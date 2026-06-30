@@ -1,12 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  output: "export",      // generates a static `out/` folder
-  trailingSlash: true,   // GitHub Pages needs index.html per folder
+  // Hosted natively on Vercel: no static `output: "export"`, so we get
+  // server rendering, image optimisation and Next.js routing for free.
   reactCompiler: true,
-  images: {
-    unoptimized: true,   // Next.js image optimisation requires a server
-  },
 };
 
 export default nextConfig;
