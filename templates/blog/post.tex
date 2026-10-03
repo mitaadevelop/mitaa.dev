@@ -1,0 +1,118 @@
+% Copy to content/blog/<slug>.tex — the file name is the URL (/blog/<slug>).
+% Put images in public/blog/<slug>/ and reference them from the site root.
+% Everything before \begin{document} is metadata; delete the lines you don't use.
+%
+% The same file compiles with latexmk (mitaa.sty supplies the site's macros):
+%   npm run blog:check <slug>              compare the site's numbering with LaTeX's
+%   npm run blog:check <slug> -- --publish also copy the PDF to public/docs/blog/
+\documentclass[11pt,a4paper]{article}
+% \usepackage[dutch]{babel}  % Dutch labels on the site and in the PDF; English without it
+\usepackage{amsmath, booktabs, graphicx}
+\usepackage{mitaa}
+
+\title{Post Title}
+\subtitle{One line under the title, in italics}
+\author{Mitchel Reints}
+\affiliation{Independent, Utrecht}
+\date{2026-01-01}
+\version{v1}{}  % \version{v2}{2026-02-01} shows "v2 · revised …"
+\kind{Report}  % the small label above the title
+\keywords{embedded, control, measurement}
+\excerpt{One or two sentences for the blog index card and the meta description.}
+\tags{Embedded, C}
+\coverimage{/blog-example.png}  % your own: /blog/<slug>/cover.png (index card and social image)
+\xpost{https://x.com/handle/status/0000000000000000000}
+% \pdf{/docs/blog/<slug>.pdf}  % a "Download as PDF" button; blog:check --publish puts it there
+\paginate{auto}  % auto (6+ sections and 2000+ words) | always | never — or set pages with \clearpage
+% \draft  % renders under npm run dev only
+
+\begin{document}
+\maketitle
+
+% An abstract before the first \section goes into the header, above the text.
+\begin{abstract}
+The question, the method and the answer, in four or five sentences.
+\end{abstract}
+
+\section{Background}
+\label{sec:background}
+
+Open with the problem in two or three sentences: what you were trying to do, and why it was harder than it looked.
+
+Each \texttt{\textbackslash{}section} is numbered and listed in the table of contents; \texttt{\textbackslash{}subsection} and \texttt{\textbackslash{}subsubsection} go deeper.
+
+\begin{note}
+Callouts: \texttt{note}, \texttt{tip}, \texttt{warning}, \texttt{important}, \texttt{caution}.
+\end{note}
+
+\section{Design}
+
+\begin{figure}
+\includegraphics[width=0.6\textwidth]{/blog-example.png}  % your own: /blog/<slug>/diagram.png
+\caption{What the reader should notice in this picture}
+\label{fig:design}
+\end{figure}
+
+Figures, tables, equations and theorems are numbered as LaTeX numbers them. \texttt{\textbackslash{}Cref} writes the word and the number — \Cref{fig:design}, \Cref{tab:parts} — and \texttt{\textbackslash{}ref} the number alone, as in Table~\ref{tab:parts}.
+
+\begin{table}
+\caption{Main parts}
+\label{tab:parts}
+\begin{tabular}{llr}
+\toprule
+Part & Role & Price (€) \\
+\midrule
+MCU & Control & 2.10 \\
+LDO & Power & 0.35 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+A caption written above the table is printed above it, as here; below the content, below it.
+
+\section{Implementation}
+
+\begin{lstlisting}[language=c, title=control.c]
+void control_loop(void) {
+    float error = setpoint - read_adc();
+    set_pwm(kp * error);
+}
+\end{lstlisting}
+
+Inline math like $K_p$ and display math both go through KaTeX. A numbered \texttt{equation} can be pointed at with \texttt{\textbackslash{}eqref}: the controller is \eqref{eq:pi}.
+\begin{equation}
+u(t) = K_p \, e(t) + K_i \int_0^t e(\tau)\, d\tau
+\label{eq:pi}
+\end{equation}
+
+\begin{definition}[Settling time]
+The time after which the output stays within 2\,\% of its final value.
+\end{definition}
+
+\section{Results}
+
+What you measured, with numbers. Footnotes work too.\footnote{Measured at room temperature.}
+
+\begin{figure}
+\begin{barchart}[ylabel={Settling time (ms)}, series={before, after}]
+Step   & 42 & 18 \\
+Ramp   & 35 & 21 \\
+Impulse & 28 & 12 \\
+\end{barchart}
+\caption{A bar chart from a small table of numbers}
+\label{fig:results}
+\end{figure}
+
+\begin{quote}[--- Someone worth quoting]
+A quotation, with its attribution set flush right underneath.
+\end{quote}
+
+\section{Conclusion}
+
+What worked, what didn't, and what is next. Cite sources with \texttt{\textbackslash{}cite}, as in \cite{datasheet}, or with a page: \cite[p.~12]{datasheet}.
+
+\begin{thebibliography}{9}
+\bibitem{datasheet} Manufacturer, \emph{Part Datasheet}, rev.~3, 2025.
+\end{thebibliography}
+
+\end{document}
