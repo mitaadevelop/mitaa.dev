@@ -1,7 +1,16 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import Footer from "@/components/Footer";
+import SiteFooter from "@/components/site/SiteFooter";
+import ThemeProvider from "@/components/site/ThemeProvider";
+import ThemeToggle from "@/components/site/ThemeToggle";
+import {
+  SITE_URL,
+  SITE_NAME,
+  SITE_DESCRIPTION,
+  SITE_AUTHOR,
+  TWITTER_HANDLE,
+} from "@/lib/site";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -10,9 +19,47 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "mitaa.dev",
-  description:
-    "mitaa.dev — Embedded Systems Engineer & Software Developer.",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: SITE_NAME,
+    template: `%s | ${SITE_NAME}`,
+  },
+  description: SITE_DESCRIPTION,
+  applicationName: SITE_NAME,
+  authors: [{ name: SITE_AUTHOR }],
+  creator: SITE_AUTHOR,
+  keywords: [
+    "embedded systems",
+    "firmware",
+    "STM32",
+    "ESP32",
+    "PCB design",
+    "electrical engineering",
+    "Next.js",
+    "React",
+    "web development",
+    "mitaa.dev",
+  ],
+  alternates: {
+    canonical: "/",
+    types: {
+      "application/rss+xml": [{ url: "/feed.xml", title: `${SITE_NAME} blog` }],
+    },
+  },
+  openGraph: {
+    type: "website",
+    siteName: SITE_NAME,
+    url: SITE_URL,
+    title: SITE_NAME,
+    description: SITE_DESCRIPTION,
+  },
+  twitter: {
+    card: "summary_large_image",
+    site: TWITTER_HANDLE,
+    creator: TWITTER_HANDLE,
+    title: SITE_NAME,
+    description: SITE_DESCRIPTION,
+  },
 };
 
 export default function RootLayout({
@@ -25,8 +72,11 @@ export default function RootLayout({
       <body
         className={`${inter.variable} antialiased bg-background text-foreground font-sans`}
       >
-        <main className="min-h-screen">{children}</main>
-        <Footer />
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <main className="min-h-screen">{children}</main>
+          <SiteFooter />
+          <ThemeToggle />
+        </ThemeProvider>
       </body>
     </html>
   );

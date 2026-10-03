@@ -5,7 +5,8 @@ import { remark } from "remark";
 import remarkGfm from "remark-gfm";
 import remarkHtml from "remark-html";
 
-const bioPath = path.join(process.cwd(), "content/bio.md");
+/** The bio is a single markdown file with YAML frontmatter. */
+const BIO_PATH = path.join(process.cwd(), "content/bio.md");
 
 export interface Bio {
   title: string;
@@ -16,7 +17,7 @@ export interface Bio {
 
 /** Read the intro/bio text from content/bio.md. */
 export function getBio(): Bio {
-  const raw = fs.readFileSync(bioPath, "utf8");
+  const raw = fs.readFileSync(BIO_PATH, "utf8");
   const { data, content } = matter(raw);
 
   const paragraphs = content
