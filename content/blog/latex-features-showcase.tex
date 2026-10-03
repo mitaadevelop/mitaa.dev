@@ -1,0 +1,251 @@
+\title{LaTeX Features Showcase}
+\date{2026-03-02}
+\excerpt{A complete overview of the LaTeX this blog understands — sectioning, lists, tables, listings, quotes, figures and more.}
+\tags{LaTeX, Reference, Web}
+\xpost{https://x.com/YOUR_HANDLE/status/PLACEHOLDER_TWEET_ID_1}
+
+\begin{document}
+
+\section{Introduction}
+
+This post demonstrates the LaTeX this blog understands. Use it as a reference for writing your own posts, or just to see how everything renders.
+
+\section{Text Formatting}
+
+You can write \textbf{bold text}, \emph{italic text}, and \emph{\textbf{bold italic}} together. There's also \textasciitilde{}\textasciitilde{}strikethrough\textasciitilde{}\textasciitilde{} for deleted content. Inline \texttt{code} looks like this.
+
+Here is a \href{https://example.com}{regular link} and an auto-linked URL: https://example.com.
+
+\section{Headings}
+
+This post uses \texttt{\#\#} and \texttt{\#\#\#} headings (h2 and h3). They automatically appear in the table of contents on the right.
+
+\subsection{This is an H3 Subheading}
+
+Subheadings help break up longer sections into logical parts.
+
+\section{Lists}
+
+\subsection{Unordered Lists}
+
+\begin{itemize}
+  \item First item
+  \item Second item with \textbf{bold}
+  \item Nested lists work too:
+  \item Sub-item one
+  \item Sub-item two
+  \item Even deeper nesting
+  \item Back to top level
+\end{itemize}
+
+\subsection{Ordered Lists}
+
+\begin{enumerate}
+  \item First step
+  \item Second step
+  \item Third step
+  \item Sub-step A
+  \item Sub-step B
+  \item Final step
+\end{enumerate}
+
+\subsection{Task Lists}
+
+\begin{itemize}
+  \item Implement LaTeX rendering
+  \item [x] Add syntax highlighting
+  \item [ ] Write more blog posts
+  \item [ ] World domination
+\end{itemize}
+
+\section{Blockquotes}
+
+\begin{quote}[--- Martin Fowler]
+``Any fool can write code that a computer can understand. Good programmers write code that humans can understand.''
+\end{quote}
+
+The attribution goes in square brackets after \texttt{\textbackslash{}begin\{quote\}} and is set flush right underneath.
+
+Nested blockquotes also work:
+
+\begin{quote}
+This is the outer quote.
+
+\begin{quote}
+And this is a nested quote inside it.
+\end{quote}
+
+Back to the outer quote.
+\end{quote}
+
+\section{Code Blocks}
+
+Inline code: \texttt{const x = 42;}
+
+Fenced code block with syntax highlighting:
+
+\begin{lstlisting}[language=typescript]
+interface BlogPost {
+  slug: string;
+  title: string;
+  date: string;
+  tags: string[];
+}
+
+function getLatestPosts(posts: BlogPost[], count: number): BlogPost[] {
+  return posts
+    .sort((a, b) => (a.date > b.date ? -1 : 1))
+    .slice(0, count);
+}
+\end{lstlisting}
+
+A Python example:
+
+\begin{lstlisting}[language=python]
+def fibonacci(n: int) -> list[int]:
+    """Generate the first n Fibonacci numbers."""
+    fib = [0, 1]
+    for i in range(2, n):
+        fib.append(fib[i - 1] + fib[i - 2])
+    return fib[:n]
+
+print(fibonacci(10))
+# [0, 1, 1, 2, 3, 5, 8, 13, 21, 34]
+\end{lstlisting}
+
+A shell command:
+
+\begin{lstlisting}[language=bash]
+git log --oneline --graph --all | head -20
+\end{lstlisting}
+
+A listing can carry a file name in its header — \texttt{title=} for \texttt{lstlisting}, \texttt{filename=} for \texttt{minted}:
+
+\begin{minted}[filename=blink.py]{python}
+from machine import Pin
+import time
+
+led = Pin(25, Pin.OUT)
+while True:
+    led.toggle()
+    time.sleep(0.5)
+\end{minted}
+
+And \texttt{verbatim} prints text exactly as written, without colouring:
+
+\begin{verbatim}
+$ make flash
+avrdude: 1024 bytes of flash written
+\end{verbatim}
+
+\section{Tables}
+
+\begin{tabular}{lcl}
+\hline
+Feature & Supported & Notes \\
+\hline
+Bold & ✅ & \texttt{**text**} \\
+Italic & ✅ & \texttt{*text*} \\
+Strikethrough & ✅ & \texttt{~~text~~} \\
+Tables & ✅ & GFM extension \\
+Task lists & ✅ & GFM extension \\
+Footnotes & ✅ & GFM extension \\
+\hline
+\end{tabular}
+
+\subsection{Alignment in Tables}
+
+\begin{tabular}{lcr}
+\hline
+Left-aligned & Center-aligned & Right-aligned \\
+\hline
+Content & Content & Content \\
+More & More & More \\
+Data & Data & Data \\
+\hline
+\end{tabular}
+
+\section{Footnotes}
+
+Footnotes use \texttt{\textbackslash{}footnote\{\}}.\footnote{The text of the footnote, collected at the bottom of the page.} You can also write longer ones.\footnote{A longer footnote can hold \textbf{bold}, \texttt{code} and math such as $e^{i\pi} + 1 = 0$.}
+
+\section{Images}
+
+Figures use the \texttt{figure} environment. The \texttt{\textbackslash{}caption\{\}} becomes the caption, and each figure gets an automatic number you can point at once you give it a \texttt{\textbackslash{}label\{\}}: \texttt{\textbackslash{}Cref\{\}} prints the word and the number — this one is \Cref{fig-example} — and \texttt{\textbackslash{}ref\{\}} the number alone, exactly as LaTeX does.
+
+\begin{figure}
+\includegraphics[width=0.4\textwidth]{/blog-example.png}
+\caption{Example image}
+\label{fig-example}
+\end{figure}
+
+As shown in \href{#fig-1}{Fig. 1}, images are automatically numbered and captioned.
+
+\section{Emphasis Combinations}
+
+Here are some formatting combos:
+
+\begin{itemize}
+  \item \textbf{Bold with \texttt{inline code} inside}
+  \item \emph{Italic with \href{https://example.com}{a link} inside}
+  \item \textasciitilde{}\textasciitilde{}Strikethrough with \textbf{bold} inside\textasciitilde{}\textasciitilde{}
+  \item A paragraph with \textbf{bold}, \emph{italic}, \texttt{code}, and a \href{https://example.com}{link} all mixed together
+\end{itemize}
+
+\section{Long Code Block}
+
+To test scrolling behavior with longer blocks:
+
+\begin{lstlisting}[language=c]
+#include <stdio.h>
+#include <stdlib.h>
+
+typedef struct Node {
+    int data;
+    struct Node* next;
+} Node;
+
+Node* create_node(int data) {
+    Node* node = malloc(sizeof(Node));
+    node->data = data;
+    node->next = NULL;
+    return node;
+}
+
+void insert_front(Node** head, int data) {
+    Node* new_node = create_node(data);
+    new_node->next = *head;
+    *head = new_node;
+}
+
+void print_list(Node* head) {
+    Node* current = head;
+    while (current != NULL) {
+        printf("%d -> ", current->data);
+        current = current->next;
+    }
+    printf("NULL\n");
+}
+
+int main(void) {
+    Node* list = NULL;
+    for (int i = 5; i >= 1; i--) {
+        insert_front(&list, i);
+    }
+    print_list(list); // 1 -> 2 -> 3 -> 4 -> 5 -> NULL
+    return 0;
+}
+\end{lstlisting}
+
+\section{Line Breaks \& Paragraphs}
+
+This is the first paragraph. LaTeX needs a blank line between paragraphs to separate them.
+
+This is the second paragraph. Without a blank line, text would continue on the same paragraph.
+
+\section{Summary}
+
+That covers the structural LaTeX: text formatting, sectioning, lists, quotes, listings, tables and figures. Everything here is parsed with \texttt{@unified-latex} and rendered to HTML at build time.
+
+\end{document}
+

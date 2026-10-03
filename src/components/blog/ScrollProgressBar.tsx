@@ -8,7 +8,7 @@ import {
 export default function ScrollProgressBar() {
   return (
     <ScrollProgressProvider global>
-      <ScrollProgress className="fixed top-16 left-0 z-[60] h-[2px] bg-gradient-to-r from-accent via-accent-light to-cyan-300" />
+      <ScrollProgress className="fixed top-0 left-0 z-[60] h-[2px] bg-gradient-to-r from-accent via-accent-light to-cyan-300" />
     </ScrollProgressProvider>
   );
 }

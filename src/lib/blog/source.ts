@@ -1,0 +1,150 @@
+/** Reading and interpreting the `.tex` files on disk. */
+import fs from "fs";
+import path from "path";
+import type { BlogPost, Reference } from "./types";
+import {
+  extractAbstract,
+  parseLatex,
+  splitLatexChapters,
+  toPlainText,
+  type LatexNode,
+} from "./latex";
+import { strings } from "./i18n";
+import { countWords, minutesFromWords, readTimeFromWords, uniqueSlug } from "./text";
+
+const postsDirectory = path.join(process.cwd(), "content/blog");
+/** Blog posts are LaTeX documents. */
+const POST_EXTENSIONS = [".tex"];
+
+/**
+ * `\paginate{auto}` splits a post only when it is both long and deeply
+ * sectioned, so a short post with many `\section`s does not fragment into a
+ * dozen URLs.
+ */
+const AUTO_MIN_CHAPTERS = 6;
+const AUTO_MIN_WORDS = 2000;
+
+/**
+ * `templates/blog/post.tex`, served as `/blog/template` under `npm run dev` only,
+ * so the template can be previewed through the real pipeline. A post in
+ * `content/blog/` with the same slug wins.
+ */
+function devTemplatePost(): { slug: string; file: string } | null {
+  if (process.env.NODE_ENV !== "development") return null;
+  const file = path.join(process.cwd(), "templates", "blog", "post.tex");
+  return fs.existsSync(file) ? { slug: "template", file } : null;
+}
+
+/** Resolve the on-disk path for a slug. */
+export function resolvePostPath(slug: string): string | null {
+  for (const ext of POST_EXTENSIONS) {
+    const candidate = path.join(postsDirectory, `${slug}${ext}`);
+    if (fs.existsSync(candidate)) return candidate;
+  }
+  const template = devTemplatePost();
+  return template?.slug === slug ? template.file : null;
+}
+
+export function listPostFiles(): { slug: string; file: string }[] {
+  const posts = fs.existsSync(postsDirectory)
+    ? fs
+        .readdirSync(postsDirectory)
+        .filter((file) => POST_EXTENSIONS.includes(path.extname(file)))
+        .map((file) => ({ slug: file.replace(/\.[^.]+$/, ""), file: path.join(postsDirectory, file) }))
+    : [];
+  const template = devTemplatePost();
+  return template && !posts.some((post) => post.slug === template.slug) ? [...posts, template] : posts;
+}
+
+export interface PostSource {
+  meta: BlogPost;
+  body: LatexNode[];
+  lead: LatexNode[];
+  /** The abstract written before the first `\section`, lifted into the header. */
+  abstract: LatexNode | null;
+  chapters: { index: number; title: string; slug: string; appendix: boolean; nodes: LatexNode[] }[];
+  paginated: boolean;
+  references: Reference[];
+  bibliography: { id: string; nodes: LatexNode[] }[];
+  mtimeMs: number;
+}
+
+/**
+ * Size of a PDF named by `\pdf{/docs/…}`, measured in `public/`. A missing file
+ * means no download button rather than a broken link.
+ */
+function pdfAsset(href: string, slug: string): BlogPost["pdf"] {
+  if (!href) return undefined;
+  const file = path.join(process.cwd(), "public", href.replace(/^\//, ""));
+  if (!fs.existsSync(file)) {
+    if (process.env.NODE_ENV !== "production") {
+      console.warn(`[blog] ${slug}: \\pdf{${href}} not found in public/`);
+    }
+    return undefined;
+  }
+  return { href, bytes: fs.statSync(file).size };
+}
+
+export function readPostSource(slug: string): PostSource | null {
+  const file = resolvePostPath(slug);
+  if (!file) return null;
+
+  const document = parseLatex(fs.readFileSync(file, "utf8"));
+  const { meta } = document;
+  const words = strings(meta.lang);
+  const { body, abstract } = extractAbstract(document.body);
+  const { lead, chapters: rawChapters, byPage } = splitLatexChapters(body);
+  const wordCount = countWords(toPlainText(document.body));
+
+  // A page of an explicitly paged post is named after its first section, and
+  // the appendix pages together are "Appendices" — as a printed report's
+  // table of contents would group them.
+  const seen = new Map<string, number>();
+  const chapters = rawChapters.map((chapter) => {
+    const title = byPage && chapter.appendix ? words.appendices : chapter.title || words.page(chapter.index);
+    return { ...chapter, title, slug: uniqueSlug(title || `chapter-${chapter.index}`, seen) };
+  });
+
+  // Explicit page breaks say how the author wants the post served; otherwise
+  // \paginate decides.
+  const mode = meta.pagination;
+  const paginated =
+    mode === "never" || chapters.length < 2
+      ? false
+      : byPage || mode === "always" || (chapters.length >= AUTO_MIN_CHAPTERS && wordCount >= AUTO_MIN_WORDS);
+
+  return {
+    meta: {
+      slug,
+      title: meta.title || slug,
+      date: meta.date,
+      excerpt: meta.excerpt,
+      image: meta.image,
+      tags: meta.tags,
+      readTime: readTimeFromWords(wordCount),
+      readMinutes: minutesFromWords(wordCount),
+      xPostUrl: meta.xPostUrl,
+      lang: meta.lang,
+      author: meta.author || undefined,
+      subtitle: meta.subtitle || undefined,
+      affiliation: meta.affiliation || undefined,
+      version: meta.version,
+      keywords: meta.keywords,
+      kind: meta.kind || undefined,
+      pdf: pdfAsset(meta.pdf, slug),
+      draft: meta.draft,
+    },
+    body,
+    lead,
+    abstract,
+    chapters,
+    paginated,
+    references: document.bibliography.map((entry) => ({ id: entry.id })),
+    bibliography: document.bibliography,
+    mtimeMs: fs.statSync(file).mtimeMs,
+  };
+}
+
+export function chapterHref(postSlug: string, chapterSlug: string, index: number): string {
+  return index === 1 ? `/blog/${postSlug}` : `/blog/${postSlug}/${chapterSlug}`;
+}

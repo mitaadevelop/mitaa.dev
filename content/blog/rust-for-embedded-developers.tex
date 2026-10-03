@@ -1,0 +1,40 @@
+\title{Why Rust is the Future of Embedded Development}
+\date{2025-12-08}
+\excerpt{Exploring how Rust's ownership model and zero-cost abstractions make it an excellent choice for safety-critical embedded systems.}
+\tags{Rust, Embedded, Safety}
+\xpost{https://x.com/YOUR_HANDLE/status/PLACEHOLDER_TWEET_ID_3}
+
+\begin{document}
+
+\section{The Problem with C in Embedded}
+
+C has been the lingua franca of embedded development for decades, but it comes with well-known pitfalls: buffer overflows, null pointer dereferences, and data races. In safety-critical systems, these bugs can be catastrophic.
+
+\section{Enter Rust}
+
+Rust's ownership model prevents entire classes of bugs at compile time:
+
+\begin{itemize}
+  \item \textbf{No null pointers} — Option types instead
+  \item \textbf{No data races} — ownership and borrowing rules
+  \item \textbf{No buffer overflows} — bounds checking
+  \item \textbf{Zero-cost abstractions} — no runtime overhead
+\end{itemize}
+
+\begin{lstlisting}[language=rust]
+fn read_sensor(peripheral: &mut SensorPeripheral) -> Result<f32, SensorError> {
+    let raw = peripheral.read_register(TEMP_REG)?;
+    Ok(raw as f32 * 0.0625)
+}
+\end{lstlisting}
+
+\section{The Ecosystem}
+
+The embedded Rust ecosystem has matured significantly with projects like \texttt{embassy}, \texttt{probe-rs}, and hardware abstraction layers for most popular MCU families.
+
+\section{Conclusion}
+
+While C isn't going anywhere soon, Rust offers a compelling path forward for new embedded projects, especially those with safety or reliability requirements.
+
+\end{document}
+

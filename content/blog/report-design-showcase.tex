@@ -1,0 +1,210 @@
+% The report design, end to end, in Dutch: the content of the design mock-up
+% (an HTML export kept outside the repo), written as the LaTeX it would come from.
+% The numbers are the mock-up's sample data, not a real study — hence \draft:
+% this post renders under `npm run dev` and in the tests, never in production.
+%
+% It compiles with plain latexmk too (`npm run blog:check report-design-showcase`),
+% which is how the site's numbering is checked against LaTeX's own.
+\documentclass[11pt,a4paper]{article}
+\usepackage[dutch]{babel}
+\usepackage{amsmath, booktabs, graphicx}
+\usepackage{mitaa}
+
+\title{De prestatiekosten van een designsysteem}
+\subtitle{Een meting van bundelgrootte en laadtijd over veertig projecten, 2019--2025}
+\author{Mitchel Reints}
+\affiliation{Onafhankelijk onderzoek, Utrecht}
+\date{2025-08-12}
+\version{v2}{2025-09-04}
+\kind{Verslag}
+\keywords{designsystemen, bundelgrootte, laadtijd, meetmethode}
+\excerpt{Een gedeeld designsysteem belooft snelheid in het ontwerpproces, maar wat kost het de gebruiker? Een meting over veertig projecten.}
+\tags{Verslag, Designsystemen, Performance}
+\pdf{/docs/blog/report-design-showcase.pdf}
+\draft
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Een gedeeld designsysteem belooft snelheid in het ontwerpproces, maar wat kost het de gebruiker? In veertig projecten tussen 2019 en 2025 zijn bundelgrootte, eerste weergave en interactietijd gemeten, verdeeld over projecten met en zonder gedeelde componentbibliotheek. Projecten met een designsysteem leveren gemiddeld 34\,kB meer JavaScript uit, maar bereiken een stabielere mediane laadtijd; de spreiding halveert. De winst zit niet in het gemiddelde, maar in de staart van de verdeling.
+\end{abstract}
+
+\section{Inleiding}
+\label{sec:inleiding}
+
+Een designsysteem wordt zelden met cijfers verdedigd. De argumenten zijn consistentie en tempo~\cite{frost16}, zelden wat de gebruiker ervoor betaalt. Eerder werk meet vooral ontwerptijd~\cite{curtis20,kholmatova17}; de kosten aan de kant van de browser blijven onbesproken.\footnote{De ruwe meetdata, het buildscript en de \texttt{.tex}-bron staan in de repository bij dit verslag.}
+
+Dit verslag stelt daarom één vraag: wat doet een gedeelde componentbibliotheek met de laadtijd van het eindproduct? Veertig projecten uit de eigen praktijk zijn achteraf gemeten onder gelijke omstandigheden, zodat de vergelijking niet afhangt van wat er destijds is opgeleverd.
+
+\clearpage
+
+\section{Methode}
+\label{sec:methode}
+
+\subsection{Opzet}
+
+De steekproef bestaat uit veertig productieprojecten die tussen januari 2019 en maart 2025 zijn opgeleverd: tweeëntwintig met een gedeelde componentbibliotheek en achttien zonder. Om de vergelijking eerlijk te houden gelden drie insluitingscriteria:
+
+\begin{itemize}
+  \item het project draait nog in productie en is opnieuw te bouwen uit de originele broncode;
+  \item de eerste weergave bevat tekst en beeld, geen splash- of laadscherm;
+  \item er is geen servergerenderde variant bijgekomen na oplevering.
+\end{itemize}
+
+\subsection{Meetinstrument}
+
+Elke meting is tien keer herhaald op een gesimuleerde 4G-verbinding met \texttt{lighthouse-ci}. Om uitschieters niet te zwaar te laten wegen is de gewogen mediaan $L$ gebruikt, met gewicht $w_i$ per meting $i$:
+
+\begin{equation}
+L = \frac{\sum_{i=1}^{n} w_i t_i}{\sum_{i=1}^{n} w_i}
+\label{eq:mediaan}
+\end{equation}
+
+Hierin is $t_i$ de gemeten tijd tot de eerste betekenisvolle weergave en $n = 10$ het aantal herhalingen. Het gewicht $w_i$ daalt lineair met de afstand tot de mediaan, zodat één trage meting het beeld niet kantelt.
+
+\subsubsection{Keuze van het gewicht}
+
+De weging is bewust simpel gehouden: lineair aflopend met de afstand tot de mediaan, afgekapt op nul.\footnote{Gemeten met \texttt{lighthouse-ci} 0.13 op een vaste machine; de browserversie is bevroren op Chrome 126.} Een zwaardere functie, zoals een Gauss-kern, verschuift het resultaat met minder dan twee procent.\footnote{Een ongewogen mediaan geeft een circa acht procent lager verschil, maar reageert sterker op uitschieters.}
+
+\begin{table}
+\caption{opzet van de steekproef, verdeeld naar het gebruik van een gedeelde componentbibliotheek.}
+\label{tab:opzet}
+\begin{tabular}{lrr}
+\toprule
+Kenmerk & Met systeem & Zonder \\
+\midrule
+Aantal projecten & 22 & 18 \\
+Periode & 2019--2025 & 2019--2024 \\
+Mediane doorlooptijd & 14 weken & 9 weken \\
+Pagina's per project & 24 & 11 \\
+Herhalingen per meting & 10 & 10 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\clearpage
+
+\section{Resultaten}
+\label{sec:resultaten}
+
+Projecten met een gedeelde bibliotheek leveren meer JavaScript uit, maar doen dat voorspelbaarder. Het verschil in mediane laadtijd is klein; het verschil in spreiding is dat niet.
+
+\subsection{Bundelgrootte}
+
+Projecten met een systeem leveren mediaan 218\,kB aan JavaScript uit tegen 184\,kB zonder: een verschil van 34\,kB, ofwel achttien procent.\footnote{Bundelgrootte is gemeten na compressie met Brotli, zoals de server de bestanden uitlevert.} Dat verschil is stabiel over de hele periode en groeit niet mee met de projectomvang.
+
+\subsection{Spreiding}
+\label{sec:spreiding}
+
+Figuur~\ref{fig:spreiding} zet de standaardafwijking per projecttype naast elkaar. In alle vijf de categorieën ligt de spreiding bij projecten met een systeem lager, het duidelijkst bij dashboards.
+
+\begin{figure}
+\begin{barchart}[ylabel={$\sigma$ (ms)}, series={met systeem, zonder}]
+Marketing  & 172 & 361 \\
+Webapp     & 200 & 408 \\
+Dashboard  & 229 & 494 \\
+Portal     & 179 & 390 \\
+E-commerce & 218 & 447 \\
+\end{barchart}
+\caption{spreiding ($\sigma$) van de laadtijd per projecttype, in milliseconden, over tien herhalingen per project.}
+\label{fig:spreiding}
+\end{figure}
+
+Over de hele steekproef verhoudt de variantie zich als:
+
+\begin{equation}
+\frac{\sigma^2_{\text{met}}}{\sigma^2_{\text{zonder}}} = 0{,}48
+\label{eq:variantie}
+\end{equation}
+
+Met andere woorden: de variantie halveert ruwweg. Het 95\,\%-betrouwbaarheidsinterval loopt van 0,39 tot 0,58 en sluit de waarde 1 dus ruim uit. Tabel~\ref{tab:kerncijfers} vat de kerncijfers samen.
+
+\begin{table}
+\caption{kerncijfers over de volledige steekproef; $\Delta$ is het verschil ten opzichte van projecten zonder systeem.}
+\label{tab:kerncijfers}
+\begin{tabular}{lrrr}
+\toprule
+Maat & Met & Zonder & $\Delta$ \\
+\midrule
+JavaScript (kB) & 218 & 184 & +34 \\
+Mediane $L$ (ms) & 1\,180 & 1\,240 & $-60$ \\
+Spreiding $\sigma$ (ms) & 210 & 430 & $-220$ \\
+p95 (ms) & 1\,620 & 2\,480 & $-860$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\clearpage
+
+\section{Discussie}
+\label{sec:discussie}
+
+\subsection{Interpretatie}
+
+De extra kilobytes zijn reëel: een gedeelde bibliotheek levert code mee die een enkel scherm niet nodig heeft. Dat de mediaan desondanks nauwelijks verschuift, komt doordat die code beter te cachen is en over meerdere pagina's wordt hergebruikt. De winst zit in de staart: de traagste vijf procent van de metingen is bijna een seconde sneller.
+
+\begin{definition}[Dekking]
+\label{def:dekking}
+Een project heet \emph{gedekt} wanneer ten minste tachtig procent van de zichtbare componenten uit de gedeelde bibliotheek komt. Projecten onder die grens zijn in dit onderzoek als `zonder systeem' geteld.
+\end{definition}
+
+\begin{quote}[--- Vermeer \& De Wit~\cite[p.~212]{vermeer23}]
+Gemiddelden beschrijven een ervaring die niemand heeft. Wie de langzaamste gebruiker wil helpen, moet naar de staart van de verdeling kijken.
+\end{quote}
+
+\subsection{Beperkingen}
+
+Drie beperkingen verdienen vermelding. De steekproef komt uit één praktijk en is dus niet willekeurig getrokken. De projecten zonder systeem zijn gemiddeld ouder, waardoor een deel van het verschil aan voortschrijdende techniek kan liggen. En de meting kijkt alleen naar de eerste weergave, niet naar wat er daarna gebeurt.
+
+Het leeftijdsverschil is deels ondervangen: de vier oudste projecten zijn opnieuw gebouwd met de huidige toolchain.\footnote{De herbouw betrof alleen de bouwstap, niet de broncode; de componenten bleven ongewijzigd.}
+
+\section{Conclusie}
+\label{sec:conclusie}
+
+Een designsysteem maakt de gemiddelde pagina niet sneller, maar wel voorspelbaarder. Voor wie op een mediaan stuurt is de winst verwaarloosbaar; voor wie op de p95 stuurt is het een van de effectiefste ingrepen die er zijn~\cite{walton21}. De vraag is dus niet of een systeem iets kost, maar welke gebruiker je ermee bedient.
+
+\clearpage
+
+\appendix
+
+\section{Broncode}
+\label{app:broncode}
+
+Dit verslag is gezet in LaTeX. De volledige bron staat hieronder ingekort; het buildscript zet het bestand om naar zowel PDF als HTML.
+
+\begin{lstlisting}[language=latex, title=verslag.tex]
+\documentclass[11pt,a4paper]{article}
+\usepackage[dutch]{babel}
+\usepackage{amsmath, booktabs, graphicx}
+
+\title{De prestatiekosten van een designsysteem}
+\author{Mitchel Reints}
+\date{12 augustus 2025}
+
+\begin{document}
+\maketitle
+\tableofcontents
+
+% Sectie 1
+\section{Inleiding}
+Een systeem wordt zelden met cijfers verdedigd~\cite{frost16}.
+
+\begin{equation}
+L = \frac{\sum_{i=1}^{n} w_i t_i}{\sum_{i=1}^{n} w_i}
+\end{equation}
+
+\bibliographystyle{apalike}
+\bibliography{verslag}
+\end{document}
+\end{lstlisting}
+
+\begin{thebibliography}{9}
+\bibitem{frost16} Frost, B. (2016). \emph{Atomic Design}. Brad Frost Web.
+\bibitem{curtis20} Curtis, N. (2020). \emph{Measuring design system adoption}. EightShapes.
+\bibitem{kholmatova17} Kholmatova, A. (2017). \emph{Design Systems}. Smashing Magazine.
+\bibitem{vermeer23} Vermeer, J. \& De Wit, S. (2023). Prestatieperceptie aan de rand van het netwerk. \emph{Tijdschrift voor Interactie}, 14(3), 198--224.
+\bibitem{walton21} Walton, R. (2021). The cost of abstraction on the web. \emph{Proc.\ WebPerf '21}, 44--59.
+\end{thebibliography}
+
+\end{document}
