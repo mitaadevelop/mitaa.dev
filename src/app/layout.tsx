@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import SiteFooter from "@/components/site/SiteFooter";
+import Footer from "@/components/site/Footer";
 import ThemeProvider from "@/components/site/ThemeProvider";
 import ThemeToggle from "@/components/site/ThemeToggle";
 import {
@@ -74,7 +74,7 @@ export default function RootLayout({
       >
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <main className="min-h-screen">{children}</main>
-          <SiteFooter />
+          <Footer />
           <ThemeToggle />
         </ThemeProvider>
       </body>
