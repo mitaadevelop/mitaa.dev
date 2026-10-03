@@ -28,6 +28,7 @@
   - [Adding a Project](#adding-a-project)
   - [Showcasing a PCB](#showcasing-a-pcb)
 - [Comments & Social](#comments--social)
+- [Shop](#shop)
 - [Deployment](#deployment)
 - [Roadmap](#roadmap)
 - [License](#license)
@@ -53,7 +54,7 @@ allowing dynamic routes like the RSS feed.
 | **Framework** | [Next.js 16](https://nextjs.org/) (App Router) |
 | **Language** | [TypeScript](https://www.typescriptlang.org/) |
 | **Styling** | [Tailwind CSS v4](https://tailwindcss.com/) |
-| **UI Primitives** | [shadcn/ui](https://ui.shadcn.com/) |
+| **UI Primitives** | [animate-ui](https://animate-ui.com/) (vendored in `src/components/animate-ui/`) |
 | **Animations** | [Motion](https://motion.dev/) |
 | **Blog** | LaTeX via [@unified-latex](https://github.com/siefkenj/unified-latex) → [Rehype](https://github.com/rehypejs/rehype), math via [KaTeX](https://katex.org/) |
 | **Markdown** | [Remark](https://remark.js.org/) — projects, bio and GitHub READMEs |
@@ -116,17 +117,26 @@ mitaa.dev/
 │   ├── projects/*.md           # Curated projects — YAML frontmatter + markdown
 │   └── bio.md                  # Home page bio
 ├── public/
-│   ├── data/                   # Pre-fetched GitHub data (generated at build time)
-│   └── pcb/<repo>/             # PCB assets (git-ignored; pulled from repos' PCB/ folders)
+│   ├── data/                   # Pre-fetched GitHub data (git-ignored; generated at build time)
+│   ├── docs/                   # PDFs: blog/ committed, <repo>/ pulled at build time
+│   ├── media/                  # Gallery/video/CSV: curated/ committed, <repo>/ pulled at build time
+│   ├── pcb/                    # PCB assets: demo-board/ committed, <repo>/ pulled at build time
+│   └── shop/                   # Shop preview images
 ├── scripts/
 │   ├── fetch-github-data.mjs   # Pre-build: GitHub data + PCB/doc/media assets
 │   ├── convert-step-models.mjs # predev/prebuild: convert curated .step models → .glb
 │   ├── step-to-glb.mjs         # STEP → GLB converter (OpenCascade / occt-import-js)
-│   └── render-kicad-images.mjs # kicad-cli → schematic/PCB SVGs + X-ray (run locally)
+│   ├── render-kicad-images.mjs # kicad-cli → schematic/PCB SVGs + X-ray (run locally)
+│   ├── recolor-glb.mjs         # Recolor soldermask/silkscreen/finish of a board GLB
+│   └── blog-check.mts          # Compile a post with latexmk and compare numbering
+├── templates/                  # Starting points: a blog post and a project repo
 ├── src/
 │   ├── app/                    # Next.js App Router routes
+│   │   ├── api/github-repos/   # Live repo list (revalidates every 60 s)
 │   │   ├── blog/[slug]/        # layout.tsx = post chrome, page.tsx = chapter text
+│   │   ├── feed.xml/           # RSS feed
 │   │   ├── projects/           # Project list & detail pages
+│   │   ├── shop/               # Shop and product pages
 │   │   └── globals.css         # Global styles + .prose-blog
 │   ├── components/
 │   │   ├── animate-ui/         # Animation primitives (Blur, Fade, ScrollProgress)
@@ -140,7 +150,8 @@ mitaa.dev/
 │   │   ├── blog/               # The LaTeX pipeline (see Blog System)
 │   │   ├── projects/           # Curated + GitHub-sourced projects, shared types
 │   │   └── date.ts, bio.ts, pcb.ts, site.ts, utils.ts
-│   └── data/shop.ts            # Shop catalogue
+│   ├── data/shop.ts            # Shop catalogue
+│   └── types/                  # JSX types for <model-viewer> and KiCanvas elements
 └── tests/                      # node --test: blog snapshots + regressions
 ```
 
@@ -172,9 +183,11 @@ A post with 6+ `\section`s and 2000+ words splits into one page per section
 (`\paginate{always|never}` overrides that). Figure, table and theorem numbers,
 and `\ref`s, work across chapter pages.
 
-These `.tex` files use a few macros of their own (`\excerpt`, `\tags`,
-`\paginate`, the callout environments), so they will not compile with
-`pdflatex` as-is.
+The site-only macros (`\excerpt`, `\tags`, `\paginate`, the callout
+environments, …) are defined for real LaTeX in `content/blog/mitaa.sty`, so a
+post also compiles to a PDF. `npm run blog:check <post>` builds it with latexmk
+and checks that every figure, equation and citation number matches what the
+site prints; `-- --publish` copies the PDF to `public/docs/blog/`.
 
 ### Projects System
 
@@ -303,6 +316,19 @@ npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+`public/data/` is not committed. To see GitHub-sourced projects and the
+contribution calendar in development, run `node scripts/fetch-github-data.mjs`
+once (or `npm run build`).
+
+Other scripts:
+
+```bash
+npm run blog:check <post> [-- --publish]          # latexmk build + numbering check
+npm run pcb:render <board.kicad_pcb> [sch]        # kicad-cli → schematic/PCB/X-ray SVGs (local)
+npm run pcb:convert <in.step> <out.glb>           # STEP → GLB
+npm run pcb:recolor <in.glb> <out.glb> --board "#1b2a4a" [--silk "#fff"] [--finish "#d4af37"]
+```
 
 ### Build
 
@@ -472,7 +498,7 @@ This website does not host its own comment system. Instead, blog post discussion
 
 - Each blog post published on `mitaa.dev` is also shared as a post on **X**
 - Readers can reply, quote, or discuss the post directly on that platform
-- This keeps the website lightweight and static while still enabling community interaction
+- This keeps the website lightweight while still enabling community interaction
 
 ### Where to follow
 
@@ -483,21 +509,12 @@ This website does not host its own comment system. Instead, blog post discussion
 
 ---
 
-## E-commerce & Licensing
+## Shop
 
-For selling digital products (such as software applications) and issuing license keys directly on the website, this project is integrated with [Lemon Squeezy](https://www.lemonsqueezy.com/).
-
-### Why Lemon Squeezy?
-Using Lemon Squeezy as a **Merchant of Record (MoR)** is highly recommended for static Next.js sites because:
-1. **Global Tax/VAT Handling:** They automatically calculate, collect, and remit global software taxes so you don't have to worry about complex tax administration.
-2. **Built-in Licensing:** It provides out-of-the-box software licensing (generating, validating, and managing license keys).
-3. **No Customer Data Handling:** They safely store customer data (emails, billing info) and are fully GDPR/PCI compliant. You don't need to build or secure your own database.
-4. **No Backend Required:** You don't need a custom server or complex webhooks just to generate a license key.
-
-### Implementation Approach
-1. **Products:** Add a `BuyButton` component linking to a Lemon Squeezy checkout overlay or hosted checkout page.
-2. **Delivery:** After a successful payment, Lemon Squeezy automatically emails the customer their download link and generated license key.
-3. **Validation:** Inside your sold application (e.g., a desktop app in Rust, C#, or Electron), implement a check against the [Lemon Squeezy License API](https://docs.lemonsqueezy.com/api/licenses) to verify the entered key.
+`/shop` lists digital products from `src/data/shop.ts`; preview images live in
+`public/shop/<product>/`, and the sale masters stay outside git
+(`private-products/`, ignored). Checkout is not enabled yet — products show as
+"Coming soon" until a payment provider is wired up.
 
 ---
 
@@ -532,13 +549,13 @@ out of the box — none of which a static-export/GitHub Pages setup could do.
 - [x] Interactive hardware viewer (schematic / PCB / 3D / BOM + X-ray)
 - [ ] True translucent PCB X-ray (stack per-layer renders with opacity)
 - [ ] Tag-based blog filtering
-- [ ] Update `xPostUrl` frontmatter fields with real tweet URLs
+- [ ] Set `\xpost` in each post to its real X post URL
 
 ---
 
 ## License
 
-This project is open source and available under the [MIT License](LICENSE).
+No `LICENSE` file has been added yet.
 
 Feel free to fork, clone, or use this as a template for your own portfolio. If you do, a shoutout or star on GitHub is always appreciated ⭐
 

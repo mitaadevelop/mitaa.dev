@@ -5,7 +5,7 @@ import { fetchGitHubRepos, mapReposToProjects } from "@/lib/projects/github";
 // The projects list fetches this on load, so newly-added repos appear on refresh
 // without waiting for a rebuild. Full detail (docs, PDFs, PCB assets) fills in next build.
 // Must be a literal — Next statically analyses segment configs, so an imported
-// constant (LIVE_REVALIDATE_SECONDS in @/lib/github) fails the build. Keep in sync.
+// constant (LIVE_REVALIDATE_SECONDS in @/lib/projects/github) fails the build. Keep in sync.
 export const revalidate = 60;
 
 export async function GET() {

@@ -18,6 +18,7 @@ npm run blog:check <post> [-- --publish]   # compile a post with latexmk, compar
 # PCB tooling (run locally — kicad-cli / occt run on your machine, not on Vercel):
 npm run pcb:convert <in.step> <out.glb>                         # STEP → GLB (occt-import-js)
 npm run pcb:render  <board.kicad_pcb> [schematic.kicad_sch]     # kicad-cli → schematic/PCB/X-ray SVGs
+npm run pcb:recolor <in.glb> <out.glb> --board "#hex" [--silk "#hex"] [--finish "#hex"]  # recolor a board GLB's materials
 ```
 
 Typecheck with `npx tsc --noEmit` (strict; keep it green).
@@ -116,7 +117,7 @@ The consequence: **nothing in the layout can receive the active chapter as a pro
 - `scripts/fetch-github-data.mjs` — GitHub REST + GraphQL (repos, contributions, commits, contributors, releases, dependency manifests) **and** per-repo PCB assets and `project/**/*.pdf` documents (see below). Needs `GITHUB_TOKEN` (or `GITHUB_TOKEN_PUBLIC_REPO` / `GITHUB_TOKEN_CONTRIBUTIONS`); degrades to public-rate-limited fetches without one.
 - `scripts/convert-step-models.mjs` → `scripts/step-to-glb.mjs` — converts curated `.step` models referenced in project frontmatter to `.glb` (OpenCascade via `occt-import-js`, WASM — runs on Vercel).
 
-`public/pcb/*`, `public/docs/*` and `public/data/*.json` are build artifacts. `.gitignore` ignores `public/pcb/*` except the committed `demo-board`, and `public/docs/*` except the committed `curated/` folder for hand-added PDFs.
+`public/pcb/*`, `public/docs/*`, `public/media/*` and `public/data/` are build artifacts. `.gitignore` ignores all of `public/data/` (readers fall back to empty data when it is missing — run `node scripts/fetch-github-data.mjs` to populate it for `next dev`), `public/pcb/*` except the committed `demo-board`, `public/docs/*` except `curated/` (hand-added PDFs) and `blog/` (PDFs from `blog:check --publish`), and `public/media/*` except `curated/`. Design files (`*.pen`) stay out of git.
 
 ### The PCB viewer subsystem (most distinctive area)
 A project's optional `pcb` block (`PcbAssets` in `src/lib/projects/types.ts`) drives a tabbed hardware viewer rendered by `src/components/pcb/PcbViewer.tsx` (Schematic / PCB / 3D / BOM). Where assets come from:
