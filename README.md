@@ -55,7 +55,7 @@ allowing dynamic routes like the RSS feed.
 | **Language** | [TypeScript](https://www.typescriptlang.org/) |
 | **Styling** | [Tailwind CSS v4](https://tailwindcss.com/) |
 | **UI Primitives** | [animate-ui](https://animate-ui.com/) (vendored in `src/components/animate-ui/`) |
-| **Animations** | [Motion](https://motion.dev/) |
+| **Animations** | [Motion](https://motion.dev/) for single-element entrances, [GSAP](https://gsap.com/) for the home intro and scroll effects |
 | **Blog** | LaTeX via [@unified-latex](https://github.com/siefkenj/unified-latex) → [Rehype](https://github.com/rehypejs/rehype), math via [KaTeX](https://katex.org/) |
 | **Markdown** | [Remark](https://remark.js.org/) — projects, bio and GitHub READMEs |
 | **Diagrams** | [Mermaid](https://mermaid.js.org) text drawn to SVG at build time by [pele](https://pele.run) — blog posts and project docs |
@@ -63,6 +63,7 @@ allowing dynamic routes like the RSS feed.
 | **Icons** | [Lucide React](https://lucide.dev/) |
 | **Font** | [Inter](https://rsms.me/inter/) (Google Fonts) |
 | **Hardware viewer** | [KiCanvas](https://kicanvas.org) (live schematic/PCB) + [`<model-viewer>`](https://modelviewer.dev) (3D) + [occt-import-js](https://github.com/kovacsv/occt-import-js) (STEP→GLB) + [kicad-cli](https://docs.kicad.org) (pre-rendered SVGs) |
+| **Download counts** | [Upstash Redis](https://upstash.com) over its REST API (optional) |
 | **Hosting** | [Vercel](https://vercel.com/) — native Next.js (SSR + static) |
 
 ---
@@ -71,16 +72,22 @@ allowing dynamic routes like the RSS feed.
 
 ### General
 - ⚡ **Pre-rendered** — content baked in at build time for instant page loads
-- 🎨 **Minimalist light theme** — clean whites, subtle grays, green accents
+- 🎨 **Minimalist light and dark theme** — clean whites and grays, green accents, a theme toggle
 - 📱 **Responsive** — optimized for mobile, tablet, and desktop
 - 🔤 **Inter font** — crisp, modern typography with tight tracking
-- ✨ **Scroll animations** — blur and fade effects via `animate-ui` primitives
+- ✨ **Animations** — blur and fade entrances via `animate-ui`, an intro and scroll effects via GSAP, which check `prefers-reduced-motion` themselves
 - 📊 **Scroll progress bar** — subtle indicator at the top of the viewport
 - 🧭 **Sticky table of contents** — auto-highlighting active section on blog posts
 
 ### Home Page (`/`)
-- Bio section with staggered fade-in paragraphs
-- Latest blog posts list with date and primary tag
+- Bio section with an animated intro
+- **GitHub Activity** — a contribution heatmap for the last year
+- Latest blog posts list with date and primary tag (the section is left out while there are no posts)
+
+### Shop (`/shop`)
+- Free downloads: three **LaTeX templates** (essay, report, research report), a two-page **LaTeX cheat sheet** and a wallpaper pack
+- Every download goes through `/api/download/<id>`, which counts it (once per visitor, per file, per day; no IP stored) and redirects to the file
+- "Open in Overleaf" for the templates
 
 ### Projects (`/projects`)
 - Curated projects from `content/projects/*.md`
@@ -116,12 +123,14 @@ allowing dynamic routes like the RSS feed.
 ```
 mitaa.dev/
 ├── content/
-│   ├── blog/*.tex              # Blog posts — LaTeX documents
-│   ├── projects/*.md           # Curated projects — YAML frontmatter + markdown
+│   ├── blog/                   # Your posts (*.tex) — none are committed; mitaa.sty = the site's macros as LaTeX
+│   ├── projects/*.md           # Curated projects — YAML frontmatter + markdown (optional)
+│   ├── shop/                   # Sources of the free LaTeX templates and cheat sheet
 │   └── bio.md                  # Home page bio
 ├── public/
 │   ├── data/                   # Pre-fetched GitHub data (git-ignored; generated at build time)
 │   ├── docs/                   # PDFs: blog/ committed, <repo>/ pulled at build time
+│   ├── downloads/              # Built shop downloads (ZIPs, PDFs, previews) — committed output of `downloads:build`
 │   ├── media/                  # Gallery/video/CSV: curated/ committed, <repo>/ pulled at build time
 │   ├── pcb/                    # PCB assets: <repo>/ pulled at build time
 │   └── shop/                   # Shop preview images
@@ -131,31 +140,34 @@ mitaa.dev/
 │   ├── step-to-glb.mjs         # STEP → GLB converter (OpenCascade / occt-import-js)
 │   ├── render-kicad-images.mjs # kicad-cli → schematic/PCB SVGs + X-ray (run locally)
 │   ├── recolor-glb.mjs         # Recolor soldermask/silkscreen/finish of a board GLB
+│   ├── build-downloads.mts     # Compile the LaTeX templates and zip the shop downloads (run locally)
 │   └── blog-check.mts          # Compile a post with latexmk and compare numbering
-├── templates/                  # Starting points: a blog post and a project repo
+├── templates/                  # Starting points: a blog post (shows every feature) and a project repo
 ├── src/
 │   ├── app/                    # Next.js App Router routes
 │   │   ├── api/github-repos/   # Live repo list (revalidates every 60 s)
+│   │   ├── api/download/[id]/  # Counts a shop download, then redirects to the file
+│   │   ├── api/blog-watch/     # Dev only: live preview of .tex saves (404 in production)
 │   │   ├── blog/[slug]/        # layout.tsx = post chrome, page.tsx = chapter text
 │   │   ├── feed.xml/           # RSS feed
 │   │   ├── projects/           # Project list & detail pages
-│   │   ├── shop/               # Shop and product pages
+│   │   ├── shop/               # Shop, product and LaTeX template pages
 │   │   └── globals.css         # Global styles + .prose-blog
 │   ├── components/
 │   │   ├── animate-ui/         # Animation primitives (Blur, Fade, ScrollProgress)
-│   │   ├── blog/               # Table of contents, chapter nav, progress bar
+│   │   ├── blog/               # Table of contents, chapter nav, progress bar, live preview
 │   │   ├── pcb/                # Schematic / PCB / 3D / BOM viewer
 │   │   ├── project/            # Docs, gallery, video, charts, contributions
-│   │   ├── shop/               # Shop gallery
-│   │   └── site/               # Footer, theme toggle, icons
+│   │   ├── shop/               # Shop gallery, download counts
+│   │   └── site/               # Footer, theme toggle, icons, home hero, scroll reveal
 │   ├── hooks/                  # Hooks used by the animation primitives
 │   ├── lib/
 │   │   ├── blog/               # The LaTeX pipeline (see Blog System)
-│   │   ├── projects/           # Curated + GitHub-sourced projects, shared types
-│   │   └── date.ts, bio.ts, pcb.ts, site.ts, utils.ts
-│   ├── data/shop.ts            # Shop catalogue
+│   │   ├── projects/           # Curated + GitHub-sourced projects, markdown → HTML, shared types
+│   │   └── date.ts, diagram.ts, downloads.ts, gsap.ts, bio.ts, pcb.ts, site.ts, utils.ts
+│   ├── data/                   # shop.ts (catalogue), latex-templates.ts (free templates + cheat sheet)
 │   └── types/                  # JSX types for <model-viewer> and KiCanvas elements
-└── tests/                      # node --test: blog snapshots + regressions
+└── tests/                      # node --test: blog snapshots + regressions; fixtures/blog = the posts they render
 ```
 
 ## Architecture
@@ -297,7 +309,7 @@ Files pulled from GitHub are regenerated on every build, so `public/pcb/*`
 
 ### Prerequisites
 
-- [Node.js](https://nodejs.org/) 18+ (recommended: 20 LTS)
+- [Node.js](https://nodejs.org/) 20.6+ (the GitHub fetch below uses `node --env-file`; Vercel builds on Node 24)
 - [npm](https://www.npmjs.com/) 9+ or [pnpm](https://pnpm.io/)
 
 ### Installation
@@ -321,8 +333,20 @@ npm run dev
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 `public/data/` is not committed. To see GitHub-sourced projects and the
-contribution calendar in development, run `node scripts/fetch-github-data.mjs`
-once (or `npm run build`).
+contribution calendar in development, fetch them once with your tokens:
+
+```bash
+node --env-file=.env.local scripts/fetch-github-data.mjs
+```
+
+`--env-file` matters: only Next.js reads `.env.local` by itself, and this script
+is plain Node, so without the flag it runs without a token — repos still arrive
+(at GitHub's public rate limit), but the contribution calendar is skipped. See
+[Environment Variables](#environment-variables).
+
+Under `npm run dev`, saving a `.tex` file in `content/blog/` refreshes the open
+post, and `/blog/template` shows the template post that demonstrates every feature
+of the blog (it exists in development only).
 
 Other scripts:
 
@@ -345,7 +369,8 @@ npx tsc --noEmit && npm run lint && npm test
 ```
 
 `prebuild` first fetches GitHub data and converts any PCB models, then Next.js
-builds the app into `.next/`. Vercel runs this for you on every push.
+builds the app into `.next/`. On Vercel the same command runs for every build;
+see [Deployment](#deployment).
 
 ### Make shortcuts
 
@@ -367,19 +392,29 @@ make blog-check POST=report-design-showcase
 
 ### Environment Variables
 
-Create a `.env.local` file in the project root:
+Create a `.env.local` file in the project root (it is git-ignored):
 
 ```env
-# Required for pre-build GitHub data fetching
+# GitHub tokens for the pre-build fetch (scripts/fetch-github-data.mjs).
+# Either set the one GITHUB_TOKEN, or the two specific ones; the specific
+# names win when both are set.
 GITHUB_TOKEN=ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+GITHUB_TOKEN_CONTRIBUTIONS=ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx   # the contribution heatmap
+GITHUB_TOKEN_PUBLIC_REPO=ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx     # repos, READMEs, PCB files, media
 ```
 
 To create a token:
 1. Go to [GitHub Settings → Developer Settings → Personal Access Tokens](https://github.com/settings/tokens)
-2. Generate a new token (classic) with **no scopes** required for public data, or `read:user` for private contributions
+2. Generate a new token (classic) with **no scopes** for public data, or `read:user` to also count private contributions (and switch on *Private contributions* in your GitHub profile)
 3. Copy the token into `.env.local`
 
-> The token is only used at build time by `scripts/fetch-github-data.mjs`. It is never exposed to the client bundle. Without it, contributions data will be skipped (repos are public and will still be fetched).
+How the tokens are used:
+
+- **On Vercel** the same names go in the project's *Settings → Environment Variables*; the build reads them from there.
+- **Locally**, `.env.local` is read by Next.js, but not by the fetch script, which is plain Node. Run it as `node --env-file=.env.local scripts/fetch-github-data.mjs`.
+- The tokens are only used at build time by that script. They never reach the client bundle.
+- **Without the contributions token** the heatmap is skipped: `public/data/github-contributions.json` is not written, and the home page shows "Contribution data isn't available right now". An existing file is kept. Repos are public and still arrive without any token, within GitHub's public rate limit (60 requests per hour per IP).
+- The heatmap is a **snapshot of the moment of the build**. It only refreshes when the fetch runs again, so rebuild after you want newer activity.
 
 #### Download counts (optional)
 
@@ -568,10 +603,15 @@ This website does not host its own comment system. Instead, blog post discussion
 
 ## Shop
 
-`/shop` lists digital products from `src/data/shop.ts`; preview images live in
-`public/shop/<product>/`, and the sale masters stay outside git
-(`private-products/`, ignored). Checkout is not enabled yet — products show as
-"Coming soon" until a payment provider is wired up.
+`/shop` lists the digital products. They are all **free**: the Signal No. 01
+wallpaper pack (`src/data/shop.ts`), three LaTeX templates — essay, report and
+research report — and a two-page LaTeX cheat sheet (`src/data/latex-templates.ts`).
+Preview images live in `public/shop/<product>/`; the sale masters stay outside git
+(`private-products/`, ignored).
+
+- **Sources:** the templates are in `content/shop/latex-templates/<slug>/` and the cheat sheet in `content/shop/latex-cheatsheet/`. `npm run downloads:build` (or `make downloads`) compiles them with LaTeX and writes the ZIPs, PDFs and preview images to `public/downloads/`. It runs locally, and its output is committed.
+- **Downloads and counts:** every link goes through `/api/download/<id>`, which counts the download and redirects to the file. Counts live in Upstash Redis (see [Download counts](#download-counts-optional)) and are hidden until it is connected.
+- **Overleaf:** `?open=overleaf` sends the visitor to Overleaf, which fetches the ZIP itself.
 
 ---
 
@@ -579,17 +619,46 @@ This website does not host its own comment system. Instead, blog post discussion
 
 ### Vercel (this site's host)
 
-The site runs as a **native Next.js app on Vercel** — not a static export. Connect
-the GitHub repo once and Vercel builds and deploys automatically on every push,
-running `npm run build` (which triggers the `prebuild` data-fetch + PCB
-conversion).
+The site runs as a **native Next.js app on Vercel** — not a static export. Vercel
+runs `npm run build`, which triggers the `prebuild` data-fetch + PCB conversion,
+and `vercel.json` only names the framework.
 
-> Add `GITHUB_TOKEN` as an environment variable in your Vercel project settings
-> so the pre-build script can fetch GitHub data. Without it the build still
-> succeeds, but GitHub-sourced projects are missing.
+Two ways to get a version live:
+
+1. **Through Git.** Connect the GitHub repo to the Vercel project and every push
+   builds and deploys. Check in the project's *Deployments* tab that pushes are
+   actually picked up: a branch or pull request is only previewed when the
+   integration builds it.
+2. **From your machine with the Vercel CLI**, for a version that is not on `main`
+   yet. Deploy from a clean copy: leave out `node_modules`, `.next`, every `.env*`
+   file and `private-products/`, because the CLI uploads what is in the folder.
+
+   ```bash
+   vercel link --yes --project <project> --scope <team>   # once; this writes .env.local, delete it
+   vercel deploy --prod --yes --scope <team>
+   ```
+
+   A CLI deploy does not need the GitHub tokens in Vercel: run the fetch locally
+   (`node --env-file=.env.local scripts/fetch-github-data.mjs`) and the files it
+   writes to `public/data/`, `public/pcb/`, `public/docs/` and `public/media/` go up
+   with the deploy. The build then skips the contributions fetch and keeps them. Those
+   four folders are git-ignored in the repo, so in the upload folder use a
+   `.vercelignore` (`node_modules`, `.next`, `.env*`) instead of the `.gitignore`.
+
+> Add the GitHub tokens ([Environment Variables](#environment-variables)) to the
+> Vercel project settings so the pre-build script can fetch GitHub data itself.
+> Without them the build still succeeds, but the contribution heatmap is missing
+> and repos come in at GitHub's public rate limit.
 >
 > Connect an Upstash Redis database (Storage → Marketplace) to show download
 > counts in the shop; see [Download counts](#download-counts-optional).
+>
+> The canonical URLs, sitemap and feed use `https://mitaa.dev`. Set
+> `NEXT_PUBLIC_SITE_URL` in the project when a deployment lives elsewhere.
+
+A domain belongs to one Vercel project: a deployment of that project answers on
+it as soon as it is aliased. Check which project a domain is attached to before a
+production deploy, because that is the version the visitors get.
 
 Because it's a native Next.js deployment, server rendering, image optimization,
 dynamic routes (`/feed.xml`, `/api`) and the build-time PCB fetch all work
@@ -607,9 +676,14 @@ out of the box — none of which a static-export/GitHub Pages setup could do.
 - [x] Blog posts in LaTeX, with KaTeX math and per-chapter pages
 - [x] Snapshot and regression tests for the blog pipeline
 - [x] Interactive hardware viewer (schematic / PCB / 3D / BOM + X-ray)
+- [x] Free shop downloads (LaTeX templates, cheat sheet) with a daily-deduplicated download count
+- [x] Mermaid diagrams (architecture, flowchart, sequence …) in blog posts and project docs
+- [x] One blog template post that shows every feature, with a live preview under `npm run dev`
+- [x] Home intro and scroll effects with GSAP
+- [ ] Refresh the contribution heatmap on a schedule (it is a snapshot of each build)
 - [ ] True translucent PCB X-ray (stack per-layer renders with opacity)
 - [ ] Tag-based blog filtering
-- [ ] Set `\xpost` in each post to its real X post URL
+- [ ] Write the first blog post and set its `\xpost` to the real X post URL
 
 ---
 
