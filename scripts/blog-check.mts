@@ -18,7 +18,8 @@
 import { execFileSync } from "node:child_process";
 import { copyFileSync, existsSync, mkdirSync, readFileSync } from "node:fs";
 import path from "node:path";
-import { getPostNumbering } from "../src/lib/blog/index.ts";
+// The site's blog code is imported further down, once the environment it reads
+// at import time (for a fixture post) has been set.
 
 const LATEXMK = process.env.LATEXMK || "latexmk";
 const root = process.cwd();
@@ -31,14 +32,23 @@ if (!slug) {
   process.exit(2);
 }
 
-// `template` is templates/blog/post.tex, as on the dev site.
-const source =
+// `template` is templates/blog/post.tex, as on the dev site; a post is looked
+// up in content/blog, then among the test fixtures (tests/fixtures/blog).
+const FIXTURES = path.join(root, "tests/fixtures/blog");
+const candidates =
   slug === "template"
-    ? path.join(root, "templates/blog/post.tex")
-    : path.join(root, "content/blog", `${slug}.tex`);
-if (!existsSync(source)) {
-  console.error(`no such post: content/blog/${slug}.tex`);
+    ? [path.join(root, "templates/blog/post.tex")]
+    : [path.join(root, "content/blog", `${slug}.tex`), path.join(FIXTURES, `${slug}.tex`)];
+const source = candidates.find((file) => existsSync(file));
+if (!source) {
+  console.error(`no such post: content/blog/${slug}.tex or tests/fixtures/blog/${slug}.tex`);
   process.exit(2);
+}
+if (source.startsWith(FIXTURES)) {
+  // The override only applies under NODE_ENV=test (see postsDirectory in source.ts).
+  (process.env as Record<string, string>).NODE_ENV = "test";
+  process.env.BLOG_CONTENT_DIR = FIXTURES;
+  process.env.BLOG_PUBLIC_DIR = path.join(root, "tests/fixtures/public");
 }
 
 const outDir = path.join(root, "node_modules/.cache/blog-check", slug);
@@ -83,6 +93,7 @@ for (const match of aux.matchAll(/^\\bibcite\{([^}]+)\}\{([^}]*)\}/gm)) {
 
 // The template is only served under `npm run dev`.
 if (slug === "template") (process.env as Record<string, string>).NODE_ENV = "development";
+const { getPostNumbering } = await import("../src/lib/blog/index.ts");
 const site = await getPostNumbering(slug);
 if (!site) {
   console.error(`the site does not render ${slug}`);

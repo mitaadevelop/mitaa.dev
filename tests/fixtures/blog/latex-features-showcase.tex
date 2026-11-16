@@ -2,6 +2,7 @@
 \date{2026-03-02}
 \excerpt{A complete overview of the LaTeX this blog understands — sectioning, lists, tables, listings, quotes, figures and more.}
 \tags{LaTeX, Reference, Web}
+\coverimage{/blog-example.png}
 \xpost{https://x.com/YOUR_HANDLE/status/PLACEHOLDER_TWEET_ID_1}
 
 \begin{document}
@@ -180,6 +181,22 @@ Figures use the \texttt{figure} environment. The \texttt{\textbackslash{}caption
 \end{figure}
 
 As shown in \href{#fig-1}{Fig. 1}, images are automatically numbered and captioned.
+
+\section{Diagrams}
+
+A listing in the language \texttt{mermaid} is drawn as a diagram when the site is built; \Cref{fig-flow} is Mermaid text. Put it in a \texttt{figure} for a number and a caption, and give it a \texttt{title=} for screen readers.
+
+\begin{figure}
+\begin{lstlisting}[language=mermaid, title={The control loop}]
+flowchart LR
+  A[Sensor] --> B[Controller]
+  B --> C{In range?}
+  C -->|yes| D[Actuator]
+  C -->|no| E[Alarm]
+\end{lstlisting}
+\caption{A flowchart drawn from Mermaid text}
+\label{fig-flow}
+\end{figure}
 
 \section{Emphasis Combinations}
 

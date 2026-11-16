@@ -10,7 +10,8 @@ import type { Root } from "hast";
 import type { TocItem } from "./types";
 import { prepareLatex, type LatexNode, type RenderContext } from "./latex";
 import { KATEX_MACROS, KATEX_OPTIONS } from "./katex";
-import { rehypeCodeLines, rehypeLatexFixups, rehypeWrapDisplayMath } from "./hast";
+import { rehypeCodeLines, rehypeDiagrams, rehypeLatexFixups, rehypeWrapDisplayMath } from "./hast";
+import { strings } from "./i18n";
 
 export interface RenderResult {
   html: string;
@@ -47,6 +48,7 @@ export async function renderLatex(
   opts: { ctx: RenderContext; firstHeadingId?: string; source?: string }
 ): Promise<RenderResult> {
   const toc: TocItem[] = [];
+  const words = strings(opts.ctx.lang);
   const prepared = prepareLatex(nodes, opts.ctx);
 
   // @unified-latex/unified-latex-to-hast depends on @types/hast v2 while this
@@ -78,6 +80,15 @@ export async function renderLatex(
       languages: { ...common, latex: latexLanguage },
     })
     .use(rehypeCodeLines)
+    // Last, so highlighting and code lines never see the diagram's own <pre>.
+    .use(rehypeDiagrams, {
+      words: {
+        diagram: words.diagram,
+        showSource: words.showDiagramSource,
+        failed: words.diagramFailed,
+      },
+      where: opts.source,
+    })
     .use(rehypeStringify, { allowDangerousHtml: true });
 
   const file = new VFile();

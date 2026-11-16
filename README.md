@@ -58,6 +58,7 @@ allowing dynamic routes like the RSS feed.
 | **Animations** | [Motion](https://motion.dev/) |
 | **Blog** | LaTeX via [@unified-latex](https://github.com/siefkenj/unified-latex) → [Rehype](https://github.com/rehypejs/rehype), math via [KaTeX](https://katex.org/) |
 | **Markdown** | [Remark](https://remark.js.org/) — projects, bio and GitHub READMEs |
+| **Diagrams** | [Mermaid](https://mermaid.js.org) text drawn to SVG at build time by [pele](https://pele.run) — blog posts and project docs |
 | **Syntax Highlighting** | [highlight.js](https://highlightjs.org/) |
 | **Icons** | [Lucide React](https://lucide.dev/) |
 | **Font** | [Inter](https://rsms.me/inter/) (Google Fonts) |
@@ -100,6 +101,8 @@ allowing dynamic routes like the RSS feed.
 - Long posts split into **one page per `\section`**, with a chapter list,
   previous/next navigation and ← → keys — only the text swaps between chapters
 - Syntax-highlighted listings with language labels
+- **Diagrams** — architecture, flowcharts, sequence diagrams and more, from
+  Mermaid text, drawn at build time and themed light/dark
 - SEO-friendly metadata per post and per chapter
 
 ### GitHub Integration
@@ -120,7 +123,7 @@ mitaa.dev/
 │   ├── data/                   # Pre-fetched GitHub data (git-ignored; generated at build time)
 │   ├── docs/                   # PDFs: blog/ committed, <repo>/ pulled at build time
 │   ├── media/                  # Gallery/video/CSV: curated/ committed, <repo>/ pulled at build time
-│   ├── pcb/                    # PCB assets: demo-board/ committed, <repo>/ pulled at build time
+│   ├── pcb/                    # PCB assets: <repo>/ pulled at build time
 │   └── shop/                   # Shop preview images
 ├── scripts/
 │   ├── fetch-github-data.mjs   # Pre-build: GitHub data + PCB/doc/media assets
@@ -429,10 +432,11 @@ As \ref{fig-board} shows, and as \cite{shannon1948} argued.
 \end{document}
 ```
 
-The three fixture posts in `content/blog/` double as a reference:
-`latex-features-showcase.tex` for structure, `katex-math-reference.tex` for
-math, and `report-features-reference.tex` for theorems, callouts, footnotes and
-references. Run `npm test` after editing the pipeline.
+Start from [`templates/blog/post.tex`](templates/blog/post.tex): one post that
+shows every feature of the blog (also at `/blog/template` under `npm run dev`).
+The test fixtures in `tests/fixtures/blog/` go further: `katex-math-reference.tex`
+for math and `report-features-reference.tex` for theorems, callouts, footnotes
+and references. Run `npm test` after editing the pipeline.
 
 ### Adding a Project
 
@@ -501,6 +505,33 @@ A project page can also show a **photo gallery** (thumbnail grid + lightbox) and
 - **For a curated project:** set `gallery: [ ... ]` (image paths/URLs) and
   `video:` (a YouTube/Vimeo URL, or a path to an `.mp4`/`.webm`) in the
   frontmatter. Committed media lives in `public/media/curated/<name>/`.
+
+### Architecture and other diagrams
+
+Write the diagram as [Mermaid](https://mermaid.js.org) text; the site draws it
+to an SVG when it is built, with [pele](https://pele.run) (no JavaScript in the
+browser, and it follows the light/dark theme).
+
+- **On a project page** (a repo's `project/*.md`, its README, or a curated page):
+  a fenced block marked `mermaid`. `templates/project/repo/project/architecture.md`
+  has a flowchart, an `architecture-beta` system diagram and a sequence diagram.
+- **In a blog post:** a listing in the language `mermaid`, inside a `figure` for a
+  number and a caption; `title=` is the accessible name.
+  `templates/blog/post.tex` shows both a flowchart and an architecture diagram.
+
+```latex
+\begin{figure}
+\begin{lstlisting}[language=mermaid, title={Signal path of the controller}]
+flowchart LR
+  A[Sensor] --> B[Controller] --> C[Actuator]
+\end{lstlisting}
+\caption{From the sensor to the actuator}
+\end{figure}
+```
+
+The Mermaid text stays behind "Show diagram source". A diagram with a typo shows
+pele's error and its source instead of failing the build, and `npm run dev` logs
+it. In the PDF (`npm run blog:check`) a diagram is printed as its source.
 
 ### Measurement charts
 

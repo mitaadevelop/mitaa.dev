@@ -1,6 +1,7 @@
 % Copy to content/blog/<slug>.tex — the file name is the URL (/blog/<slug>).
+% This one post shows every feature of the blog; delete what yours does not use.
 % Put images in public/blog/<slug>/ and reference them from the site root.
-% Everything before \begin{document} is metadata; delete the lines you don't use.
+% Everything before \begin{document} is metadata.
 %
 % The same file compiles with latexmk (mitaa.sty supplies the site's macros):
 %   npm run blog:check <slug>              compare the site's numbering with LaTeX's
@@ -23,29 +24,190 @@
 \coverimage{/blog-example.png}  % your own: /blog/<slug>/cover.png (index card and social image)
 \xpost{https://x.com/handle/status/0000000000000000000}
 % \pdf{/docs/blog/<slug>.pdf}  % a "Download as PDF" button; blog:check --publish puts it there
-\paginate{auto}  % auto (6+ sections and 2000+ words) | always | never — or set pages with \clearpage
+\paginate{auto}  % auto (6+ sections and 2000+ words) | always | never. \clearpage sets pages yourself, as below
 % \draft  % renders under npm run dev only
 
 \begin{document}
 \maketitle
 
-% An abstract before the first \section goes into the header, above the text.
+% An abstract before the first \section goes into the header, above the text,
+% with the keywords under it.
 \begin{abstract}
 The question, the method and the answer, in four or five sentences.
 \end{abstract}
 
-\section{Background}
-\label{sec:background}
+\section{Text and structure}
+\label{sec:text}
 
-Open with the problem in two or three sentences: what you were trying to do, and why it was harder than it looked.
+Open with the problem in two or three sentences: what you were trying to do, and why it was harder than it looked. Text can be \textbf{bold}, \emph{emphasised}, \textbf{\emph{both}} or \texttt{code}, and a \href{https://example.com}{link} takes any address. The characters LaTeX reserves are typed with a backslash: 50\,\% of \$5 \& 3\_4 \#1.
 
-Each \texttt{\textbackslash{}section} is numbered and listed in the table of contents; \texttt{\textbackslash{}subsection} and \texttt{\textbackslash{}subsubsection} go deeper.
+Each \texttt{\textbackslash{}section} is numbered and listed in the table of contents. Every \texttt{\textbackslash{}clearpage} in the source starts a new page on the site, and a page may hold several sections, as this one does: it is called after its first section, and the page links below the text step through them.
+
+\subsection{Lists}
+
+\begin{itemize}
+  \item \texttt{itemize} for points without an order;
+  \item lists can nest:
+    \begin{itemize}
+      \item one level down;
+      \item and another item.
+    \end{itemize}
+  \item back at the top.
+\end{itemize}
+
+\begin{enumerate}
+  \item State the problem.
+  \item Describe what you tried.
+  \item Give the result.
+\end{enumerate}
+
+\subsubsection{Quotes and footnotes}
+
+A quotation sets its attribution flush right underneath.
+
+\begin{quote}[--- Someone worth quoting]
+A quotation, in a few lines.
+\end{quote}
+
+Footnotes are numbered through the whole post and printed at the foot of the page.\footnote{Measured at room temperature.}
+
+\clearpage
+
+\section{Callouts}
+\label{sec:callouts}
+
+Five kinds, each with an optional title in square brackets. The kind is shown by the colour of the rail.
 
 \begin{note}
-Callouts: \texttt{note}, \texttt{tip}, \texttt{warning}, \texttt{important}, \texttt{caution}.
+A \texttt{note} for background the reader may want.
 \end{note}
 
-\section{Design}
+\begin{tip}[A title]
+A \texttt{tip} that saves time.
+\end{tip}
+
+\begin{important}
+An \texttt{important} point to keep in mind.
+\end{important}
+
+\begin{warning}
+A \texttt{warning} about something that goes wrong quietly.
+\end{warning}
+
+\begin{caution}
+A \texttt{caution} before something that cannot be undone.
+\end{caution}
+
+\section{Code}
+\label{sec:code}
+
+\texttt{lstlisting} takes the language and a file name; \texttt{minted} the same, as \texttt{filename=}. A \texttt{verbatim} block is printed without colour.
+
+\begin{lstlisting}[language=c, title=control.c]
+void control_loop(void) {
+    float error = setpoint - read_adc();
+    set_pwm(kp * error);
+}
+\end{lstlisting}
+
+Give a listing a \texttt{caption=} and a \texttt{label=} and it is numbered like a figure, so \Cref{lst:pid} can point at it.
+
+\begin{lstlisting}[language=c, caption={The integral term with anti-windup}, label=lst:pid]
+integral += error * dt;
+integral = clamp(integral, -I_MAX, I_MAX);
+\end{lstlisting}
+
+\begin{minted}[filename=blink.py]{python}
+led = Pin(25, Pin.OUT)
+while True:
+    led.toggle()
+    time.sleep(0.5)
+\end{minted}
+
+\begin{verbatim}
+$ make flash
+avrdude: 1024 bytes of flash written
+\end{verbatim}
+
+\clearpage
+
+\section{Mathematics}
+\label{sec:math}
+
+All of KaTeX is available. Inline maths goes between dollar signs, like $K_p$ and $x \in \R^n$, and display maths between \texttt{\textbackslash[} and \texttt{\textbackslash]}:
+\[
+  \int_0^\infty e^{-x^2} \dd x = \frac{\sqrt{\pi}}{2}
+\]
+
+A numbered \texttt{equation} takes the next number in the post and can be pointed at with \texttt{\textbackslash{}eqref}: the controller is \eqref{eq:pi}.
+\begin{equation}
+u(t) = K_p \, e(t) + K_i \int_0^t e(\tau)\, d\tau
+\label{eq:pi}
+\end{equation}
+
+\subsection{Alignment, matrices and cases}
+
+\[
+\begin{aligned}
+  \nabla \cdot \vect{E} &= \frac{\rho}{\eps_0} \\
+  \nabla \cdot \vect{B} &= 0
+\end{aligned}
+\qquad
+A = \begin{pmatrix} 1 & 2 \\ 3 & 4 \end{pmatrix}
+\qquad
+\abs{x} = \begin{cases} x & x \ge 0 \\ -x & x < 0 \end{cases}
+\]
+
+\subsection{Chemistry and units}
+
+Reactions are written with \texttt{\textbackslash{}ce\{\}}: $\ce{H2O}$ and
+\[
+  \ce{2H2 + O2 -> 2H2O}
+\]
+The site also defines \texttt{\textbackslash{}R \textbackslash{}C \textbackslash{}Z \textbackslash{}N \textbackslash{}eps \textbackslash{}dd \textbackslash{}abs \textbackslash{}norm \textbackslash{}set \textbackslash{}vect \textbackslash{}unit}, as in $v = 3\unit{m/s}$ and $\norm{\vect{v}} < 1$; \texttt{mitaa.sty} gives them the same meaning in the PDF.
+
+\section{Theorems and proofs}
+\label{sec:theorems}
+
+Theorems, lemmas, propositions, corollaries and definitions share one counter; examples have their own. A \texttt{proof} is not numbered.
+
+\begin{definition}[Settling time]
+The time after which the output stays within 2\,\% of its final value.
+\end{definition}
+
+\begin{theorem}[Stability]
+\label{thm:stable}
+The closed loop is stable for every $K_p > 0$ and $K_i \ge 0$.
+\end{theorem}
+
+\begin{proof}
+Both poles of the characteristic polynomial lie in the left half-plane.
+\end{proof}
+
+\begin{lemma}
+A lemma, to be used in the proof of something larger.
+\end{lemma}
+
+\begin{proposition}
+A proposition.
+\end{proposition}
+
+\begin{corollary}
+A corollary of \Cref{thm:stable}.
+\end{corollary}
+
+\begin{example}
+\Cref{thm:stable} still says nothing about how fast the loop settles.
+\end{example}
+
+\clearpage
+
+\section{Figures, tables and charts}
+\label{sec:figures}
+
+Figures, tables, equations and theorems are numbered as LaTeX numbers them, so a reference can sit anywhere, even before the thing it points at.
+
+\subsection{Figures}
 
 \begin{figure}
 \includegraphics[width=0.6\textwidth]{/blog-example.png}  % your own: /blog/<slug>/diagram.png
@@ -53,7 +215,9 @@ Callouts: \texttt{note}, \texttt{tip}, \texttt{warning}, \texttt{important}, \te
 \label{fig:design}
 \end{figure}
 
-Figures, tables, equations and theorems are numbered as LaTeX numbers them. \texttt{\textbackslash{}Cref} writes the word and the number — \Cref{fig:design}, \Cref{tab:parts} — and \texttt{\textbackslash{}ref} the number alone, as in Table~\ref{tab:parts}.
+\subsection{Tables}
+
+A caption written above the table is printed above it; below the content, below it. \texttt{booktabs} rules and plain \texttt{\textbackslash{}hline}s both work, and the first row becomes the header.
 
 \begin{table}
 \caption{Main parts}
@@ -68,30 +232,19 @@ LDO & Power & 0.35 \\
 \end{tabular}
 \end{table}
 
-A caption written above the table is printed above it, as here; below the content, below it.
+\begin{table}
+\begin{tabular}{lcr}
+\hline
+Left & Centre & Right \\
+\hline
+a & b & c \\
+\hline
+\end{tabular}
+\caption{Column alignment: \texttt{l}, \texttt{c} and \texttt{r}}
+\label{tab:align}
+\end{table}
 
-\section{Implementation}
-
-\begin{lstlisting}[language=c, title=control.c]
-void control_loop(void) {
-    float error = setpoint - read_adc();
-    set_pwm(kp * error);
-}
-\end{lstlisting}
-
-Inline math like $K_p$ and display math both go through KaTeX. A numbered \texttt{equation} can be pointed at with \texttt{\textbackslash{}eqref}: the controller is \eqref{eq:pi}.
-\begin{equation}
-u(t) = K_p \, e(t) + K_i \int_0^t e(\tau)\, d\tau
-\label{eq:pi}
-\end{equation}
-
-\begin{definition}[Settling time]
-The time after which the output stays within 2\,\% of its final value.
-\end{definition}
-
-\section{Results}
-
-What you measured, with numbers. Footnotes work too.\footnote{Measured at room temperature.}
+\subsection{Charts}
 
 \begin{figure}
 \begin{barchart}[ylabel={Settling time (ms)}, series={before, after}]
@@ -103,16 +256,64 @@ Impulse & 28 & 12 \\
 \label{fig:results}
 \end{figure}
 
-\begin{quote}[--- Someone worth quoting]
-A quotation, with its attribution set flush right underneath.
-\end{quote}
+\subsection{Diagrams}
 
-\section{Conclusion}
+A listing in the language \texttt{mermaid} is drawn as a diagram when the site is built, by \href{https://pele.run}{pele}: flowcharts, sequence, state, class and ER diagrams, Gantt charts and system architectures. It follows the light or dark theme, and the Mermaid text is behind ``Show diagram source''. Put it in a \texttt{figure} for a number and a caption, and give it a \texttt{title=} that says what it shows, for screen readers. \Cref{fig:flow} is a flowchart and \Cref{fig:arch} an architecture diagram. In the PDF a diagram is printed as its source, because LaTeX cannot draw it.
 
-What worked, what didn't, and what is next. Cite sources with \texttt{\textbackslash{}cite}, as in \cite{datasheet}, or with a page: \cite[p.~12]{datasheet}.
+\begin{figure}
+\begin{lstlisting}[language=mermaid, title={Signal path of the controller}]
+flowchart LR
+  A[Sensor] -->|I2C| B[Controller]
+  B --> C{In range?}
+  C -->|yes| D[Actuator]
+  C -->|no| E[Alarm]
+\end{lstlisting}
+\caption{A flowchart: from the sensor to the actuator}
+\label{fig:flow}
+\end{figure}
+
+\begin{figure}
+\begin{lstlisting}[language=mermaid, title={Boards and services of the system}]
+architecture-beta
+  group board(server)[Board]
+  service mcu(server)[MCU] in board
+  service flash(disk)[Flash] in board
+  service host(internet)[Host]
+  mcu:B -- T:flash
+  mcu{group}:R -- L:host
+\end{lstlisting}
+\caption{An architecture diagram: the parts on the board and what they talk to}
+\label{fig:arch}
+\end{figure}
+
+\subsection{References}
+
+\texttt{\textbackslash{}ref} is the number alone, as in Table~\ref{tab:parts}. \texttt{\textbackslash{}Cref} and \texttt{\textbackslash{}autoref} add the word: \Cref{fig:design}, \autoref{tab:align}. \texttt{\textbackslash{}cref} gives it in lower case, \cref{fig:results}, and \texttt{\textbackslash{}eqref} an equation in brackets, \eqref{eq:pi}. Sections can be labelled too: see \Cref{sec:code}.
+
+\clearpage
+
+\section{Citations and bibliography}
+\label{sec:cite}
+
+Cite sources with \texttt{\textbackslash{}cite}, as in \cite{datasheet}; two at once give \cite{datasheet,lecture}, and a page goes in brackets: \cite[p.~12]{datasheet}. Numbers follow the order of the \texttt{\textbackslash{}bibitem}s, and the list is printed where \texttt{thebibliography} stands. A key that is neither a label nor a bibitem is printed as a visible unresolved reference, so look for one before publishing.
 
 \begin{thebibliography}{9}
 \bibitem{datasheet} Manufacturer, \emph{Part Datasheet}, rev.~3, 2025.
+\bibitem{lecture} A.~Teacher, \emph{Control Systems}, lecture notes, 2024.
 \end{thebibliography}
+
+\section*{Acknowledgements}
+
+\texttt{\textbackslash{}section*} gives an unnumbered heading that stays on the page it is written on, like this one.
+
+% \appendix starts the appendices: their sections are lettered A, B, … and the
+% page is called "Appendices". Delete this part if the post has none.
+\clearpage
+\appendix
+
+\section{Wiring}
+\label{app:wiring}
+
+Material that would interrupt the argument, such as the full wiring table, goes here and is cited from the text as \Cref{app:wiring}.
 
 \end{document}

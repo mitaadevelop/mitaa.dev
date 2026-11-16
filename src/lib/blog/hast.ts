@@ -4,7 +4,9 @@
  */
 import { visit, SKIP } from "unist-util-visit";
 import { toText } from "hast-util-to-text";
+import { fromHtml } from "hast-util-from-html";
 import type { Element, ElementContent, Root } from "hast";
+import { diagramHtml, type DiagramWords } from "../diagram";
 import type { TocItem } from "./types";
 import type { RenderContext } from "./latex";
 import { strings } from "./i18n";
@@ -224,6 +226,31 @@ export function rehypeCodeLines() {
         properties: { className: ["line"] },
         children,
       }));
+      return SKIP;
+    });
+  };
+}
+
+/**
+ * Fill the `div.diagram-slot` that latex.ts leaves for a
+ * `lstlisting[language=mermaid]` with pele's SVG and the source toggle.
+ *
+ * Runs after highlighting and rehypeCodeLines, which therefore never see the
+ * diagram's own `<pre>`. pele's output is trusted markup; the Mermaid text and
+ * the label are escaped by `diagramHtml`.
+ */
+export function rehypeDiagrams({ words, where }: { words: DiagramWords; where?: string }) {
+  return (tree: Root) => {
+    visit(tree, "element", (node: Element) => {
+      if (!classList(node).includes("diagram-slot")) return;
+      const label = node.properties?.dataDiagramLabel;
+      const html = diagramHtml(String(node.properties?.dataDiagram ?? ""), {
+        label: label === undefined ? undefined : String(label),
+        words,
+        where,
+      });
+      node.properties = { className: ["diagram-block"] };
+      node.children = fromHtml(html, { fragment: true }).children as ElementContent[];
       return SKIP;
     });
   };

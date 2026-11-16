@@ -7,7 +7,7 @@ Two ways to get a project onto mitaa.dev:
 | [repo/](repo/) | A GitHub repo that should show up as a full project page — **the default** | the root of the new repo |
 | [curated.md](curated.md) | A hand-written project page (rarely needed — see the end of this page) | `content/projects/<slug>.md` |
 
-Preview under `npm run dev`: [/projects/project-template](http://localhost:3000/projects/project-template) renders [repo/](repo/) as if it were a fetched GitHub repo. Its `PCB/`, `images/` and `measurements/` folders are empty placeholders, so the preview borrows the demo-board PCB, photos and chart.
+There is no preview of [repo/](repo/) on the dev site: its `PCB/`, `images/` and `measurements/` folders are empty placeholders. Copy it into a GitHub repo, add your files and redeploy.
 
 Everything below describes what `scripts/fetch-github-data.mjs` looks for. Folder names and file names are the interface: get them right and the page assembles itself on the next build.
 
@@ -73,6 +73,7 @@ The category comes from the topics first, the main language second:
 - Must be lowercase `project/` for markdown. (PDFs and video also accept `Project/`, markdown does not.)
 - `overview.md` is always tab 1, then `readme.md`, then the rest alphabetically by path. The tab label is the file name without extension, so name files the way you want the tab to read — `power-budget.md`, not `03_pwr.md`.
 - Relative links and images in the markdown work; they are rewritten to point at GitHub.
+- **Diagrams**: a fenced block marked `mermaid` is drawn as an SVG when the site is built (by [pele](https://pele.run); light and dark theme, the Mermaid text behind "Show diagram source"). [repo/project/architecture.md](repo/project/architecture.md) has a flowchart, an `architecture-beta` system diagram and a sequence diagram to copy. A typo shows the error and the source on the page, never a failed build. The same goes for a README and a curated page.
 - Max 40 markdown files, each under 200 KB.
 - PDFs: max 12 per repo, 25 MB each, 60 MB total. The tab label is the file name with `-`/`_` turned into spaces.
 - Video: one `.mp4`/`.webm`, max 60 MB. For anything bigger, put it on YouTube and use a curated page.
