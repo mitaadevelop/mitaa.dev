@@ -1,6 +1,6 @@
 # Blog template
 
-Copy [post.tex](post.tex) to `content/blog/<slug>.tex`. The file name is the URL: `content/blog/can-bus-sniffer.tex` → `/blog/can-bus-sniffer`.
+Start a post with `npm run new:post can-bus-sniffer "A CAN bus sniffer"` (or `make new-post POST=can-bus-sniffer`). It copies [post.tex](post.tex) to `content/blog/can-bus-sniffer.tex`, fills in the title and today's date, makes the folder `public/blog/can-bus-sniffer/` for images, and marks the post `\draft`: it shows under `npm run dev` and stays out of the production site until you delete that line. Copying the file by hand works too. The file name is the URL: `content/blog/can-bus-sniffer.tex` → `/blog/can-bus-sniffer`.
 
 - **Metadata** goes before `\begin{document}`: `\title`, `\date{YYYY-MM-DD}`, `\excerpt` (card text and meta description), `\tags{A, B}`, and optionally `\subtitle`, `\author`, `\affiliation`, `\version{v2}{YYYY-MM-DD}`, `\kind{Report}`, `\keywords{a, b}`, `\pdf{/docs/blog/<slug>.pdf}`, `\coverimage`, `\xpost`, `\paginate` and `\draft` (dev only).
 - **Language**: `\usepackage[dutch]{babel}` (or `\lang{nl}`) gives the post Dutch labels — Figuur, Tabel, Definitie, Inhoud, Pagina 2 van 5. Without it the post is English.

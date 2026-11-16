@@ -9,7 +9,7 @@ PORT ?= 3000
 .DEFAULT_GOAL := help
 .PHONY: help install run dev build build-fast start preview data \
         lint typecheck test test-update check deps \
-        downloads blog-check blog-publish \
+        downloads new-post blog-check blog-publish \
         pcb-render pcb-convert pcb-recolor \
         clean distclean fix-biber
 
@@ -22,8 +22,8 @@ help: ## Show this list
 install: ## Install dependencies from package-lock.json
 	npm ci
 
-data: ## Fetch GitHub repos, contributions and project assets into public/
-	node scripts/fetch-github-data.mjs
+data: ## Fetch GitHub repos, contributions and project assets into public/ (tokens from .env.local)
+	node $(if $(wildcard .env.local),--env-file=.env.local) scripts/fetch-github-data.mjs
 
 ## —— Develop ——————————————————————————————————————————————————————————
 
@@ -69,6 +69,10 @@ deps: ## Check that exactly one katex and one gsap are installed
 
 downloads: ## Rebuild the shop downloads (ONLY="essay cheatsheet" for a few)
 	npm run downloads:build -- $(ONLY)
+
+new-post: ## Start a blog post from the template (POST=<slug> [TITLE="A title"])
+	@test -n "$(POST)" || { echo 'usage: make new-post POST=<slug> [TITLE="A title"]'; exit 1; }
+	npm run new:post -- $(POST) $(TITLE)
 
 blog-check: ## Compile a post with LaTeX and compare numbering (POST=<slug>)
 	@test -n "$(POST)" || { echo "usage: make blog-check POST=<slug>"; exit 1; }

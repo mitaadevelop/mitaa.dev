@@ -10,6 +10,7 @@
     "pcb:convert": "node scripts/step-to-glb.mjs",
     "pcb:render": "node scripts/render-kicad-images.mjs",
     "pcb:recolor": "node scripts/recolor-glb.mjs",
+    "new:post": "tsx scripts/new-post.mts",
     "blog:check": "tsx scripts/blog-check.mts",
     "downloads:build": "tsx scripts/build-downloads.mts",
     "start": "next start",

@@ -5,6 +5,21 @@
 
 ---
 
+## Quick start: where does my content go?
+
+| I want to add… | Do this |
+| --- | --- |
+| **A blog post** | `npm run new:post <name>`, write it, delete its `\draft` line, push |
+| **A project** | Push a public GitHub repo; add a `project/` folder for the write-up |
+| **The home page bio** | Edit `content/bio.md` |
+| **A free download in the shop** | Edit its sources in `content/shop/`, then `npm run downloads:build` |
+
+Everything you write lives in `content/` (plus images in `public/blog/<name>/`).
+[`content/README.md`](content/README.md) explains each of these and which folders
+you should not touch. To see the site while you write: `npm run dev`.
+
+---
+
 ## Table of Contents
 
 - [Overview](#overview)
@@ -336,7 +351,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 contribution calendar in development, fetch them once with your tokens:
 
 ```bash
-node --env-file=.env.local scripts/fetch-github-data.mjs
+make data     # runs: node --env-file=.env.local scripts/fetch-github-data.mjs
 ```
 
 `--env-file` matters: only Next.js reads `.env.local` by itself, and this script
@@ -382,6 +397,8 @@ make run            # dev server (PORT=4000 for another port)
 make build          # full production build, GitHub fetch included
 make preview        # build without the GitHub fetch, then serve it
 make check          # typecheck + lint + test
+make data           # fetch GitHub repos and contributions, tokens from .env.local
+make new-post POST=can-bus-sniffer TITLE="A CAN bus sniffer"   # start a blog post
 make downloads      # rebuild the shop downloads (ONLY="cheatsheet" for one)
 make blog-check POST=report-design-showcase
 ```
@@ -433,42 +450,19 @@ Without them every download still works; nothing is counted and no count is show
 
 ### Adding a Blog Post
 
-Create `content/blog/my-new-post.tex` — the filename is the URL slug. Adding the
-file is all it takes; it shows up on `/blog`, in `/feed.xml` and in the sitemap.
-
-```latex
-\title{My New Post}
-\date{2026-09-23}
-\excerpt{A short description of this post.}
-\tags{Embedded, Tutorial}
-
-\begin{document}
-
-\section{Introduction}
-
-Text with \textbf{bold}, \emph{emphasis} and inline math $E = mc^2$.
-
-\begin{lstlisting}[language=c]
-int main(void) { return 0; }
-\end{lstlisting}
-
-\begin{figure}
-\includegraphics[width=0.4\textwidth]{/images/board.png}
-\caption{The board}
-\label{fig-board}
-\end{figure}
-
-As \ref{fig-board} shows, and as \cite{shannon1948} argued.
-
-\begin{thebibliography}{9}
-\bibitem{shannon1948} C. E. Shannon, \emph{A Mathematical Theory of Communication}, 1948.
-\end{thebibliography}
-
-\end{document}
+```bash
+npm run new:post can-bus-sniffer "A CAN bus sniffer"   # or: make new-post POST=can-bus-sniffer
 ```
 
-Start from [`templates/blog/post.tex`](templates/blog/post.tex): one post that
-shows every feature of the blog (also at `/blog/template` under `npm run dev`).
+This makes `content/blog/can-bus-sniffer.tex` (the file name is the URL,
+`/blog/can-bus-sniffer`) and `public/blog/can-bus-sniffer/` for its images. The post
+starts as [`templates/blog/post.tex`](templates/blog/post.tex), which shows every
+feature of the blog (it is also at `/blog/template` under `npm run dev`), so delete
+what you do not need. It is a **draft**: open it with `npm run dev` and it shows on
+your machine only. Delete the `\draft` line to publish it; it then appears on
+`/blog`, in `/feed.xml` and in the sitemap. The full walk-through is in
+[`content/README.md`](content/README.md).
+
 The test fixtures in `tests/fixtures/blog/` go further: `katex-math-reference.tex`
 for math and `report-features-reference.tex` for theorems, callouts, footnotes
 and references. Run `npm test` after editing the pipeline.

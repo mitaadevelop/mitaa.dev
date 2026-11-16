@@ -13,6 +13,7 @@ npm run build    # prebuild fetches GitHub data + converts STEP models, then nex
 npm run lint     # eslint (eslint-config-next)
 npm test         # node --test via tsx: snapshot + regression tests for the blog pipeline
 npm start        # serve a production build
+npm run new:post <slug> ["Title"]          # start a post: content/blog/<slug>.tex from the template (a \draft) + public/blog/<slug>/
 npm run blog:check <post> [-- --publish]   # compile a post with latexmk, compare its numbering with the site's; --publish copies the PDF to public/docs/blog/
 npm run downloads:build [-- <name> …]      # compile the LaTeX templates + zip the shop downloads into public/downloads/ (local; output is committed)
 
@@ -41,6 +42,8 @@ The site runs as a **native Next.js App Router app on Vercel** (server rendering
 A project page can come from either source, merged + deduplicated on `/projects` (curated wins on matching slug or `github` URL):
 - **Curated** — `content/projects/*.md` (YAML frontmatter + markdown body). Parsed by `src/lib/projects/index.ts`.
 - **GitHub repos** — every public repo of the configured user, prefetched **at build time** by `scripts/fetch-github-data.mjs` into `public/data/github-repos.json`, then mapped to `Project` objects by `src/lib/projects/github.ts`.
+
+**Where content goes is written down in `content/README.md`** (the author's map: posts, projects, bio, shop sources, and the folders not to touch); keep it in step with the folders when one moves. `npm run new:post` (`scripts/new-post.mts`, tested in `tests/new-post.test.ts`) copies `templates/blog/post.tex`, so it **depends on the lines of that template**: it rewrites the header comment, `\title`, `\date`, `\coverimage`, `\xpost`, `\draft` and `\pdf`, and fails with a message when one is missing. Change the template and run the tests.
 
 Blog posts are **LaTeX**: `content/blog/*.tex` (none are committed on purpose — the blog is empty until the owner writes one, and `/blog` and the home page handle that), parsed and rendered by the modules in `src/lib/blog/` (map below). Markdown is used elsewhere on the site (projects, bio, GitHub READMEs) but never for the blog.
 
