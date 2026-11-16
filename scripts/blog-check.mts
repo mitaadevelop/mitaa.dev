@@ -31,14 +31,21 @@ if (!slug) {
   process.exit(2);
 }
 
-// `template` is templates/blog/post.tex, as on the dev site.
-const source =
+// `template` is templates/blog/post.tex, as on the dev site; a post is looked
+// up in content/blog, then among the test fixtures (tests/fixtures/blog).
+const FIXTURES = path.join(root, "tests/fixtures/blog");
+const candidates =
   slug === "template"
-    ? path.join(root, "templates/blog/post.tex")
-    : path.join(root, "content/blog", `${slug}.tex`);
-if (!existsSync(source)) {
-  console.error(`no such post: content/blog/${slug}.tex`);
+    ? [path.join(root, "templates/blog/post.tex")]
+    : [path.join(root, "content/blog", `${slug}.tex`), path.join(FIXTURES, `${slug}.tex`)];
+const source = candidates.find((file) => existsSync(file));
+if (!source) {
+  console.error(`no such post: content/blog/${slug}.tex or tests/fixtures/blog/${slug}.tex`);
   process.exit(2);
+}
+if (source.startsWith(FIXTURES)) {
+  process.env.BLOG_CONTENT_DIR = FIXTURES;
+  process.env.BLOG_PUBLIC_DIR = path.join(root, "tests/fixtures/public");
 }
 
 const outDir = path.join(root, "node_modules/.cache/blog-check", slug);

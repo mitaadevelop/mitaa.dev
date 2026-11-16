@@ -55,7 +55,8 @@ export default function Home() {
       {/* GitHub Contributions */}
       <GitHubContributions />
 
-      {/* Blog / Writing Section */}
+      {/* Blog / Writing Section — left out while there are no posts */}
+      {blogPosts.length > 0 && (
       <section className="pb-16">
         <Blur delay={100} inView inViewMargin="-50px">
           <h2 className="text-[13px] font-medium tracking-[0.8px] uppercase text-muted mb-6">
@@ -88,6 +89,7 @@ export default function Home() {
           ))}
         </div>
       </section>
+      )}
     </div>
   );
 }

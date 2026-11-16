@@ -122,6 +122,24 @@
   {\list{}{\rightmargin\leftmargin}\item\relax}
   {\IfValueT{#1}{\par\nopagebreak\smallskip{\raggedleft\small #1\par}}\endlist}
 
+% --- Maths ----------------------------------------------------------------------
+% The site's KaTeX macros (KATEX_MACROS in src/lib/blog/katex.ts), so a post that
+% writes $x \in \R$ or \abs{x} compiles to the same thing. \ce{} and \pu{} come
+% from mhchem on both sides.
+\RequirePackage{amssymb}
+\RequirePackage[version=4]{mhchem}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\eps}{\varepsilon}
+\newcommand{\dd}{\,\mathrm{d}}
+\newcommand{\abs}[1]{\left|#1\right|}
+\newcommand{\norm}[1]{\left\lVert#1\right\rVert}
+\newcommand{\set}[1]{\left\{#1\right\}}
+\newcommand{\vect}[1]{\boldsymbol{#1}}
+\newcommand{\unit}[1]{\,\mathrm{#1}}
+
 % --- Bar chart ------------------------------------------------------------------
 % \begin{barchart}[ylabel={$\sigma$ (ms)}, series={met systeem, zonder}]
 % Marketing & 66 & 139 \\

@@ -34,6 +34,9 @@ export default function BlogPage() {
       </Blur>
 
       {/* Posts */}
+      {blogPosts.length === 0 && (
+        <p className="text-[14px] text-muted">No posts yet.</p>
+      )}
       <div className="divide-y divide-divider">
         {blogPosts.map((post, i) => (
           <Fade key={post.slug} inView delay={i * 60}>

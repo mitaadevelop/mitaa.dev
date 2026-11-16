@@ -12,7 +12,16 @@ import {
 import { strings } from "./i18n";
 import { countWords, minutesFromWords, readTimeFromWords, uniqueSlug } from "./text";
 
-const postsDirectory = path.join(process.cwd(), "content/blog");
+/**
+ * Where the posts live: `content/blog`, unless `BLOG_CONTENT_DIR` says
+ * otherwise (the tests point it at `tests/fixtures/blog`). Read on every call,
+ * so setting the variable after this module is imported still takes effect.
+ */
+function postsDirectory(): string {
+  return process.env.BLOG_CONTENT_DIR
+    ? path.resolve(process.env.BLOG_CONTENT_DIR)
+    : path.join(process.cwd(), "content/blog");
+}
 /** Blog posts are LaTeX documents. */
 const POST_EXTENSIONS = [".tex"];
 
@@ -38,7 +47,7 @@ function devTemplatePost(): { slug: string; file: string } | null {
 /** Resolve the on-disk path for a slug. */
 export function resolvePostPath(slug: string): string | null {
   for (const ext of POST_EXTENSIONS) {
-    const candidate = path.join(postsDirectory, `${slug}${ext}`);
+    const candidate = path.join(postsDirectory(), `${slug}${ext}`);
     if (fs.existsSync(candidate)) return candidate;
   }
   const template = devTemplatePost();
@@ -46,11 +55,12 @@ export function resolvePostPath(slug: string): string | null {
 }
 
 export function listPostFiles(): { slug: string; file: string }[] {
-  const posts = fs.existsSync(postsDirectory)
+  const directory = postsDirectory();
+  const posts = fs.existsSync(directory)
     ? fs
-        .readdirSync(postsDirectory)
+        .readdirSync(directory)
         .filter((file) => POST_EXTENSIONS.includes(path.extname(file)))
-        .map((file) => ({ slug: file.replace(/\.[^.]+$/, ""), file: path.join(postsDirectory, file) }))
+        .map((file) => ({ slug: file.replace(/\.[^.]+$/, ""), file: path.join(directory, file) }))
     : [];
   const template = devTemplatePost();
   return template && !posts.some((post) => post.slug === template.slug) ? [...posts, template] : posts;
@@ -71,11 +81,15 @@ export interface PostSource {
 
 /**
  * Size of a PDF named by `\pdf{/docs/…}`, measured in `public/`. A missing file
- * means no download button rather than a broken link.
+ * means no download button rather than a broken link. `BLOG_PUBLIC_DIR`
+ * replaces `public/` as the root (the tests use it for their fixture PDF).
  */
 function pdfAsset(href: string, slug: string): BlogPost["pdf"] {
   if (!href) return undefined;
-  const file = path.join(process.cwd(), "public", href.replace(/^\//, ""));
+  const publicDir = process.env.BLOG_PUBLIC_DIR
+    ? path.resolve(process.env.BLOG_PUBLIC_DIR)
+    : path.join(process.cwd(), "public");
+  const file = path.join(publicDir, href.replace(/^\//, ""));
   if (!fs.existsSync(file)) {
     if (process.env.NODE_ENV !== "production") {
       console.warn(`[blog] ${slug}: \\pdf{${href}} not found in public/`);

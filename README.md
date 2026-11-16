@@ -403,10 +403,11 @@ As \ref{fig-board} shows, and as \cite{shannon1948} argued.
 \end{document}
 ```
 
-The three fixture posts in `content/blog/` double as a reference:
-`latex-features-showcase.tex` for structure, `katex-math-reference.tex` for
-math, and `report-features-reference.tex` for theorems, callouts, footnotes and
-references. Run `npm test` after editing the pipeline.
+Start from [`templates/blog/post.tex`](templates/blog/post.tex): one post that
+shows every feature of the blog (also at `/blog/template` under `npm run dev`).
+The test fixtures in `tests/fixtures/blog/` go further: `katex-math-reference.tex`
+for math and `report-features-reference.tex` for theorems, callouts, footnotes
+and references. Run `npm test` after editing the pipeline.
 
 ### Adding a Project
 

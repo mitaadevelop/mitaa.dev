@@ -13,6 +13,12 @@ import { parseLatex, splitLatexChapters, SUPPORTED } from "../src/lib/blog/latex
 import { findUntranslated } from "../src/lib/blog/render.ts";
 import { matchSnapshot } from "./snapshot.ts";
 
+// The posts under test are fixtures, not the site's content: content/blog holds
+// only what the author publishes, so the pipeline's regression net lives apart.
+const FIXTURES = path.join(process.cwd(), "tests/fixtures/blog");
+process.env.BLOG_CONTENT_DIR = FIXTURES;
+process.env.BLOG_PUBLIC_DIR = path.join(process.cwd(), "tests/fixtures/public");
+
 const REPORT = "report-features-reference";
 const MATH = "katex-math-reference";
 const SHOWCASE = "latex-features-showcase";
@@ -274,9 +280,9 @@ describe("pagination", () => {
   test("long posts split, short ones do not", async () => {
     assert.equal(getChapterOutline(REPORT).length, 7);
     assert.equal(getChapterOutline(MATH).length, 13);
-    for (const slug of [SHOWCASE, "building-rtos-from-scratch", "nextjs-portfolio-devlog"]) {
-      assert.deepEqual(getChapterOutline(slug), [], `${slug} must stay a single page`);
-    }
+    // An unknown slug also has no outline, so make sure the post is really there.
+    assert.ok(getAllSlugs().includes(SHOWCASE), `${SHOWCASE} is not a fixture`);
+    assert.deepEqual(getChapterOutline(SHOWCASE), [], `${SHOWCASE} must stay a single page`);
   });
 
   test("\\clearpage sets the pages: one page may hold several sections", () => {
@@ -474,9 +480,8 @@ describe("code listings", () => {
 
 describe("source hygiene", () => {
   test("no control characters leaked into the .tex sources", () => {
-    const dir = path.join(process.cwd(), "content/blog");
-    for (const file of readdirSync(dir).filter((f) => f.endsWith(".tex"))) {
-      const source = readFileSync(path.join(dir, file), "utf8");
+    for (const file of readdirSync(FIXTURES).filter((f) => f.endsWith(".tex"))) {
+      const source = readFileSync(path.join(FIXTURES, file), "utf8");
       const stray = [...source].filter((c) => c < " " && c !== "\n" && c !== "\t");
       assert.deepEqual(stray, [], `${file} contains control characters`);
     }
@@ -505,10 +510,9 @@ describe("source hygiene", () => {
 
 describe("fixture coverage", () => {
   test("every supported macro and environment is used by at least one post", () => {
-    const dir = path.join(process.cwd(), "content/blog");
-    const sources = readdirSync(dir)
+    const sources = readdirSync(FIXTURES)
       .filter((f) => f.endsWith(".tex"))
-      .map((f) => readFileSync(path.join(dir, f), "utf8"))
+      .map((f) => readFileSync(path.join(FIXTURES, f), "utf8"))
       .join("\n");
     const missing = [
       ...SUPPORTED.macros.filter((name) => !new RegExp(`\\\\${name}(?![a-zA-Z])`).test(sources)).map((n) => `\\${n}`),
