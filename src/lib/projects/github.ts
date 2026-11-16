@@ -1,8 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import { remark } from "remark";
-import remarkGfm from "remark-gfm";
-import remarkHtml from "remark-html";
+import { markdownToHtml } from "./markdown";
 import type { MarkdownDoc, Measurement, PcbAssets, PdfDoc, Project, ProjectWithHtml } from "./types";
 
 const GITHUB_USERNAME = "mitaadevelop";
@@ -279,11 +277,13 @@ async function renderRepoMarkdown(
   repo: GitHubRepo,
   filePath: string
 ): Promise<string> {
-  const processed = await remark().use(remarkGfm).use(remarkHtml).process(markdown);
   const dir = filePath.includes("/")
     ? filePath.slice(0, filePath.lastIndexOf("/") + 1)
     : "";
-  return absolutizeMarkdownUrls(processed.toString(), repo, dir);
+  return markdownToHtml(markdown, {
+    transform: (html) => absolutizeMarkdownUrls(html, repo, dir),
+    where: `${repo.name}/${filePath}`,
+  });
 }
 
 /** Derive a short button label from a file path (basename without extension). */

@@ -1056,6 +1056,65 @@ html {
   color: var(--muted);
 }
 
+/* Diagrams (lstlisting[language=mermaid] in a post, a ```mermaid fence on a
+   project page). pele draws the SVG at build time and colours it with
+   --pele-* custom properties; they point at the site's own tokens here, so
+   light and dark themes need no second drawing. Lines and secondary text are
+   mixed from the foreground, which keeps them readable on the card in both. */
+.prose-blog .diagram {
+  --pele-bg: var(--card);
+  --pele-fg: var(--foreground);
+  --pele-muted: color-mix(in srgb, var(--foreground) 62%, var(--card));
+  --pele-line: color-mix(in srgb, var(--foreground) 62%, var(--card));
+  --pele-surface: var(--secondary);
+  --pele-surface-alt: var(--code-bg);
+  --pele-border: color-mix(in srgb, var(--foreground) 32%, var(--card));
+  --pele-accent: var(--syn-function);
+  --pele-font: var(--font-sans), sans-serif;
+  --pele-radius: 4px;
+  width: 100%;
+  margin: 1rem 0 0.25rem;
+  padding: 1rem;
+  overflow-x: auto;
+  text-align: center;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--card);
+}
+
+.prose-blog .diagram svg {
+  display: inline-block;
+  max-width: 100%;
+  height: auto;
+}
+
+.prose-blog .diagram-error {
+  text-align: left;
+  color: var(--muted);
+}
+
+.prose-blog .diagram-error p {
+  margin: 0 0 0.5rem;
+}
+
+.prose-blog .diagram-error pre {
+  margin: 0.5rem 0 0;
+}
+
+.prose-blog .diagram-source {
+  margin-top: 0.5rem;
+  font-size: calc(var(--prose-base) * 0.8571);
+}
+
+.prose-blog .diagram-source summary {
+  cursor: pointer;
+  color: var(--muted);
+}
+
+.prose-blog .diagram-source pre {
+  margin-top: 0.4rem;
+}
+
 /* Turning a page of a blog post ------------------------------------------
    Only the text takes part (ChapterBody's ViewTransition); the header, table
    of contents and navigation stay where they are. The old page leaves quickly,

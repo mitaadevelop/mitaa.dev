@@ -182,6 +182,22 @@ Figures use the \texttt{figure} environment. The \texttt{\textbackslash{}caption
 
 As shown in \href{#fig-1}{Fig. 1}, images are automatically numbered and captioned.
 
+\section{Diagrams}
+
+A listing in the language \texttt{mermaid} is drawn as a diagram when the site is built; \Cref{fig-flow} is Mermaid text. Put it in a \texttt{figure} for a number and a caption, and give it a \texttt{title=} for screen readers.
+
+\begin{figure}
+\begin{lstlisting}[language=mermaid, title={The control loop}]
+flowchart LR
+  A[Sensor] --> B[Controller]
+  B --> C{In range?}
+  C -->|yes| D[Actuator]
+  C -->|no| E[Alarm]
+\end{lstlisting}
+\caption{A flowchart drawn from Mermaid text}
+\label{fig-flow}
+\end{figure}
+
 \section{Emphasis Combinations}
 
 Here are some formatting combos:

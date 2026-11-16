@@ -256,6 +256,36 @@ Impulse & 28 & 12 \\
 \label{fig:results}
 \end{figure}
 
+\subsection{Diagrams}
+
+A listing in the language \texttt{mermaid} is drawn as a diagram when the site is built, by \href{https://pele.run}{pele}: flowcharts, sequence, state, class and ER diagrams, Gantt charts and system architectures. It follows the light or dark theme, and the Mermaid text is behind ``Show diagram source''. Put it in a \texttt{figure} for a number and a caption, and give it a \texttt{title=} that says what it shows, for screen readers. \Cref{fig:flow} is a flowchart and \Cref{fig:arch} an architecture diagram. In the PDF a diagram is printed as its source, because LaTeX cannot draw it.
+
+\begin{figure}
+\begin{lstlisting}[language=mermaid, title={Signal path of the controller}]
+flowchart LR
+  A[Sensor] -->|I2C| B[Controller]
+  B --> C{In range?}
+  C -->|yes| D[Actuator]
+  C -->|no| E[Alarm]
+\end{lstlisting}
+\caption{A flowchart: from the sensor to the actuator}
+\label{fig:flow}
+\end{figure}
+
+\begin{figure}
+\begin{lstlisting}[language=mermaid, title={Boards and services of the system}]
+architecture-beta
+  group board(server)[Board]
+  service mcu(server)[MCU] in board
+  service flash(disk)[Flash] in board
+  service host(internet)[Host]
+  mcu:B -- T:flash
+  mcu{group}:R -- L:host
+\end{lstlisting}
+\caption{An architecture diagram: the parts on the board and what they talk to}
+\label{fig:arch}
+\end{figure}
+
 \subsection{References}
 
 \texttt{\textbackslash{}ref} is the number alone, as in Table~\ref{tab:parts}. \texttt{\textbackslash{}Cref} and \texttt{\textbackslash{}autoref} add the word: \Cref{fig:design}, \autoref{tab:align}. \texttt{\textbackslash{}cref} gives it in lower case, \cref{fig:results}, and \texttt{\textbackslash{}eqref} an equation in brackets, \eqref{eq:pi}. Sections can be labelled too: see \Cref{sec:code}.

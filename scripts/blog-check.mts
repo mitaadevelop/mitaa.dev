@@ -18,7 +18,8 @@
 import { execFileSync } from "node:child_process";
 import { copyFileSync, existsSync, mkdirSync, readFileSync } from "node:fs";
 import path from "node:path";
-import { getPostNumbering } from "../src/lib/blog/index.ts";
+// The site's blog code is imported further down, once the environment it reads
+// at import time (for a fixture post) has been set.
 
 const LATEXMK = process.env.LATEXMK || "latexmk";
 const root = process.cwd();
@@ -44,6 +45,8 @@ if (!source) {
   process.exit(2);
 }
 if (source.startsWith(FIXTURES)) {
+  // The override only applies under NODE_ENV=test (see postsDirectory in source.ts).
+  (process.env as Record<string, string>).NODE_ENV = "test";
   process.env.BLOG_CONTENT_DIR = FIXTURES;
   process.env.BLOG_PUBLIC_DIR = path.join(root, "tests/fixtures/public");
 }
@@ -90,6 +93,7 @@ for (const match of aux.matchAll(/^\\bibcite\{([^}]+)\}\{([^}]*)\}/gm)) {
 
 // The template is only served under `npm run dev`.
 if (slug === "template") (process.env as Record<string, string>).NODE_ENV = "development";
+const { getPostNumbering } = await import("../src/lib/blog/index.ts");
 const site = await getPostNumbering(slug);
 if (!site) {
   console.error(`the site does not render ${slug}`);

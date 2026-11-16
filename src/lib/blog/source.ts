@@ -13,15 +13,27 @@ import { strings } from "./i18n";
 import { countWords, minutesFromWords, readTimeFromWords, uniqueSlug } from "./text";
 
 /**
- * Where the posts live: `content/blog`, unless `BLOG_CONTENT_DIR` says
- * otherwise (the tests point it at `tests/fixtures/blog`). Read on every call,
- * so setting the variable after this module is imported still takes effect.
+ * Where the posts live: `content/blog`. Under `NODE_ENV=test` only,
+ * `BLOG_CONTENT_DIR` replaces it (the tests point it at `tests/fixtures/blog`,
+ * from `tests/setup.ts`, which runs before this module is imported).
+ *
+ * Keep this a module-level constant with a literal `NODE_ENV === "test"`
+ * condition. Next inlines NODE_ENV when it builds, so in production this folds
+ * to the static path and the build traces only `content/blog`; a path that
+ * depends on a free-standing variable, or one hidden behind a function call,
+ * makes Turbopack trace the whole project into the server bundle (`/feed.xml`
+ * reads the posts at request time, so it matters). A build warns about it:
+ * "Dynamic filesystem access causes tracing of the whole project".
  */
-function postsDirectory(): string {
-  return process.env.BLOG_CONTENT_DIR
+const postsDirectory =
+  process.env.NODE_ENV === "test" && process.env.BLOG_CONTENT_DIR
     ? path.resolve(process.env.BLOG_CONTENT_DIR)
     : path.join(process.cwd(), "content/blog");
-}
+/** The root `\pdf{}` paths are measured against: `public/`, or the tests' own under `NODE_ENV=test`. */
+const publicDirectory =
+  process.env.NODE_ENV === "test" && process.env.BLOG_PUBLIC_DIR
+    ? path.resolve(process.env.BLOG_PUBLIC_DIR)
+    : path.join(process.cwd(), "public");
 /** Blog posts are LaTeX documents. */
 const POST_EXTENSIONS = [".tex"];
 
@@ -47,7 +59,7 @@ function devTemplatePost(): { slug: string; file: string } | null {
 /** Resolve the on-disk path for a slug. */
 export function resolvePostPath(slug: string): string | null {
   for (const ext of POST_EXTENSIONS) {
-    const candidate = path.join(postsDirectory(), `${slug}${ext}`);
+    const candidate = path.join(postsDirectory, `${slug}${ext}`);
     if (fs.existsSync(candidate)) return candidate;
   }
   const template = devTemplatePost();
@@ -55,12 +67,11 @@ export function resolvePostPath(slug: string): string | null {
 }
 
 export function listPostFiles(): { slug: string; file: string }[] {
-  const directory = postsDirectory();
-  const posts = fs.existsSync(directory)
+  const posts = fs.existsSync(postsDirectory)
     ? fs
-        .readdirSync(directory)
+        .readdirSync(postsDirectory)
         .filter((file) => POST_EXTENSIONS.includes(path.extname(file)))
-        .map((file) => ({ slug: file.replace(/\.[^.]+$/, ""), file: path.join(directory, file) }))
+        .map((file) => ({ slug: file.replace(/\.[^.]+$/, ""), file: path.join(postsDirectory, file) }))
     : [];
   const template = devTemplatePost();
   return template && !posts.some((post) => post.slug === template.slug) ? [...posts, template] : posts;
@@ -81,15 +92,11 @@ export interface PostSource {
 
 /**
  * Size of a PDF named by `\pdf{/docs/…}`, measured in `public/`. A missing file
- * means no download button rather than a broken link. `BLOG_PUBLIC_DIR`
- * replaces `public/` as the root (the tests use it for their fixture PDF).
+ * means no download button rather than a broken link. See `publicDirectory`.
  */
 function pdfAsset(href: string, slug: string): BlogPost["pdf"] {
   if (!href) return undefined;
-  const publicDir = process.env.BLOG_PUBLIC_DIR
-    ? path.resolve(process.env.BLOG_PUBLIC_DIR)
-    : path.join(process.cwd(), "public");
-  const file = path.join(publicDir, href.replace(/^\//, ""));
+  const file = path.join(publicDirectory, href.replace(/^\//, ""));
   if (!fs.existsSync(file)) {
     if (process.env.NODE_ENV !== "production") {
       console.warn(`[blog] ${slug}: \\pdf{${href}} not found in public/`);

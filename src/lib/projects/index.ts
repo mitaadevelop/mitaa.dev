@@ -1,9 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import matter from "gray-matter";
-import { remark } from "remark";
-import remarkGfm from "remark-gfm";
-import remarkHtml from "remark-html";
+import { markdownToHtml } from "./markdown";
 import type { Project, Measurement, PcbAssets, MarkdownDoc, PdfDoc, LanguageStat, Release, Commit, Contributor, Dependency, ProjectWithHtml } from "./types";
 
 export type { Project, Measurement, PcbAssets, MarkdownDoc, PdfDoc, LanguageStat, Release, Commit, Contributor, Dependency, ProjectWithHtml };
@@ -162,8 +160,7 @@ export async function getProjectBySlug(slug: string): Promise<ProjectWithHtml | 
 
   let contentHtml = "";
   if (content.trim()) {
-    const processed = await remark().use(remarkGfm).use(remarkHtml).process(content);
-    contentHtml = processed.toString();
+    contentHtml = await markdownToHtml(content, { where: `content/projects/${slug}.md` });
   }
 
   return { ...meta, contentHtml };

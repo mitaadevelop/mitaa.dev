@@ -175,6 +175,9 @@
 % --- Code -----------------------------------------------------------------------
 % `title=` is the file name over a listing (unnumbered); `caption=` numbers it.
 \lstalias[]{latex}[LaTeX]{TeX}
+% A Mermaid diagram is a listing in the PDF — LaTeX cannot draw it, the site
+% does (pele). The language only has to exist; it colours nothing.
+\lstdefinelanguage{mermaid}{}
 \lstset{basicstyle=\ttfamily\small, columns=fullflexible, keepspaces=true,
   numbers=left, numberstyle=\tiny\color{gray}, frame=single, rulecolor=\color{gray!40},
   breaklines=true, upquote=true}

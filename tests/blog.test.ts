@@ -15,9 +15,8 @@ import { matchSnapshot } from "./snapshot.ts";
 
 // The posts under test are fixtures, not the site's content: content/blog holds
 // only what the author publishes, so the pipeline's regression net lives apart.
+// tests/setup.ts points the blog source at this folder before anything is imported.
 const FIXTURES = path.join(process.cwd(), "tests/fixtures/blog");
-process.env.BLOG_CONTENT_DIR = FIXTURES;
-process.env.BLOG_PUBLIC_DIR = path.join(process.cwd(), "tests/fixtures/public");
 
 const REPORT = "report-features-reference";
 const MATH = "katex-math-reference";
@@ -475,6 +474,26 @@ describe("code listings", () => {
     const body = await html(SHOWCASE);
     assert.match(body, /<span class="listing-file">blink\.py<\/span><span class="listing-meta"><span class="code-lang-label" data-lang="python">python<\/span>/);
     assert.match(body, /avrdude: 1024 bytes of flash written/);
+  });
+});
+
+describe("diagrams", () => {
+  test("a Mermaid listing is drawn to SVG, numbered by its figure, and named for screen readers", async () => {
+    const body = await html(SHOWCASE);
+    assert.match(body, /<div class="diagram-block"><div class="diagram" role="img" aria-label="The control loop"><svg /);
+    assert.match(body, /class="pele pele-flowchart"/);
+    // The figure numbers it like any other, and \Cref finds it.
+    assert.match(body, /Figure 2/);
+    assert.match(body, /<details class="diagram-source"><summary>Show diagram source<\/summary>/);
+    assert.ok(!body.includes("diagram-slot"), "the placeholder was never filled");
+    assert.ok(!body.includes("language-mermaid"), "the diagram was not mistaken for a code listing");
+  });
+
+  test("in Dutch the toggle is Dutch too", async () => {
+    // report-design-showcase is the Dutch fixture; it has no diagram, so check the words.
+    const { strings } = await import("../src/lib/blog/i18n.ts");
+    assert.equal(strings("nl").showDiagramSource, "Toon de bron van het diagram");
+    assert.equal(strings("en").showDiagramSource, "Show diagram source");
   });
 });
 

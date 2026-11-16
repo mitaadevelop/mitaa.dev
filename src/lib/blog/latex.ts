@@ -753,6 +753,19 @@ function transformListing(node: Node, name: string, state: LatexRenderState): No
   else if (name === "lstlisting") language = options.get("language") ?? "";
   language = language.toLowerCase();
 
+  // A Mermaid listing is a diagram, not code: leave a slot that rehypeDiagrams
+  // fills with pele's SVG. `title=` (or `alt=`) is what the diagram shows, for
+  // screen readers; the number and caption come from the enclosing `figure`.
+  if (language === "mermaid") {
+    const label = options.get("alt") ?? options.get("title") ?? "";
+    return tag("div", [
+      attr("className", "diagram-slot"),
+      attr("data-diagram", raw),
+      // Not `data-label`: rehypeLatexFixups reads that one as a \label marker.
+      ...(label ? [attr("data-diagram-label", label)] : []),
+    ], []);
+  }
+
   // listings' `title=` and minted's `filename=` are unnumbered labels; a
   // listings `caption=` is numbered, like a figure.
   const file = options.get("title") ?? options.get("filename") ?? "";
