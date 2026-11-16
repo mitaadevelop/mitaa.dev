@@ -16,6 +16,7 @@ npm start        # serve a production build
 npm run new:post <slug> ["Title"]          # start a post: content/blog/<slug>.tex from the template (a \draft) + public/blog/<slug>/
 npm run blog:check <post> [-- --publish]   # compile a post with latexmk, compare its numbering with the site's; --publish copies the PDF to public/docs/blog/
 npm run downloads:build [-- <name> …]      # compile the LaTeX templates + zip the shop downloads into public/downloads/ (local; output is committed)
+npm run icons:build                        # src/app/icon.svg → favicon.ico + apple-icon.png (headless Chrome, local; output is committed; the SVG carries the dark-mode look, the rasters the light one)
 
 # PCB tooling (run locally — kicad-cli / occt run on your machine, not on Vercel):
 npm run pcb:convert <in.step> <out.glb>                         # STEP → GLB (occt-import-js)

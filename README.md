@@ -368,6 +368,7 @@ Other scripts:
 ```bash
 npm run blog:check <post> [-- --publish]          # latexmk build + numbering check
 npm run downloads:build [-- <name> …]             # LaTeX templates + shop ZIPs → public/downloads/ (local)
+npm run icons:build                               # favicon.ico + apple-icon.png from src/app/icon.svg (local, needs Chrome)
 npm run pcb:render <board.kicad_pcb> [sch]        # kicad-cli → schematic/PCB/X-ray SVGs (local)
 npm run pcb:convert <in.step> <out.glb>           # STEP → GLB
 npm run pcb:recolor <in.glb> <out.glb> --board "#1b2a4a" [--silk "#fff"] [--finish "#d4af37"]
