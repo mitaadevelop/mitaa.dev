@@ -1,0 +1,241 @@
+\title{Writing a Report on This Blog}
+\date{2026-09-18}
+\excerpt{Abstracts, callouts, theorems, numbered tables, cross-references and a bibliography — the LaTeX document furniture this blog supports, and how to write it.}
+\tags{Reference, Writing, LaTeX}
+\paginate{always}
+\lang{en}
+
+\begin{document}
+
+A blog post and a report are not the same document. A report opens with an abstract, states its definitions before it uses them, numbers its figures and tables so it can point back at them, and ends with a bibliography. All of that exists here.
+
+The syntax throughout is ordinary LaTeX: an environment, an optional \texttt{[Title]} in brackets, and a \texttt{\textbackslash{}label\{\}} wherever you want to point back at something later.
+
+\section{Abstracts and summaries}
+
+A report starts with a summary of what it found. Write it as an \texttt{abstract} block and it lands at the top of the first chapter, set apart from the body:
+
+\begin{abstract}
+Sampling a bandlimited signal below twice its highest frequency folds energy from above the Nyquist limit down into the passband, where no later filtering can separate it from the signal. This report measures that folding on a 12-bit converter and shows the anti-aliasing filter order needed to keep it below the noise floor.
+\end{abstract}
+
+The block takes an optional title if "Abstract" is not the word you want:
+
+\begin{abstract}[Summary]
+Written the same way, labelled differently.
+\end{abstract}
+
+LaTeX inside works normally — \textbf{bold}, \texttt{code}, $\sqrt{2}$, links, lists.
+
+\section{Callouts}
+
+Five callout types are available. Each is an aside with a coloured rail; the type is also spelled out in words, so the meaning does not depend on seeing the colour.
+
+\begin{note}
+A neutral aside. Use it for context a reader can skip.
+\end{note}
+
+\begin{tip}
+Something that will save the reader time.
+\end{tip}
+
+\begin{warning}
+Something that will cost the reader time, money or a part.
+\end{warning}
+
+\begin{important}
+Something they must not miss.
+\end{important}
+
+\begin{caution}
+Something that can cause damage or injury.
+\end{caution}
+
+Any of them takes its own title in square brackets:
+
+\begin{warning}[Mind the probe ground]
+A ×1 probe on a floating supply will short the ground clip through the mains earth. Use a differential probe or an isolation transformer.
+\end{warning}
+
+And they can hold anything a paragraph can — lists, code, tables, math:
+
+\begin{tip}[Checking the filter corner]
+Sweep the generator and look for the −3 dB point:
+
+\begin{lstlisting}[language=bash]
+siggen sweep --from 1k --to 100k --points 60
+\end{lstlisting}
+
+The corner should land near $f_c = \dfrac{1}{2\pi RC}$.
+\end{tip}
+
+\section{Theorems, definitions and proofs}
+
+Seven environments are numbered automatically, and the numbering continues across chapter pages rather than restarting.
+
+\begin{definition}[Bandlimited signal]
+\label{def-bandlimited}
+A signal $x(t)$ is \emph{bandlimited} to $B$ hertz if its Fourier transform $X(f)$ vanishes for all $\abs{f} > B$.
+\end{definition}
+
+\begin{theorem}[Nyquist–Shannon]
+\label{thm-sampling}
+Let $x(t)$ be bandlimited to $B$ hertz. Then $x$ is completely determined by its samples $x(nT)$ whenever the sampling rate $f_s = 1/T$ satisfies $f_s > 2B$.
+\end{theorem}
+
+\begin{lemma}
+\texttt{theorem}, \texttt{lemma}, \texttt{proposition}, \texttt{corollary} and \texttt{definition} share one counter, the way \texttt{amsthm} numbers them by default. So this is Lemma 3, not Lemma 1.
+\end{lemma}
+
+\begin{corollary}
+Undersampling a signal that is not bandlimited cannot be repaired after the fact.
+\end{corollary}
+
+\begin{proof}
+Below $f_s = 2B$ the shifted copies of $X(f)$ overlap, so the sum is not invertible on any single period. No filter applied to the sampled sequence can undo a sum it cannot separate.
+\end{proof}
+
+\texttt{example} has its own counter, because examples usually number separately from results:
+
+\begin{example}
+At $f_s = \pu{48 kHz}$, a tone at $\pu{30 kHz}$ folds down to $\abs{48 - 30} = \pu{18 kHz}$ — squarely inside the audio band.
+\end{example}
+
+\texttt{proof} is the one environment that is not numbered, and it closes with a ∎.
+
+\section{Tables, figures and cross-references}
+
+Give a table a caption and a number by wrapping it:
+
+\begin{table}
+\caption{Measured folding for a 12-bit converter at 48 kHz}
+\label{tbl-folding}
+\begin{tabular}{llr}
+\hline
+Input tone & Folded to & Amplitude \\
+\hline
+30 kHz & 18 kHz & −52 dBFS \\
+54 kHz & 6 kHz & −49 dBFS \\
+78 kHz & 30 kHz & −61 dBFS \\
+\hline
+\end{tabular}
+\end{table}
+
+Figures keep the syntax they always had, with an optional label after the width:
+
+\begin{figure}
+\includegraphics[width=0.45\textwidth]{/blog-example.png}
+\caption{The measurement setup}
+\label{fig-setup}
+\end{figure}
+
+Both get a label with \texttt{\textbackslash{}label\{\}}. Point at them with \texttt{\textbackslash{}Cref\{\}}, and the word and number fill themselves in. Plain \texttt{\textbackslash{}ref\{\}} prints the number alone — Table~\ref{tbl-folding} — exactly as it does in the PDF:
+
+\begin{itemize}
+  \item The theorem above is \Cref{thm-sampling}, resting on \Cref{def-bandlimited}.
+  \item The measurements are in \Cref{tbl-folding}.
+  \item The bench is shown in \Cref{fig-setup}.
+  \item \texttt{\textbackslash{}cref\{\}} writes the word in lower case — see \cref{fig-setup} — and hyperref's \texttt{\textbackslash{}autoref\{\}} reads like \texttt{\textbackslash{}Cref}: \autoref{tbl-folding}.
+\end{itemize}
+
+Cross-references work across chapters too: \Cref{tbl-bom} is defined three chapters further on, and the link still resolves — the whole post is rendered before any page is served, so a forward reference is no different from a backward one.
+
+\begin{note}[How a key is resolved]
+\texttt{\textbackslash{}ref\{\}} and \texttt{\textbackslash{}cite\{\}} are resolved the same way: a key that names a \texttt{\textbackslash{}label\{\}} becomes a cross-reference, and anything else is looked up in the bibliography. There are no reserved prefixes — \texttt{fig-setup}, \texttt{bench} and \texttt{setup} are all fine. If a label and a bibliography key collide, the label wins.
+\end{note}
+
+A reference that points nowhere is not silently dropped — it renders visibly, like \Cref{fig-doesnotexist}, so a broken link is caught in review rather than in production.
+
+\section{Citations and the bibliography}
+
+Declare the works in a \texttt{thebibliography} environment at the end of the document:
+
+\begin{lstlisting}[language=latex]
+\begin{thebibliography}{9}
+\bibitem{shannon1948} C. E. Shannon, \emph{A Mathematical Theory of Communication},
+  Bell System Technical Journal, 1948. \url{https://doi.org/...}
+\end{thebibliography}
+\end{lstlisting}
+
+Then cite them in the body with \texttt{\textbackslash{}cite\{id\}}. The sampling theorem is usually credited to Shannon \cite{shannon1948}, building on earlier work by Nyquist \cite{nyquist1928}; the modern treatment is in Oppenheim and Schafer \cite{oppenheim1999}.
+
+Several at once, comma-separated: \texttt{\textbackslash{}cite\{shannon1948, nyquist1928\}} gives \cite{shannon1948, nyquist1928}.
+
+Numbers follow the order of the \texttt{\textbackslash{}bibitem}s, as \texttt{thebibliography} numbers them in LaTeX, and hold across the \textbf{whole} post, so a reference keeps the same number wherever a reader meets it. The list itself is printed where the environment stands — at the end of the last chapter of this post — with every entry, cited or not.
+
+\begin{important}
+Because numbering is post-wide, adding a citation early in a report renumbers the ones after it. That is the same behaviour as BibTeX and is usually what you want.
+\end{important}
+
+\section{Footnotes and the rest}
+
+Footnotes are plain \texttt{\textbackslash{}footnote\{\}}.\footnote{Unlike the rest of the document furniture, this one needs no environment — it is the ordinary LaTeX macro.} They collect at the bottom of the chapter that uses them.
+
+Definitions, footnotes and citations can be mixed freely.\footnote{A footnote can hold math such as $\int_0^1 x^2\,\dd x = \tfrac{1}{3}$, and links like \href{/blog/katex-math-reference}{the math reference}.} A footnote can contain math, code and links:
+
+
+Everything else a report needs already existed before these blocks were added:
+
+\begin{tabular}{ll}
+\hline
+Feature & How \\
+\hline
+Numbered sections & Automatic, from \texttt{\textbackslash{}section} and \texttt{\textbackslash{}subsection} \\
+Table of contents & Automatic, in the sidebar \\
+Chapter pages & Automatic for long posts; \texttt{\textbackslash{}paginate\{\}} in the preamble \\
+Equations & \texttt{\$…\$} and \texttt{\$\$…\$\$}, see \href{/blog/katex-math-reference}{the math reference} \\
+Equation numbers & \texttt{\textbackslash\{\}tag\{\}} \\
+\hline
+\end{tabular}
+
+\section{A worked example}
+
+Everything at once, as it would appear in a real report.
+
+\begin{abstract}
+A 4th-order Butterworth anti-aliasing filter at $\pu{20 kHz}$ keeps all folded energy below −70 dBFS for the converter measured here.
+\end{abstract}
+
+\begin{definition}[Folding frequency]
+For a sampling rate $f_s$, an input at $f$ appears at $\abs{f - k f_s}$ for the integer $k$ minimising that distance.
+\end{definition}
+
+Applying \Cref{thm-sampling} to the converter in \Cref{fig-setup} gives a Nyquist limit of $\pu{24 kHz}$. The measured folding in \Cref{tbl-folding} is consistent with the definition above, and with the bounds given by Oppenheim and Schafer \cite{oppenheim1999}.
+
+\begin{table}
+\caption{Filter bill of materials}
+\label{tbl-bom}
+\begin{tabular}{lll}
+\hline
+Ref & Value & Tolerance \\
+\hline
+R1, R2 & 10 kΩ & 1\% \\
+C1 & 1.0 nF & 2\% \\
+C2 & 470 pF & 2\% \\
+\hline
+\end{tabular}
+\end{table}
+
+The parts in \Cref{tbl-bom} realise the filter as a Sallen–Key pair.
+
+\begin{proposition}[Filter order]
+\label{prop-order}
+A fourth-order Butterworth filter at $f_c = \pu{20 kHz}$ keeps the folded energy below the converter's noise floor.
+\end{proposition}
+
+\begin{warning}
+The 2\% capacitors dominate the corner-frequency spread. A 5\% part moves $f_c$ by roughly $\pu{500 Hz}$, which is enough to undo the margin above.
+\end{warning}
+
+\begin{proof}
+The stopband attenuation of an $n$-th order Butterworth response at $f$ is $-10\log_{10}\left(1 + (f/f_c)^{2n}\right)$ decibels. At $n = 4$, $f_c = \pu{20 kHz}$ and $f = \pu{54 kHz}$ this is below $-70$ dB, which is under the measured floor in \Cref{tbl-folding}.
+\end{proof}
+
+\begin{thebibliography}{9}
+\bibitem{shannon1948} C. E. Shannon, \emph{A Mathematical Theory of Communication}, Bell System Technical Journal, 1948. \url{https://doi.org/10.1002/j.1538-7305.1948.tb01338.x}
+\bibitem{nyquist1928} H. Nyquist, \emph{Certain Topics in Telegraph Transmission Theory}, Transactions of the AIEE, 1928.
+\bibitem{oppenheim1999} A. V. Oppenheim and R. W. Schafer, \emph{Discrete-Time Signal Processing}, Prentice Hall, 2nd ed., 1999.
+\end{thebibliography}
+
+\end{document}
+

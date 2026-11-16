@@ -1,0 +1,115 @@
+% =====================================================================
+%  Styling of the report template — mitaa.dev
+%  The content lives in main.tex. Change the font, colour and
+%  margins here; a regular report needs none of it.
+% =====================================================================
+
+% --- Language and font ----------------------------------------------
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+\usepackage{libertinus}          % Libertinus: serif, sans and maths
+\usepackage{microtype}
+
+% --- Table of contents (load before parskip) ------------------------------
+\usepackage[titles]{tocloft}  % title set as an ordinary heading
+\renewcommand{\cftsecfont}{\sffamily\bfseries}
+\renewcommand{\cftsecpagefont}{\sffamily\bfseries}
+\setlength{\cftbeforesecskip}{0.6em}
+
+% --- Page ------------------------------------------------------------
+\usepackage[a4paper, margin=2.5cm]{geometry}
+\usepackage{parskip}             % space between paragraphs, no indent
+\linespread{1.08}
+
+% --- Colour -----------------------------------------------------------
+\usepackage{xcolor}
+\definecolor{accent}{HTML}{1F5FA8}   % the one accent colour; change to taste
+\definecolor{subtle}{HTML}{6B7280}
+
+% --- Content ----------------------------------------------------------
+\usepackage{amsmath}
+\usepackage{graphicx}
+\graphicspath{{figures/}}        % put your images in the figures/ folder
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{enumitem}
+\setlist{itemsep=0.2em, topsep=0.3em}
+\usepackage{caption}
+\DeclareCaptionFont{accent}{\color{accent}}
+\captionsetup{font=small, labelfont={bf,accent}, labelsep=period}
+\usepackage{siunitx}             % numbers and units: \qty{9.81}{\metre\per\second\squared}
+
+% --- References (APA 7) -------------------------------------------------
+\usepackage{csquotes}
+\usepackage[style=apa, backend=biber]{biblatex}
+\addbibresource{references.bib}
+
+% --- Headings ----------------------------------------------------------
+\usepackage{titlesec}
+\titleformat{\section}{\sffamily\Large\bfseries\color{accent}}{\thesection}{0.75em}{}
+\titleformat{\subsection}{\sffamily\large\bfseries}{\thesubsection}{0.75em}{}
+\titleformat{\subsubsection}{\sffamily\normalsize\bfseries}{\thesubsubsection}{0.75em}{}
+\titlespacing*{\section}{0pt}{1.8em}{0.6em}
+\titlespacing*{\subsection}{0pt}{1.3em}{0.3em}
+\titlespacing*{\subsubsection}{0pt}{1em}{0.2em}
+
+% --- Report details ---------------------------------------------------
+% Fill these in at the top of main.tex; they appear on the title page.
+% \docfield{name} creates \docname{...} to fill in and \thedocname to print it.
+\newcommand{\docfield}[1]{%
+  \expandafter\newcommand\csname thedoc#1\endcsname{}%
+  \expandafter\newcommand\csname doc#1\endcsname[1]{%
+    \expandafter\renewcommand\csname thedoc#1\endcsname{##1}}}
+\docfield{title}
+\docfield{subtitle}
+\docfield{authors}
+\docfield{programme}
+\docfield{course}
+\docfield{supervisor}
+\docfield{institution}
+\docfield{version}
+\docfield{date}
+\docdate{\today}
+
+% --- Header and footer ------------------------------------------------
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\sffamily\color{subtle}\thedoctitle}
+\fancyhead[R]{\small\sffamily\color{subtle}\nouppercase{\leftmark}}
+\fancyfoot[R]{\small\sffamily\thepage}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\sectionmark}[1]{\markboth{#1}{}}
+\fancypagestyle{plain}{\fancyhf{}\fancyfoot[R]{\small\sffamily\thepage}}
+
+% --- Title page -----------------------------------------------------------
+% One line of details; empty fields are skipped.
+\newcommand{\docmeta}[2]{%
+  \ifdefempty{#2}{}{%
+    \noindent\makebox[8em][l]{\color{subtle}#1}%
+    \begin{tabular}[t]{@{}l@{}}#2\end{tabular}\par}}
+
+\newcommand{\maketitlepage}{%
+  \begin{titlepage}
+    \raggedright\sffamily
+    {\color{accent}\rule{3em}{3pt}}\par
+    \vspace{2.5em}
+    {\small\bfseries\color{accent}REPORT\par}
+    \vspace{0.8em}
+    {\fontsize{30}{35}\selectfont\bfseries\thedoctitle\par}
+    \ifdefempty{\thedocsubtitle}{}{%
+      \vspace{0.8em}{\Large\color{subtle}\thedocsubtitle\par}}
+    \vfill
+    {\setlength{\parskip}{0.35em}%
+      \docmeta{Authors}{\thedocauthors}
+      \docmeta{Programme}{\thedocprogramme}
+      \docmeta{Course}{\thedoccourse}
+      \docmeta{Lecturer}{\thedocsupervisor}
+      \docmeta{Institution}{\thedocinstitution}
+      \docmeta{Version}{\thedocversion}
+      \docmeta{Date}{\thedocdate}}
+  \end{titlepage}}
+
+% --- Links (load last) -----------------------------------------
+\usepackage[hidelinks]{hyperref}
+\usepackage[nameinlink, noabbrev]{cleveref}

@@ -1,0 +1,212 @@
+% =====================================================================
+%  Research report — free LaTeX template by mitaa.dev
+%  Compile with pdfLaTeX + Biber (Overleaf does this for you).
+%  Locally:  latexmk -pdf main.tex
+% =====================================================================
+\documentclass[11pt, a4paper, oneside]{report}
+\input{setup}
+
+% --- Details: fill these in -------------------------------------------
+\doctitle{The Title of Your Research}
+\docsubtitle{A subtitle that sums up the research question}
+\docauthors{First Last (1234567)}
+\docprogramme{Degree programme}
+\doccourse{Graduation research}
+\docsupervisor{Supervisor's name}
+\docclient{Client organisation}   % leave empty if there is none
+\docinstitution{University or college}
+\docversion{1.0}
+\docdate{\today}
+
+\begin{document}
+
+\maketitlepage
+
+% --- Front matter: Roman page numbers -------------------------------------
+\pagenumbering{roman}
+
+\chapter*{Preface}
+A short, personal introduction: how this research came about and whom you
+would like to thank. Sign with your name, place and date.
+
+\bigskip
+\noindent First Last\\
+Place, \today
+
+\chapter*{Abstract}
+Summarise the research in 250 to 400 words: the background, the research
+question, the method, the main results and the conclusion. Someone who
+reads only this page should know what you studied and what came out of
+it.
+
+\keywords{keyword one, keyword two, keyword three}
+
+\tableofcontents
+
+% --- Main text: Arabic page numbers -----------------------------------------
+\clearpage
+\pagenumbering{arabic}
+
+% =====================================================================
+\chapter{Introduction}
+\label{ch:introduction}
+% =====================================================================
+
+\section{Background}
+Describe the situation that led to this research. Why does the subject
+matter now, and to whom?
+
+\section{Problem statement}
+Name the problem as concretely as you can: what goes wrong or is
+unknown, and what are the consequences?
+
+\section{Objective}
+The objective of this research is \ldots{} Phrase it so that, at the end,
+you can check whether it was achieved.
+
+\section{Research questions}
+\label{sec:questions}
+The main question of this research is:
+
+\begin{quote}
+  \itshape How \ldots{} ?
+\end{quote}
+
+To answer the main question, the following sub-questions were drawn up:
+\begin{enumerate}[label=\arabic*.]
+  \item What is already known about \ldots{} ?
+  \item What does the current situation at \ldots{} look like?
+  \item Which solutions are possible for \ldots{} ?
+\end{enumerate}
+
+\section{Outline}
+\Cref{ch:theory} sets out the theoretical framework and \cref{ch:method}
+the approach. \Cref{ch:results} answers the sub-questions, after which
+\cref{ch:conclusion} answers the main question. \Cref{ch:discussion}
+discusses the limitations and \cref{ch:recommendations} closes with
+recommendations.
+
+% =====================================================================
+\chapter{Theoretical framework}
+\label{ch:theory}
+% =====================================================================
+Describe the theories, models and earlier studies you build on. Cite your
+sources in parentheses \parencite{creswell2018} or in the running text,
+as with \textcite{booth2016}. Show how the literature sheds light on your
+problem and where a gap remains.
+
+\section{Key concepts}
+Define the concepts you measure or study, so that the reader knows what
+you mean by them.
+
+\section{Conceptual model}
+A conceptual model shows which factors you study and how they relate
+(\cref{fig:model}).
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.6\linewidth]{example-image-b}
+  \caption{Conceptual model of the research. Replace this example with
+    your own figure in the \texttt{figures/} folder.}
+  \label{fig:model}
+\end{figure}
+
+% =====================================================================
+\chapter{Method}
+\label{ch:method}
+% =====================================================================
+
+\section{Research design}
+Explain which type of research you do (qualitative, quantitative or
+mixed) and why it fits the research questions.
+
+\section{Population and sample}
+Describe whom or what you study, how you selected the participants or
+objects, and how large the sample is.
+
+\section{Data collection}
+Describe the instruments: interviews, questionnaires, measurements or
+document analysis. The questionnaire is in \cref{app:questionnaire}.
+
+\section{Data analysis}
+Explain how you processed the data. If you use a formula, number it, like
+the mean in \cref{eq:mean}:
+\begin{equation}
+  \label{eq:mean}
+  \bar{x} = \frac{1}{n} \sum_{i=1}^{n} x_i
+\end{equation}
+
+\section{Reliability and validity}
+Describe what you did to make the results reliable and valid, for
+example a pilot, triangulation or a second assessor.
+
+% =====================================================================
+\chapter{Results}
+\label{ch:results}
+% =====================================================================
+Discuss the results per sub-question, in the same order as in
+\cref{sec:questions}. Describe what you found, without explaining it yet.
+
+\section{Sub-question 1}
+\Cref{tab:descriptive} summarises the respondents' answers.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Descriptive statistics per group ($n = 120$).}
+  \label{tab:descriptive}
+  \begin{tabular}{l S[table-format=2.0] S[table-format=1.2] S[table-format=1.2]}
+    \toprule
+    Group & {$n$} & {Mean} & {Standard deviation} \\
+    \midrule
+    Group A & 40 & 3.82 & 0.71 \\
+    Group B & 42 & 3.47 & 0.88 \\
+    Group C & 38 & 4.05 & 0.64 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\section{Sub-question 2}
+Describe the results of the second sub-question. Put a quotation from an
+interview in quotation marks: \enquote{That is simply how it always went}
+(respondent 4).
+
+\section{Sub-question 3}
+Describe the results of the third sub-question.
+
+% =====================================================================
+\chapter{Conclusion}
+\label{ch:conclusion}
+% =====================================================================
+First briefly answer each sub-question, then the main question. Use only
+what is in \cref{ch:results}; new information does not belong here.
+
+% =====================================================================
+\chapter{Discussion}
+\label{ch:discussion}
+% =====================================================================
+Interpret the results: what do they mean, and how do they relate to the
+literature in \cref{ch:theory}? Discuss the limitations of the research
+and what they mean for the conclusion. Close with suggestions for further
+research.
+
+% =====================================================================
+\chapter{Recommendations}
+\label{ch:recommendations}
+% =====================================================================
+Give concrete, actionable recommendations for the client. For each one,
+say what should happen, by whom and why.
+
+\printbibliography[title={References}, heading=bibintoc]
+
+% --- Appendices -------------------------------------------------------------
+\appendix
+
+\chapter{Questionnaire}
+\label{app:questionnaire}
+Include the full questionnaire or interview guide here.
+
+\chapter{Raw data}
+Put the raw data or extended tables here that would make the main text too
+long.
+
+\end{document}

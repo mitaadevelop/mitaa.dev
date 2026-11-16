@@ -1,1 +1,0 @@
-This portfolio website showcases my projects, skills, and experience. Built with Next.js 15, TypeScript, and Tailwind CSS with a focus on performance, accessibility, and clean design. Features include dynamic project pages, a blog system, and a contact form.

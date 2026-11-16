@@ -1,0 +1,205 @@
+% mitaa.sty — the blog's own macros and environments, as real LaTeX.
+%
+% A post on mitaa.dev is an ordinary .tex file. The site's pipeline
+% (src/lib/blog/) reads a handful of macros and environments that standard
+% LaTeX does not have; this package defines them, so the very same file also
+% compiles to a PDF with latexmk — and numbers its sections, figures, tables,
+% equations, theorems, footnotes and citations exactly as the site does.
+% `npm run blog:check <post>` compiles a post and compares the two.
+%
+%   \usepackage[dutch]{babel}   % optional: the post's language
+%   \usepackage{mitaa}
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{mitaa}[2026/10/02 mitaa.dev blog posts]
+
+\RequirePackage{iftex}
+\ifPDFTeX
+  \RequirePackage[T1]{fontenc}
+  \RequirePackage[utf8]{inputenc}
+\fi
+\RequirePackage{amsmath}
+\RequirePackage{amsthm}
+\RequirePackage{graphicx}
+\RequirePackage{booktabs}
+\RequirePackage{xcolor}
+\RequirePackage{listings}
+\RequirePackage{pgfplots}
+\RequirePackage{pgfplotstable}
+\RequirePackage[most]{tcolorbox}
+\RequirePackage[hidelinks]{hyperref}
+\RequirePackage[noabbrev]{cleveref}
+\pgfplotsset{compat=1.18}
+
+% --- Language ---------------------------------------------------------------
+% The site reads babel's main language (or \lang{nl}); every word below
+% follows babel's \languagename the same way.
+\newcommand{\mitaa@word}[2]{\ifcsname l@dutch\endcsname\iflanguage{dutch}{#2}{#1}\else#1\fi}
+
+% The site prints "Bibliografie" over a Dutch bibliography; babel-dutch's
+% article \refname is "Referenties".
+\AtBeginDocument{%
+  \ifcsname captionsdutch\endcsname\iflanguage{dutch}{\renewcommand\refname{Bibliografie}}{}\fi}
+
+% --- Metadata -----------------------------------------------------------------
+% Read by the site for the post header and the blog index; here they are
+% stored, and \maketitle prints the ones a reader of the PDF needs.
+\newcommand{\mitaa@subtitle}{}
+\newcommand{\mitaa@affiliation}{}
+\newcommand{\mitaa@version}{}
+\newcommand{\mitaa@keywords}{}
+\newcommand{\mitaa@kind}{}
+\newcommand{\subtitle}[1]{\renewcommand{\mitaa@subtitle}{#1}}
+\newcommand{\affiliation}[1]{\renewcommand{\mitaa@affiliation}{#1}}
+\newcommand{\version}[2]{\renewcommand{\mitaa@version}{#1\if\relax\detokenize{#2}\relax\else\ \textperiodcentered\ \mitaa@word{revised}{herzien} #2\fi}}
+\newcommand{\keywords}[1]{\renewcommand{\mitaa@keywords}{#1}}
+\newcommand{\kind}[1]{\renewcommand{\mitaa@kind}{#1}}
+% Site-only: the web excerpt, tags, cover image, X post, PDF link, pagination,
+% draft flag and language code.
+\newcommand{\excerpt}[1]{}
+\newcommand{\tags}[1]{}
+\newcommand{\coverimage}[1]{}
+\newcommand{\xpost}[1]{}
+\newcommand{\pdf}[1]{}
+\newcommand{\paginate}[1]{}
+\newcommand{\draft}{}
+\newcommand{\lang}[1]{}
+
+\renewcommand{\maketitle}{%
+  \begin{flushleft}
+    \ifx\mitaa@kind\@empty\else{\small\scshape\mitaa@kind}\par\smallskip\fi
+    {\LARGE\bfseries\@title\par}
+    \ifx\mitaa@subtitle\@empty\else\medskip{\large\itshape\mitaa@subtitle\par}\fi
+    \bigskip
+    {\@author}\ifx\mitaa@affiliation\@empty\else, \mitaa@affiliation\fi\par
+    {\small\@date}\ifx\mitaa@version\@empty\else{\small\ \textperiodcentered\ \mitaa@version}\fi\par
+  \end{flushleft}
+  \bigskip}
+
+% \begin{abstract}[Title] — with keywords underneath, as on the site.
+\RenewDocumentEnvironment{abstract}{o}
+  {\begin{quotation}\noindent{\bfseries\IfValueTF{#1}{#1}{\abstractname}}\par\smallskip\noindent\ignorespaces}
+  {\ifx\mitaa@keywords\@empty\else\par\smallskip\noindent
+     \textit{\mitaa@word{Keywords}{Trefwoorden}:} \mitaa@keywords\fi
+   \end{quotation}}
+
+% --- Theorems -----------------------------------------------------------------
+% One counter shared by theorem, lemma, proposition, corollary and definition
+% (amsthm's default), a separate one for examples; numbered through the whole
+% document. The site sets every body in italics, so all use the plain style.
+\theoremstyle{plain}
+\newtheorem{theorem}{\mitaa@word{Theorem}{Stelling}}
+\newtheorem{lemma}[theorem]{\mitaa@word{Lemma}{Lemma}}
+\newtheorem{proposition}[theorem]{\mitaa@word{Proposition}{Propositie}}
+\newtheorem{corollary}[theorem]{\mitaa@word{Corollary}{Gevolg}}
+\newtheorem{definition}[theorem]{\mitaa@word{Definition}{Definitie}}
+\newtheorem{example}{\mitaa@word{Example}{Voorbeeld}}
+\AtBeginDocument{%
+  \crefname{theorem}{\mitaa@word{theorem}{stelling}}{\mitaa@word{theorems}{stellingen}}%
+  \crefname{lemma}{lemma}{\mitaa@word{lemmas}{lemma's}}%
+  \crefname{proposition}{\mitaa@word{proposition}{propositie}}{\mitaa@word{propositions}{proposities}}%
+  \crefname{corollary}{\mitaa@word{corollary}{gevolg}}{\mitaa@word{corollaries}{gevolgen}}%
+  \crefname{definition}{\mitaa@word{definition}{definitie}}{\mitaa@word{definitions}{definities}}%
+  \crefname{example}{\mitaa@word{example}{voorbeeld}}{\mitaa@word{examples}{voorbeelden}}%
+  \crefname{equation}{\mitaa@word{equation}{vergelijking}}{\mitaa@word{equations}{vergelijkingen}}%
+  \crefname{section}{\mitaa@word{section}{sectie}}{\mitaa@word{sections}{secties}}%
+  \crefname{appendix}{\mitaa@word{appendix}{bijlage}}{\mitaa@word{appendices}{bijlagen}}%
+}
+
+% --- Callouts -------------------------------------------------------------------
+\newcommand{\mitaa@callout}[3]{%
+  \newtcolorbox{#1}[1][#2]{enhanced, breakable, colback=white, colframe=#3,
+    boxrule=0pt, leftrule=2pt, arc=0pt, left=8pt, fonttitle=\bfseries\small,
+    coltitle=black, colbacktitle=white, title=##1, attach title to upper={\par\smallskip}}}
+\mitaa@callout{note}{\mitaa@word{Note}{Opmerking}}{gray}
+\mitaa@callout{tip}{\mitaa@word{Tip}{Tip}}{teal}
+\mitaa@callout{warning}{\mitaa@word{Warning}{Waarschuwing}}{orange}
+\mitaa@callout{important}{\mitaa@word{Important}{Belangrijk}}{blue}
+\mitaa@callout{caution}{\mitaa@word{Caution}{Let op}}{red}
+
+% --- Quote with attribution -----------------------------------------------------
+% \begin{quote}[--- Author, p.~12] … \end{quote}: the attribution flush right.
+\RenewDocumentEnvironment{quote}{o}
+  {\list{}{\rightmargin\leftmargin}\item\relax}
+  {\IfValueT{#1}{\par\nopagebreak\smallskip{\raggedleft\small #1\par}}\endlist}
+
+% --- Maths ----------------------------------------------------------------------
+% The site's KaTeX macros (KATEX_MACROS in src/lib/blog/katex.ts), so a post that
+% writes $x \in \R$ or \abs{x} compiles to the same thing. \ce{} and \pu{} come
+% from mhchem on both sides.
+\RequirePackage{amssymb}
+\RequirePackage[version=4]{mhchem}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\eps}{\varepsilon}
+\newcommand{\dd}{\,\mathrm{d}}
+\newcommand{\abs}[1]{\left|#1\right|}
+\newcommand{\norm}[1]{\left\lVert#1\right\rVert}
+\newcommand{\set}[1]{\left\{#1\right\}}
+\newcommand{\vect}[1]{\boldsymbol{#1}}
+\newcommand{\unit}[1]{\,\mathrm{#1}}
+
+% --- Bar chart ------------------------------------------------------------------
+% \begin{barchart}[ylabel={$\sigma$ (ms)}, series={met systeem, zonder}]
+% Marketing & 66 & 139 \\
+% \end{barchart}
+\pgfkeys{/mitaa/barchart/.cd,
+  ylabel/.store in=\mitaa@ylabel, ylabel={},
+  series/.store in=\mitaa@series, series={}}
+\NewDocumentEnvironment{barchart}{O{} +b}{%
+  \pgfkeys{/mitaa/barchart/.cd,#1}%
+  \pgfplotstableread[col sep=ampersand, row sep=\\, header=false]{#2}\mitaa@table
+  \pgfplotstablegetcolsof{\mitaa@table}%
+  \pgfmathtruncatemacro{\mitaa@last}{\pgfplotsretval-1}%
+  \begin{center}
+  \begin{tikzpicture}
+    \begin{axis}[ybar, ymin=0, width=\linewidth, height=6cm,
+        bar width=8pt, enlarge x limits=0.12,
+        ylabel={\mitaa@ylabel},
+        xtick=data, xticklabels from table={\mitaa@table}{0},
+        xticklabel style={font=\small},
+        legend style={at={(1,1)}, anchor=north east, draw=none, font=\small},
+        legend cell align=left,
+        cycle list={{fill=blue!70!black, draw=none}, {fill=gray!60, draw=none},
+                    {fill=orange!80!black, draw=none}, {fill=teal, draw=none}}]
+      \pgfplotsinvokeforeach{1,...,\mitaa@last}{%
+        \addplot table[x expr=\coordindex, y index=##1]{\mitaa@table};}
+      \ifx\mitaa@series\@empty\else
+        \expandafter\legend\expandafter{\mitaa@series}%
+      \fi
+    \end{axis}
+  \end{tikzpicture}
+  \end{center}}{}
+
+% --- Code -----------------------------------------------------------------------
+% `title=` is the file name over a listing (unnumbered); `caption=` numbers it.
+\lstalias[]{latex}[LaTeX]{TeX}
+% A Mermaid diagram is a listing in the PDF — LaTeX cannot draw it, the site
+% does (pele). The language only has to exist; it colours nothing.
+\lstdefinelanguage{mermaid}{}
+\lstset{basicstyle=\ttfamily\small, columns=fullflexible, keepspaces=true,
+  numbers=left, numberstyle=\tiny\color{gray}, frame=single, rulecolor=\color{gray!40},
+  breaklines=true, upquote=true}
+% minted needs -shell-escape and Pygments; without minted loaded, a minted
+% block falls back to listings (its options are ignored).
+\@ifpackageloaded{minted}{}{%
+  \lstnewenvironment{minted}[2][]{\lstset{language=#2}}{}}
+
+% --- Images ---------------------------------------------------------------------
+% The site serves images from public/ and a post names them from the site root:
+% \includegraphics{/blog/<post>/scope.png}. Here the leading slash is dropped
+% and public/ is on the search path (blog:check puts it on TEXINPUTS), so the
+% same line finds the same file.
+\NewCommandCopy{\mitaa@includegraphics}{\includegraphics}
+\def\mitaa@setfile#1#2\@nil{\ifx/#1\def\mitaa@file{#2}\else\def\mitaa@file{#1#2}\fi}
+\RenewDocumentCommand{\includegraphics}{s O{} m}{%
+  \mitaa@setfile#3\@nil
+  \IfBooleanTF{#1}{\mitaa@includegraphics*[#2]{\mitaa@file}}{\mitaa@includegraphics[#2]{\mitaa@file}}}
+
+% --- Bibliography ---------------------------------------------------------------
+% The site prints the list where thebibliography stands; \printbibliography is
+% only what it calls that place internally.
+\providecommand{\printbibliography}{}
+
+\endinput

@@ -1,0 +1,152 @@
+% =====================================================================
+%  Report — free LaTeX template by mitaa.dev
+%  Compile with pdfLaTeX + Biber (Overleaf does this for you).
+%  Locally:  latexmk -pdf main.tex
+% =====================================================================
+\documentclass[11pt, a4paper]{article}
+\input{setup}
+
+% --- Details: fill these in -------------------------------------------
+\doctitle{The Title of Your Report}
+\docsubtitle{A subtitle that says what was studied or built}
+\docauthors{First Last (1234567) \\ Second Student (7654321)}
+\docprogramme{Degree programme}
+\doccourse{Course or project name}
+\docsupervisor{Lecturer's name}
+\docinstitution{University or college}
+\docversion{1.0}
+\docdate{\today}
+
+\begin{document}
+
+\maketitlepage
+
+% --- Front matter: Roman page numbers -------------------------------------
+\pagenumbering{roman}
+
+\section*{Summary}
+Summarise the whole report in one paragraph of 150 to 250 words: the aim,
+the approach, the main results and the conclusion. Write it last; anyone
+who reads only the summary should know what you found.
+
+\tableofcontents
+\clearpage
+
+% --- Main text: Arabic page numbers -----------------------------------------
+\pagenumbering{arabic}
+
+% ---------------------------------------------------------------------
+\section{Introduction}
+\label{sec:introduction}
+% ---------------------------------------------------------------------
+Describe the background: why was this report written, and for whom? Then
+state the aim in one sentence and, if there is one, the question you
+answer.
+
+\subsection{Aim}
+The aim of this report is \ldots{} Make the aim measurable, so that
+\cref{sec:conclusion} can show whether it was met.
+
+\subsection{Outline}
+\Cref{sec:theory} gives the background, \cref{sec:method} describes the
+method and \cref{sec:results} the results. These are discussed in
+\cref{sec:discussion}, after which \cref{sec:conclusion} concludes.
+
+% ---------------------------------------------------------------------
+\section{Theoretical background}
+\label{sec:theory}
+% ---------------------------------------------------------------------
+Explain the concepts and formulas the reader needs to follow the rest, and
+cite your sources \parencite{lamport1994}. A numbered equation looks like
+this:
+\begin{equation}
+  \label{eq:ohm}
+  U = I \cdot R
+\end{equation}
+where $U$ is the voltage in volts, $I$ the current in amperes and $R$ the
+resistance in ohms. In the text you refer to it as \cref{eq:ohm}.
+
+% ---------------------------------------------------------------------
+\section{Method}
+\label{sec:method}
+% ---------------------------------------------------------------------
+Describe your work precisely enough that someone else could repeat it.
+
+\subsection{Materials}
+\begin{itemize}
+  \item an adjustable power supply from \qty{0}{\volt} to \qty{30}{\volt};
+  \item a multimeter with an accuracy of \qty{0.5}{\percent};
+  \item resistors from \qty{100}{\ohm} to \qty{10}{\kilo\ohm}.
+\end{itemize}
+
+\subsection{Procedure}
+\begin{enumerate}
+  \item Build the circuit following the diagram in \cref{fig:setup}.
+  \item Set the voltage and read the current.
+  \item Repeat the measurement three times and record the mean.
+\end{enumerate}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.6\linewidth]{example-image-a}
+  \caption{The measurement set-up. Replace this example with your own
+    image in the \texttt{figures/} folder.}
+  \label{fig:setup}
+\end{figure}
+
+% ---------------------------------------------------------------------
+\section{Results}
+\label{sec:results}
+% ---------------------------------------------------------------------
+Present the results without explaining them yet. \Cref{tab:measurements}
+gives the measured values; the raw data are in \cref{app:data}.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Measured current at different voltages.}
+  \label{tab:measurements}
+  \begin{tabular}{S[table-format=2.1] S[table-format=3.1] S[table-format=1.2]}
+    \toprule
+    {Voltage (\si{\volt})} & {Current (\si{\milli\ampere})} & {Deviation (\si{\percent})} \\
+    \midrule
+     5.0 &  49.8 & 0.40 \\
+    10.0 & 100.3 & 0.30 \\
+    15.0 & 149.1 & 0.60 \\
+    20.0 & 200.6 & 0.30 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+% ---------------------------------------------------------------------
+\section{Discussion}
+\label{sec:discussion}
+% ---------------------------------------------------------------------
+Explain what the results mean. Do they agree with the theory in
+\cref{sec:theory}? Which sources of error play a part, and how reliable
+are the measurements? Be honest about what could be better.
+
+% ---------------------------------------------------------------------
+\section{Conclusion and recommendations}
+\label{sec:conclusion}
+% ---------------------------------------------------------------------
+Answer the aim from \cref{sec:introduction} in a few sentences, without
+new information. Close with concrete recommendations: what should happen,
+by whom, and why?
+
+\printbibliography[title={References}, heading=bibintoc]
+
+% --- Appendices -------------------------------------------------------------
+\clearpage
+\appendix
+
+\section{Measurement data}
+\label{app:data}
+Put data here that would make the main text too long: raw measurements,
+full tables or extended calculations.
+
+\section{Calculations}
+Work through an example calculation step by step, for instance with
+\cref{eq:ohm}: at $U = \qty{10}{\volt}$ and $R = \qty{100}{\ohm}$,
+$I = U / R = \qty{0.1}{\ampere}$.
+
+\end{document}

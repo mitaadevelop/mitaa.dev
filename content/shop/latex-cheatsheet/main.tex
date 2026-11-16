@@ -1,0 +1,444 @@
+% =====================================================================
+%  LaTeX cheat sheet — free download from mitaa.dev
+%  Two A4 pages in landscape, three columns. Compile with pdfLaTeX:
+%    latexmk -pdf main.tex
+% =====================================================================
+\documentclass[8pt, a4paper]{extarticle}
+
+% --- Page and fonts -------------------------------------------------------
+\usepackage[a4paper, landscape, margin=1cm, top=0.9cm, bottom=1.1cm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+\usepackage{libertinus}
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage[varqu, varl]{inconsolata}  % code font with straight quotes
+\usepackage{microtype}
+\usepackage{amsmath, amssymb}
+\usepackage{multicol}
+\setlength{\columnsep}{1.4em}
+\setlength{\columnseprule}{0pt}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.25em}
+\pagestyle{empty}
+
+% --- Colour ----------------------------------------------------------------
+\usepackage{xcolor}
+\definecolor{accent}{HTML}{1F5FA8}
+\definecolor{subtle}{HTML}{6B7280}
+\definecolor{codebg}{HTML}{F3F5F9}
+
+% --- Code -------------------------------------------------------------------
+\usepackage{listings}
+\lstset{
+  language=[LaTeX]TeX,
+  basicstyle=\ttfamily\small,
+  texcsstyle=*\color{accent},
+  commentstyle=\color{subtle},
+  backgroundcolor=\color{codebg},
+  frame=none, framesep=0pt,
+  xleftmargin=0.4em, xrightmargin=0.4em,
+  aboveskip=0.35em, belowskip=0.35em,
+  columns=fullflexible, keepspaces=true,
+  showstringspaces=false, breaklines=true,
+  moretexcs={maketitle,tableofcontents,includegraphics,caption,label,
+    toprule,midrule,bottomrule,addbibresource,printbibliography,parencite,
+    textcite,cref,qty,num,unit,enquote,item,centering,href,url,text},
+}
+
+% --- Building blocks ----------------------------------------------------------
+% A section of the sheet: a coloured band with its title.
+\newcommand{\sheetsection}[1]{%
+  \par\vspace{0.55em}%
+  \noindent\colorbox{accent}{%
+    \makebox[\dimexpr\linewidth-2\fboxsep][l]{%
+      \color{white}\bfseries\normalsize #1}}\par\vspace{0.2em}}
+% A small heading inside a section.
+\newcommand{\sheetsub}[1]{\par\vspace{0.15em}{\bfseries\color{accent}#1}\par}
+% Two-column tables: code on the left, meaning or result on the right.
+\newenvironment{cmds}[1][0.46]
+  {\par\noindent\renewcommand{\arraystretch}{1.12}\setlength{\tabcolsep}{0pt}%
+   \begin{tabular}{@{}p{#1\linewidth}@{\hspace{0.6em}}p{\dimexpr\linewidth-#1\linewidth-0.6em\relax}@{}}}
+  {\end{tabular}\par}
+% Grey notes are written {\color{subtle} ...}: a group, so \verb works inside.
+
+\begin{document}
+
+% --- Title band ----------------------------------------------------------------
+\noindent
+\begin{minipage}[b]{0.62\linewidth}
+  {\fontsize{22}{24}\selectfont\bfseries LaTeX cheat sheet}\par\vspace{0.25em}
+  {\large\color{subtle}The commands you need for essays, reports and research}
+\end{minipage}%
+\hfill
+\begin{minipage}[b]{0.36\linewidth}
+  \raggedleft\color{subtle}
+  Compile with \textbf{\color{black}pdfLaTeX} (+ \textbf{\color{black}Biber} for references)\\
+  Free from \textbf{\color{accent}mitaa.dev/shop/latex-templates}
+\end{minipage}\par
+\vspace{0.3em}{\color{accent}\rule{\linewidth}{1.2pt}}
+\vspace{-0.6em}
+
+\begin{multicols*}{3}
+\raggedright
+
+% =====================================================================
+\sheetsection{Document skeleton}
+\begin{lstlisting}
+\documentclass[11pt, a4paper]{article}
+\usepackage[english]{babel}
+\usepackage{graphicx, amsmath}
+
+\title{My Report}
+\author{First Last}
+\date{\today}
+
+\begin{document}
+\maketitle
+\tableofcontents
+
+\section{Introduction}
+Text goes here.  % a comment
+
+\end{document}
+\end{lstlisting}
+
+\sheetsub{Document classes}
+\begin{cmds}[0.3]
+\verb|article| & essays, papers, short reports \\
+\verb|report|  & longer reports with chapters \\
+\verb|book|    & books, theses (two-sided) \\
+\verb|beamer|  & presentation slides \\
+\end{cmds}
+{\color{subtle}Options: \texttt{11pt}, \texttt{a4paper}, \texttt{twocolumn}, \texttt{landscape}, \texttt{oneside}.}
+
+% =====================================================================
+\sheetsection{Structure}
+\begin{cmds}
+\verb|\chapter{...}|        & chapter (\texttt{report}, \texttt{book}) \\
+\verb|\section{...}|        & 1 \quad Section \\
+\verb|\subsection{...}|     & 1.1 \quad Subsection \\
+\verb|\subsubsection{...}|  & 1.1.1 \quad Subsubsection \\
+\verb|\paragraph{...}|      & run-in paragraph heading \\
+\verb|\section*{...}|       & no number, not in contents \\
+\verb|\tableofcontents|     & contents (compile twice) \\
+\verb|\listoffigures|       & list of figures \\
+\verb|\appendix|            & sections become A, B, \ldots \\
+\verb|\newpage|             & start a new page \\
+\verb|\clearpage|           & new page, place waiting floats \\
+\end{cmds}
+
+% =====================================================================
+\sheetsection{Text}
+\begin{cmds}
+\verb|\textbf{bold}|          & \textbf{bold} \\
+\verb|\textit{italic}|        & \textit{italic} \\
+\verb|\emph{emphasis}|        & \emph{emphasis} \\
+\verb|\underline{under}|      & \underline{under} \\
+\verb|\texttt{mono}|          & \texttt{mono} \\
+\verb|\textsc{Small Caps}|    & \textsc{Small Caps} \\
+\verb|x\textsuperscript{2}|   & x\textsuperscript{2} \\
+\verb|H\textsubscript{2}O|    & H\textsubscript{2}O \\
+\end{cmds}
+
+\columnbreak
+\sheetsub{Text sizes}
+\verb|\tiny| \verb|\scriptsize| \verb|\footnotesize| \verb|\small| \verb|\normalsize| \verb|\large| \verb|\Large| \verb|\LARGE| \verb|\huge| \verb|\Huge| {\color{subtle}— use in a group: \verb|{\small text}|}
+
+\sheetsub{Text alignment}
+\verb|\begin{center}|, \verb|flushleft|, \verb|flushright|; inside a float use \verb|\centering|.
+
+\sheetsub{Spacing and breaks}
+\begin{cmds}
+\verb|\\|            & line break \\
+blank line           & new paragraph \\
+\verb|~|             & non-breaking space: \verb|Fig.~3| \\
+\verb|\vspace{1em}|  & vertical space \\
+\verb|\hspace{1em}|  & horizontal space \\
+\end{cmds}
+
+% =====================================================================
+\sheetsection{Special characters}
+\begin{cmds}[0.5]
+\verb|\% \$ \& \# \_ \{ \}| & \% \$ \& \# \_ \{ \} \\
+\verb|\textbackslash|       & \textbackslash \\
+\verb|\textasciitilde|      & \textasciitilde \\
+\verb|\textasciicircum|     & \textasciicircum \\
+\verb|``quote''|            & ``quote'' \\
+\verb|\enquote{quote}|      & ``quote'' \quad {\color{subtle}(\texttt{csquotes})} \\
+\verb|- -- ---|             & hyphen - , range 1--5, dash --- \\
+\verb|\ldots|               & ellipsis \ldots \\
+\verb|\texteuro{} \textdegree{}| & € \quad ° \\
+\end{cmds}
+{\color{subtle}\texttt{\%} starts a comment: the rest of the line is ignored.}
+
+% =====================================================================
+\sheetsection{Lists}
+\begin{lstlisting}
+\begin{itemize}          % bullets
+  \item First point
+  \item Second point
+\end{itemize}
+\begin{enumerate}        % 1. 2. 3.
+  \item Step one
+  \item Step two
+\end{enumerate}
+\begin{description}      % labelled
+  \item[Term] Definition
+\end{description}
+\end{lstlisting}
+{\color{subtle}Lists nest up to four levels. With \texttt{enumitem}: \verb|\begin{enumerate}[label=(\alph*)]| and \verb|[nosep]| for tight lists.}
+
+% =====================================================================
+\sheetsection{Figures}
+\begin{lstlisting}
+\usepackage{graphicx}        % in the preamble
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.8\linewidth]{photo.png}
+  \caption{What the reader should see.}
+  \label{fig:photo}
+\end{figure}
+\end{lstlisting}
+\begin{cmds}[0.4]
+\verb|width=0.5\linewidth| & half the text width \\
+\verb|height=4cm|          & fixed height \\
+\verb|scale=0.5|, \verb|angle=90| & scale, rotate \\
+\verb|[htbp]|              & here, top, bottom, own page \\
+\verb|[H]| {\color{subtle}(\texttt{float})} & exactly here \\
+\end{cmds}
+{\color{subtle}Put \verb|\label| after \verb|\caption|, or the number is wrong. Images: PDF, PNG or JPG; \verb|\graphicspath{{figures/}}| sets the folder.}
+
+% =====================================================================
+\sheetsection{Tables}
+\begin{lstlisting}
+\usepackage{booktabs}        % in the preamble
+\begin{table}[htbp]
+  \centering
+  \caption{Results per group.}
+  \label{tab:results}
+  \begin{tabular}{l c r}
+    \toprule
+    Group & Size & Mean \\
+    \midrule
+    A     & 40   & 3.82 \\
+    B     & 42   & 3.47 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+\end{lstlisting}
+\begin{cmds}[0.38]
+\verb|l c r|               & left, centred, right column \\
+\verb|p{4cm}|              & wrapping column, 4\,cm wide \\
+\verb#|#                   & vertical line (avoid with booktabs) \\
+\verb|&|, \verb|\\|        & next cell, next row \\
+\verb|\multicolumn{2}{c}{x}| & cell spanning two columns \\
+\verb|\cmidrule{2-3}|      & partial rule (booktabs) \\
+\end{cmds}
+{\color{subtle}Captions go \emph{above} tables and \emph{below} figures.}
+
+% =====================================================================
+\sheetsection{Math mode}
+\begin{cmds}[0.42]
+\verb|$E = mc^2$|          & inline: $E = mc^2$ \\
+\verb|\[ E = mc^2 \]|      & displayed, no number \\
+\verb|\begin{equation}|    & displayed, numbered (1) \\
+\verb|\text{if } x > 0|    & words inside math \\
+\end{cmds}
+\begin{lstlisting}
+\begin{align}               % aligned at &
+  f(x) &= (x + 1)^2 \\
+       &= x^2 + 2x + 1 \notag
+\end{align}
+\end{lstlisting}
+
+\columnbreak
+\sheetsub{Math notation}
+\begin{cmds}[0.5]
+\verb|x^{2}|, \verb|x_{i}|        & $x^{2}$, $x_{i}$ \\
+\verb|\frac{a}{b}|               & $\frac{a}{b}$ \\
+\verb|\sqrt{x}|, \verb|\sqrt[3]{x}| & $\sqrt{x}$, $\sqrt[3]{x}$ \\
+\verb|\sum_{i=1}^{n} x_i|         & $\sum_{i=1}^{n} x_i$ \\
+\verb|\int_{a}^{b} f(x)\,dx|      & $\int_{a}^{b} f(x)\,dx$ \\
+\verb|\lim_{x \to 0}|             & $\lim_{x \to 0}$ \\
+\verb|\vec{v}|, \verb|\hat{x}|, \verb|\bar{x}| & $\vec{v}$, $\hat{x}$, $\bar{x}$ \\
+\verb|\dot{x}|, \verb|\ddot{x}|   & $\dot{x}$, $\ddot{x}$ \\
+\verb|\left( \frac{a}{b} \right)| & $\left( \frac{a}{b} \right)$ \\
+\verb|\sin \cos \tan \log \ln \exp| & $\sin \cos \tan \log \ln \exp$ \\
+\verb|\mathbb{R}|, \verb|\mathrm{d}x| & $\mathbb{R}$, $\mathrm{d}x$ \\
+\end{cmds}
+
+\sheetsub{Operators and relations}
+\begin{cmds}[0.5]
+\verb|\cdot \times \div \pm|      & $\cdot \quad \times \quad \div \quad \pm$ \\
+\verb|\leq \geq \neq \approx|     & $\leq \quad \geq \quad \neq \quad \approx$ \\
+\verb|\equiv \propto \sim \ll|    & $\equiv \quad \propto \quad \sim \quad \ll$ \\
+\verb|\to \Rightarrow \iff|       & $\to \quad \Rightarrow \quad \iff$ \\
+\verb|\in \subset \cup \cap|      & $\in \quad \subset \quad \cup \quad \cap$ \\
+\verb|\forall \exists \infty \partial| & $\forall \quad \exists \quad \infty \quad \partial$ \\
+\verb|\nabla \angle \degree|      & $\nabla \quad \angle \quad {}^\circ$ {\color{subtle}(\verb|^\circ|)} \\
+\end{cmds}
+
+\sheetsub{Greek letters}
+{\renewcommand{\arraystretch}{1.12}\setlength{\tabcolsep}{0pt}%
+\begin{tabular}{@{}*{4}{p{0.25\linewidth}}@{}}
+$\alpha$ \verb|\alpha|   & $\beta$ \verb|\beta|     & $\gamma$ \verb|\gamma|   & $\delta$ \verb|\delta| \\
+$\epsilon$ \verb|\epsilon| & $\varepsilon$ \verb|\varepsilon| & $\zeta$ \verb|\zeta| & $\eta$ \verb|\eta| \\
+$\theta$ \verb|\theta|   & $\lambda$ \verb|\lambda| & $\mu$ \verb|\mu|         & $\nu$ \verb|\nu| \\
+$\xi$ \verb|\xi|         & $\pi$ \verb|\pi|         & $\rho$ \verb|\rho|       & $\sigma$ \verb|\sigma| \\
+$\tau$ \verb|\tau|       & $\phi$ \verb|\phi|       & $\varphi$ \verb|\varphi| & $\omega$ \verb|\omega| \\
+$\Gamma$ \verb|\Gamma|   & $\Delta$ \verb|\Delta|   & $\Sigma$ \verb|\Sigma|   & $\Omega$ \verb|\Omega| \\
+\end{tabular}\par}
+
+\sheetsub{Matrices and cases}
+\begin{lstlisting}
+\begin{pmatrix} a & b \\ c & d \end{pmatrix}
+f(x) = \begin{cases}
+  0 & \text{if } x < 0 \\
+  1 & \text{otherwise}
+\end{cases}
+\end{lstlisting}
+{\color{subtle}\texttt{bmatrix} gives [ ], \texttt{vmatrix} a determinant $|\,|$.}
+
+% =====================================================================
+\sheetsection{Numbers and units}
+\begin{cmds}[0.5]
+\verb|\usepackage{siunitx}|                & in the preamble \\
+\verb|\qty{340}{\metre\per\second}| & 340\,m/s \\
+\verb|\qty{4.7}{\kilo\ohm}|               & 4.7\,k$\Omega$ \\
+\verb|\num{12345.678}|                    & 12\,345.678 \\
+\verb|\unit{\milli\ampere}|               & mA \\
+\verb|\qtyrange{10}{20}{\celsius}|        & 10\,°C to 20\,°C \\
+\end{cmds}
+{\color{subtle}Table column type \texttt{S} aligns numbers on the decimal point.}
+
+% =====================================================================
+\columnbreak
+\sheetsection{Cross-references}
+\begin{cmds}[0.44]
+\verb|\label{sec:method}|  & mark a section, figure, table, equation \\
+\verb|\ref{fig:photo}|     & its number: 3 \\
+\verb|\eqref{eq:ohm}|      & equation number in brackets: (2) \\
+\verb|\pageref{tab:results}| & its page \\
+\verb|\cref{fig:photo}|    & word and number: figure 3 \\
+\end{cmds}
+{\color{subtle}Prefix labels by type (\texttt{sec:}, \texttt{fig:}, \texttt{tab:}, \texttt{eq:}). Load \texttt{hyperref}, then \texttt{cleveref}, last. Compile twice to update numbers.}
+
+% =====================================================================
+\sheetsection{References (BibLaTeX, APA)}
+\begin{lstlisting}
+\usepackage[style=apa, backend=biber]{biblatex}
+\addbibresource{references.bib}
+...
+As \textcite{knuth1984} shows \ldots
+\ldots{} in print \parencite[p.~12]{knuth1984}.
+\printbibliography
+\end{lstlisting}
+\begin{cmds}[0.42]
+\verb|\textcite{key}|          & Knuth (1984) \\
+\verb|\parencite{key}|         & (Knuth, 1984) \\
+\verb|\parencite[p.~12]{key}|  & (Knuth, 1984, p.\,12) \\
+\end{cmds}
+\sheetsub{An entry in references.bib}
+\begin{lstlisting}[language={}]
+@book{knuth1984,
+  author    = {Knuth, Donald E.},
+  title     = {The TeXbook},
+  publisher = {Addison-Wesley},
+  year      = {1984},
+}
+\end{lstlisting}
+{\color{subtle}Other types: \texttt{@article}, \texttt{@online} (with \texttt{url}, \texttt{urldate}), \texttt{@inproceedings}, \texttt{@thesis}. Google Scholar's ``Cite'' $\to$ BibTeX gives you an entry to paste.}
+
+% =====================================================================
+\sheetsection{Footnotes and links}
+\begin{cmds}[0.52]
+\verb|\footnote{More detail.}|        & numbered footnote \\
+\verb|\url{https://mitaa.dev}|        & a printed web address \\
+\verb|\href{https://mitaa.dev}{site}| & a link with your own text \\
+\end{cmds}
+{\color{subtle}Load \verb|\usepackage[hidelinks]{hyperref}| to make references, the contents and URLs clickable.}
+
+% =====================================================================
+\sheetsection{Page layout}
+\begin{cmds}[0.55]
+\verb|\usepackage[margin=2.5cm]{geometry}| & page margins \\
+\verb|\usepackage{parskip}|  & blank line between paragraphs \\
+\verb|\usepackage{setspace}| & then \verb|\onehalfspacing| \\
+\verb|\pagenumbering{roman}| & i, ii, iii (\verb|arabic| for 1, 2, 3) \\
+\verb|\thispagestyle{empty}| & no page number on this page \\
+\end{cmds}
+\sheetsub{Headers and footers (fancyhdr)}
+\begin{lstlisting}
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}                       % clear all
+\fancyhead[L]{My Report}
+\fancyfoot[R]{\thepage}
+\end{lstlisting}
+
+% =====================================================================
+\columnbreak
+\sheetsection{Your own commands}
+\begin{lstlisting}
+\newcommand{\R}{\mathbb{R}}       % $x \in \R$
+\newcommand{\abs}[1]{\left|#1\right|}
+\renewcommand{\figurename}{Fig.}
+\end{lstlisting}
+{\color{subtle}\verb|#1| is the first argument; up to nine are allowed.}
+
+% =====================================================================
+\sheetsection{Colour and code}
+\begin{cmds}[0.55]
+\verb|\usepackage{xcolor}|            & colours \\
+\verb|\textcolor{blue}{text}|          & \textcolor{blue}{text} \\
+\verb|\definecolor{brand}{HTML}{1F5FA8}| & your own colour \\
+\verb|\usepackage{listings}|           & code listings \\
+\end{cmds}
+{\color{subtle}Code: \verb|\begin{lstlisting}[language=Python]| \ldots{} \verb|\end{lstlisting}|.}
+
+% =====================================================================
+\sheetsection{Handy packages}
+\begin{cmds}[0.3]
+\texttt{amsmath}   & equations, \texttt{align}, matrices \\
+\texttt{graphicx}  & images \\
+\texttt{subcaption} & figures side by side \\
+\texttt{booktabs}  & clean tables \\
+\texttt{siunitx}   & numbers and units \\
+\texttt{biblatex}  & references \\
+\texttt{hyperref}  & links (load late) \\
+\texttt{cleveref}  & ``figure 3'' references (load last) \\
+\texttt{tikz}      & diagrams \\
+\texttt{pgfplots}  & graphs from data \\
+\end{cmds}
+
+% =====================================================================
+\sheetsection{Errors and what they mean}
+\begin{cmds}[0.4]
+\textbf{Undefined control sequence} & typo, or the package is not loaded \\
+\textbf{Missing \$ inserted}        & \verb|_| or \verb|^| outside math: use \verb|\_| or \verb|$x^2$| \\
+\textbf{File \ldots{} not found}    & wrong file name or folder \\
+\textbf{Citation \ldots{} undefined} & run Biber, or the key is misspelt \\
+\textbf{Misplaced alignment tab \&} & write \verb|\&| outside tables \\
+\textbf{Overfull \textbackslash hbox} & a line sticks out: rephrase it \\
+\textbf{Runaway argument}           & a \verb|}| is missing \\
+\end{cmds}
+{\color{subtle}Read the \emph{first} error in the log: the rest usually follow from it.}
+
+% =====================================================================
+\sheetsection{Compiling}
+\begin{cmds}[0.48]
+\verb|latexmk -pdf main.tex| & runs everything as often as needed \\
+\verb|latexmk -pvc -pdf main.tex| & rebuild on every save \\
+\verb|latexmk -c|            & remove the helper files \\
+\textcolor{subtle}{by hand}               & pdflatex, biber, pdflatex twice \\
+\end{cmds}
+{\color{subtle}On Overleaf: \textbf{Recompile} (Ctrl/Cmd + S) does all of this for you.}
+
+\vfill
+\vspace{0.6em}
+{\color{accent}\rule{\linewidth}{0.6pt}}\par
+\small\color{subtle}
+\textbf{\color{accent}mitaa.dev} — free LaTeX templates for essays, reports and research at \textbf{mitaa.dev/shop/latex-templates}. Print it, share it, don't sell it.
+
+\end{multicols*}
+\end{document}

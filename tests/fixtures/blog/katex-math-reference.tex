@@ -1,0 +1,573 @@
+\title{Writing Mathematics on This Blog}
+\date{2026-09-18}
+\excerpt{Every KaTeX feature this blog supports — inline and display math, matrices, alignment, chemistry, macros — plus the exact escaping rules for writing them.}
+\tags{Reference, Math, KaTeX}
+\paginate{always}
+
+\begin{document}
+
+Mathematics on this blog is rendered with \href{https://katex.org}{KaTeX} at build time. There is no client-side JavaScript involved: by the time a page reaches your browser the formulas are already plain HTML, with a MathML copy alongside them so screen readers can read them out.
+
+This post is both a reference and a test fixture. It is deliberately long and split across thirteen chapters, so it also exercises the chapter pagination this blog uses for longer reports. Use the arrow keys to move between chapters.
+
+\section{How to write math here}
+
+There are three ways to write a formula.
+
+\textbf{Inline math} goes between single dollar signs and flows with the text: $E = mc^2$, or $\eps > 0$, or the claim that $\forall x \in \R : x^2 \ge 0$.
+
+\textbf{Display math} goes between double dollar signs \emph{on their own lines}, with a blank line before and after:
+
+\[
+\int_{-\infty}^{\infty} e^{-x^2}\,\dd x = \sqrt{\pi}
+\]
+
+\textbf{A fenced \texttt{math} block} does exactly the same thing and is the safer choice when a formula contains a dollar sign, or when you are writing inside a list:
+
+\[
+\lim_{n \to \infty} \left(1 + \frac{1}{n}\right)^n = e
+\]
+
+\subsection{The one rule that bites everyone}
+
+\texttt{\$\$…\$\$} written on a \emph{single} line is not display math — it is inline math with doubled delimiters. That matters because several commands only work in display mode. Writing \texttt{\$\$x \textbackslash{}tag\{1\}\$\$} all on one line produces the error:
+
+\begin{quote}
+KaTeX parse error: \textbackslash{}tag works only in display equations
+\end{quote}
+
+Put the \texttt{\$\$} on their own lines, or use \texttt{\textbackslash{}[ … \textbackslash{}]}, and it works.
+
+\subsection{Escaping rules}
+
+Math is the one place in a post where LaTeX's own escaping rules apply unchanged, because the content between the delimiters is handed to KaTeX verbatim. These are the rules worth knowing.
+
+\begin{tabular}{ll}
+\hline
+Situation & What to write \\
+\hline
+A literal dollar amount & \texttt{\textbackslash{}\$5 to \textbackslash{}\$10}, or the text between them becomes math \\
+A percent sign & \texttt{\textbackslash{}\%} — a bare \texttt{\%} starts a comment and eats the rest of the line \\
+A hash & \texttt{\textbackslash{}\#} — a bare \texttt{\#} marks a macro parameter \\
+An ampersand outside math & \texttt{\textbackslash{}\&} — a bare \texttt{\&} separates table columns \\
+An underscore outside math & \texttt{\textbackslash{}\_} \\
+Math inside a \texttt{tabular} cell & Keep it to a single expression; an \texttt{\&} inside it would end the cell \\
+Anything inside \texttt{verbatim} or \texttt{lstlisting} & Nothing. Listing contents are never interpreted \\
+Math in \texttt{\textbackslash{}title} or \texttt{\textbackslash{}excerpt} & Don't. Metadata never goes through the math pipeline \\
+\hline
+\end{tabular}
+
+So a price is written \texttt{\textbackslash{}\$5 to \textbackslash{}\$10} and renders as \$5 to \$10, while \texttt{\$5 to \$10} would silently become math.
+
+Inside a listing nothing is interpreted at all:
+
+\begin{lstlisting}[language=bash]
+echo $PATH        # still a shell variable
+export COST=$5    # still a dollar sign
+\end{lstlisting}
+
+\section{Fractions, roots and binomials}
+
+Inline fractions stay small: $\frac{1}{2}$, $\tfrac{3}{4}$. Use \texttt{\textbackslash\{\}dfrac} to force the display size inline: $\dfrac{1}{2}$.
+
+\[
+\frac{a}{b} \qquad \dfrac{a}{b} \qquad \tfrac{a}{b} \qquad \binom{n}{k} \qquad \dbinom{n}{k}
+\]
+
+Roots take an optional index:
+
+\[
+\sqrt{2} \qquad \sqrt[3]{x} \qquad \sqrt[n]{\frac{x^2 + 1}{x - 1}}
+\]
+
+Nested and continued fractions:
+
+\[
+\cfrac{1}{1 + \cfrac{1}{1 + \cfrac{1}{1 + \cdots}}} = \frac{\sqrt{5} - 1}{2}
+\]
+
+The quadratic formula, which is the "hello world" of typeset mathematics:
+
+\[
+x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}
+\]
+
+\section{Sums, products, integrals and limits}
+
+Limits sit under the operator in display mode and beside it inline. Compare $\sum_{i=1}^{n} i$ inline with:
+
+\[
+\sum_{i=1}^{n} i = \frac{n(n+1)}{2}
+\]
+
+Force the placement with \texttt{\textbackslash\{\}limits} and \texttt{\textbackslash\{\}nolimits}:
+
+\[
+\sum\nolimits_{i=1}^{n} a_i \qquad \int\limits_{0}^{1} f(x)\,\dd x
+\]
+
+The big operators:
+
+\[
+\sum \quad \prod \quad \coprod \quad \bigcup \quad \bigcap \quad \bigoplus \quad \bigotimes \quad \bigwedge \quad \bigvee
+\]
+
+Integrals, including the multiple and contour forms:
+
+\[
+\int f \quad \iint f \quad \iiint f \quad \oint_C \vect{F} \cdot \dd\vect{r} \quad \int_0^\infty \frac{\sin x}{x}\,\dd x = \frac{\pi}{2}
+\]
+
+Limits and the named operators:
+
+\[
+\lim_{x \to 0} \frac{\sin x}{x} = 1 \qquad \limsup_{n \to \infty} a_n \qquad \inf_{x \in S} f(x) \qquad \operatorname*{arg\,max}_{\theta} \; L(\theta)
+\]
+
+A multi-line subscript uses \texttt{\textbackslash\{\}substack}:
+
+\[
+\sum_{\substack{0 < i < m \\ 0 < j < n}} P(i, j)
+\]
+
+And \texttt{\textbackslash\{\}overset} / \texttt{\textbackslash\{\}underset} put material above or below anything:
+
+\[
+A \overset{f}{\longrightarrow} B \qquad \underset{n \to \infty}{\lim} a_n \qquad X \overset{\text{def}}{=} Y
+\]
+
+\section{Greek, symbols, relations and operators}
+
+The lowercase Greek alphabet, including the variant forms:
+
+\[
+\alpha\ \beta\ \gamma\ \delta\ \epsilon\ \varepsilon\ \zeta\ \eta\ \theta\ \vartheta\ \iota\ \kappa\ \varkappa\ \lambda\ \mu\ \nu\ \xi\ \pi\ \varpi\ \rho\ \varrho\ \sigma\ \varsigma\ \tau\ \upsilon\ \phi\ \varphi\ \chi\ \psi\ \omega
+\]
+
+The uppercase forms that differ from Latin letters:
+
+\[
+\Gamma\ \Delta\ \Theta\ \Lambda\ \Xi\ \Pi\ \Sigma\ \Upsilon\ \Phi\ \Psi\ \Omega
+\]
+
+Assorted symbols:
+
+\[
+\aleph\ \hbar\ \ell\ \wp\ \Re\ \Im\ \partial\ \nabla\ \infty\ \emptyset\ \varnothing\ \forall\ \exists\ \nexists\ \therefore\ \because\ \angle\ \triangle\ \square
+\]
+
+Relations:
+
+\[
+\le\ \ge\ \ne\ \approx\ \equiv\ \sim\ \simeq\ \cong\ \propto\ \ll\ \gg\ \prec\ \succ\ \subset\ \subseteq\ \supseteq\ \in\ \notin\ \mid\ \nmid\ \perp\ \parallel
+\]
+
+Binary operators:
+
+\[
+\times\ \div\ \pm\ \mp\ \cdot\ \ast\ \star\ \circ\ \bullet\ \oplus\ \ominus\ \otimes\ \oslash\ \odot\ \cup\ \cap\ \setminus\ \wedge\ \vee\ \triangleq
+\]
+
+Arrows:
+
+\[
+\to\ \rightarrow\ \Rightarrow\ \Leftrightarrow\ \leftrightarrow\ \mapsto\ \hookrightarrow\ \rightharpoonup\ \implies\ \iff\ \xrightarrow{\text{catalyst}}\ \xleftarrow[\text{below}]{\text{above}}
+\]
+
+Function names get upright type. KaTeX knows the standard ones, and \texttt{\textbackslash\{\}operatorname} defines any other:
+
+\[
+\sin x \quad \log_2 n \quad \gcd(a, b) \quad \operatorname{sinc}(x) \quad \operatorname{Var}(X) \quad \operatorname*{ess\,sup}_{t} f(t)
+\]
+
+\section{Matrices and arrays}
+
+Every bracket style has its own environment:
+
+\[
+\begin{matrix} a & b \\ c & d \end{matrix} \quad
+\begin{pmatrix} a & b \\ c & d \end{pmatrix} \quad
+\begin{bmatrix} a & b \\ c & d \end{bmatrix} \quad
+\begin{Bmatrix} a & b \\ c & d \end{Bmatrix} \quad
+\begin{vmatrix} a & b \\ c & d \end{vmatrix} \quad
+\begin{Vmatrix} a & b \\ c & d \end{Vmatrix}
+\]
+
+\texttt{smallmatrix} fits inline: the rotation $\left(\begin{smallmatrix} 0 & -1 \\ 1 & 0 \end{smallmatrix}\right)$ sits in a line of text without disturbing it.
+
+A general matrix uses the ellipsis commands:
+
+\[
+A = \begin{pmatrix}
+a_{11} & a_{12} & \cdots & a_{1n} \\
+a_{21} & a_{22} & \cdots & a_{2n} \\
+\vdots & \vdots & \ddots & \vdots \\
+a_{m1} & a_{m2} & \cdots & a_{mn}
+\end{pmatrix}
+\]
+
+\texttt{array} gives full control over column alignment and rules — note the \texttt{c|cc} specification and the \texttt{\textbackslash\{\}hline}:
+
+\[
+\left[\begin{array}{cc|c}
+1 & 0 & 3 \\
+0 & 1 & -2 \\
+\hline
+0 & 0 & 1
+\end{array}\right]
+\]
+
+A determinant, written with scaling delimiters:
+
+\[
+\det(A) = \left| \begin{array}{ccc}
+1 & 2 & 3 \\
+4 & 5 & 6 \\
+7 & 8 & 9
+\end{array} \right| = 0
+\]
+
+Row spacing can be opened up with \texttt{\textbackslash\{\}arraystretch}:
+
+\[
+\def\arraystretch{1.6}
+\begin{bmatrix} \frac{1}{2} & \frac{1}{3} \\ \frac{1}{4} & \frac{1}{5} \end{bmatrix}
+\]
+
+\section{Multi-line equations}
+
+\texttt{aligned} lines things up on the \texttt{\&} marks and is the workhorse:
+
+\[
+\begin{aligned}
+(a + b)^2 &= (a + b)(a + b) \\
+          &= a^2 + ab + ba + b^2 \\
+          &= a^2 + 2ab + b^2
+\end{aligned}
+\]
+
+\texttt{gathered} centres each line instead of aligning them:
+
+\[
+\begin{gathered}
+a = b + c \\
+d = e + f + g + h
+\end{gathered}
+\]
+
+\texttt{cases} handles piecewise definitions, and \texttt{rcases} puts the brace on the right:
+
+\[
+|x| = \begin{cases}
+  x, & x \ge 0 \\
+  -x, & x < 0
+\end{cases}
+\qquad
+\begin{rcases}
+  a = 1 \\
+  b = 2
+\end{rcases} \Rightarrow a + b = 3
+\]
+
+Extra vertical space goes in brackets after the line break, and \texttt{\textbackslash\{\}text} mixes prose into the alignment:
+
+\[
+\begin{aligned}
+\nabla \cdot \vect{E} &= \frac{\rho}{\varepsilon_0} && \text{Gauss's law} \\[6pt]
+\nabla \cdot \vect{B} &= 0 && \text{no magnetic monopoles} \\[6pt]
+\nabla \times \vect{E} &= -\frac{\partial \vect{B}}{\partial t} && \text{Faraday's law} \\[6pt]
+\nabla \times \vect{B} &= \mu_0 \vect{J} + \mu_0 \varepsilon_0 \frac{\partial \vect{E}}{\partial t} && \text{Ampère's law}
+\end{aligned}
+\]
+
+\section{Numbering and cross-references}
+
+\texttt{\textbackslash\{\}tag} attaches a number of your choosing to a display equation:
+
+\[
+V_{\text{out}} = V_{\text{in}} \cdot \frac{R_2}{R_1 + R_2} \tag{7.1}
+\]
+
+\texttt{\textbackslash\{\}tag*} suppresses the parentheses:
+
+\[
+P = I^2 R \tag*{\star}
+\]
+
+\subsection{What KaTeX cannot do — and what the blog adds}
+
+KaTeX is not a full LaTeX implementation. On its own it has no \texttt{\textbackslash\{\}label}, \texttt{\textbackslash\{\}ref} or \texttt{\textbackslash\{\}eqref}, no \texttt{\textbackslash\{\}newtheorem}, no \texttt{\textbackslash\{\}newenvironment}, and no figures or footnotes. The blog's own pipeline supplies the ones a post needs, around KaTeX rather than inside it:
+
+\begin{itemize}
+  \item numbered \texttt{equation} environments, with \texttt{\textbackslash\{\}label} and \texttt{\textbackslash\{\}eqref}
+  \item theorem, lemma, definition and proof environments
+  \item figures, tables and footnotes
+\end{itemize}
+
+\subsection{Numbered equations}
+
+An \texttt{equation} gets the next number on the post's equation counter, which runs through every chapter the way it runs through the pages of the PDF:
+
+\begin{equation}
+V_{\text{out}} = V_{\text{in}} \cdot \frac{R_2}{R_1 + R_2}
+\label{eq:divider}
+\end{equation}
+
+Give it a \texttt{\textbackslash\{\}label} and \texttt{\textbackslash\{\}eqref} points at it: the divider equation is \eqref{eq:divider}, and that link scrolls to it. \texttt{\textbackslash\{\}Cref} adds the word — \Cref{eq:divider}.
+
+For theorems there is no need to fake anything — this blog has real, numbered theorem environments. See \href{/blog/report-features-reference/theorems-definitions-and-proofs}{Writing a Report on This Blog}.
+
+\begin{theorem}[Nyquist–Shannon]
+A bandlimited signal containing no frequencies above $B$ hertz is completely determined by its samples taken at a rate $f_s > 2B$.
+\end{theorem}
+
+An equation with its own \texttt{\textbackslash\{\}tag} keeps that tag and does not take a number, as in LaTeX.
+
+\section{Text, fonts, colour and accents}
+
+Text commands keep normal spacing inside a formula:
+
+\[
+\text{if } x > 0 \text{ then } \sqrt{x} \in \R \qquad \textbf{bold} \quad \textit{italic} \quad \texttt{monospace} \quad \textsf{sans}
+\]
+
+Maths alphabets change the letterforms without changing the spacing:
+
+\[
+\mathrm{ABC} \quad \mathbf{ABC} \quad \mathit{ABC} \quad \mathbb{ABC} \quad \mathcal{ABC} \quad \mathfrak{ABC} \quad \mathscr{ABC} \quad \mathsf{ABC} \quad \mathtt{ABC} \quad \boldsymbol{\alpha\beta\gamma}
+\]
+
+Accents:
+
+\[
+\hat{a}\ \widehat{abc}\ \bar{a}\ \overline{abc}\ \vec{a}\ \overrightarrow{AB}\ \dot{a}\ \ddot{a}\ \tilde{a}\ \widetilde{abc}\ \check{a}\ \breve{a}\ \acute{a}\ \grave{a}\ \mathring{a}
+\]
+
+Braces that span and label a group:
+
+\[
+\underbrace{a + b + \cdots + z}_{26 \text{ terms}} \qquad \overbrace{x + x + x}^{3x}
+\]
+
+Boxes, strikes and negations:
+
+\[
+\underline{abc} \quad \boxed{E = mc^2} \quad \cancel{5} \quad \bcancel{5} \quad \xcancel{5} \quad \text{\sout{abc}} \quad \not=
+\]
+
+Colour is available, but use it sparingly:
+
+\[
+\textcolor{teal}{a} + \textcolor{orange}{b} = \textcolor{purple}{c}
+\]
+
+A warning about that: a colour written into a formula is a fixed value, so it does not follow the light and dark themes the way the rest of the text does. Everything KaTeX renders without an explicit colour inherits the surrounding text colour and flips correctly. Prefer that.
+
+\section{Delimiters, spacing and layout}
+
+\texttt{\textbackslash\{\}left} and \texttt{\textbackslash\{\}right} scale a delimiter pair to their contents, and \texttt{\textbackslash\{\}left.} or \texttt{\textbackslash\{\}right.} makes one side invisible:
+
+\[
+\left( \frac{a}{b} \right) \quad \left[ \sum_{i=1}^n x_i \right] \quad \left\{ \frac{1}{2} \right\} \quad \left. \frac{\dd y}{\dd x} \right|_{x = 0}
+\]
+
+Fixed sizes, when automatic scaling picks wrong:
+
+\[
+\big( \Big( \bigg( \Bigg( \quad \Bigl\langle \Bigm| \Bigr\rangle \quad \lceil x \rceil \quad \lfloor x \rfloor \quad \lVert v \rVert
+\]
+
+Spacing, from thinnest to widest, plus the negative thin space:
+
+\[
+a\!b \quad ab \quad a\,b \quad a\:b \quad a\;b \quad a\quad b \quad a\qquad b \quad a\hspace{2em}b
+\]
+
+\texttt{\textbackslash\{\}phantom} reserves space without drawing anything, which is how you align things that have no natural alignment point:
+
+\[
+\begin{aligned}
+x &= 1 \\
+\phantom{x} &\phantom{=} + 2
+\end{aligned}
+\qquad
+\vect{v} = \begin{pmatrix} \phantom{-}1 \\ -2 \\ \phantom{-}3 \end{pmatrix}
+\]
+
+And a deliberately over-wide equation, which scrolls sideways inside its own box rather than stretching the page:
+
+\[
+f(x_1, x_2, \ldots, x_n) = a_0 + a_1 x_1 + a_2 x_2 + \cdots + a_n x_n + b_{11} x_1^2 + b_{12} x_1 x_2 + \cdots + b_{nn} x_n^2 + c_{111} x_1^3 + c_{112} x_1^2 x_2 + \cdots + c_{nnn} x_n^3 \tag{9.1}
+\]
+
+\section{Commutative diagrams}
+
+The \texttt{CD} environment draws square diagrams. Horizontal arrows are \texttt{@>label>>} and \texttt{@<<label<}; vertical ones are \texttt{@VVlabelV} and \texttt{@AAlabelA}; \texttt{@=} is an equals sign and \texttt{@.} an empty cell.
+
+\[
+\begin{CD}
+A @>f>> B \\
+@VVgV @VVhV \\
+C @>k>> D
+\end{CD}
+\]
+
+A larger one, with a label under an arrow and an identity edge:
+
+\[
+\begin{CD}
+X @>{\varphi}>> Y @>{\psi}>> Z \\
+@VV{\alpha}V @VV{\beta}V @| \\
+X' @>>{\varphi'}> Y' @>>{\psi'}> Z
+\end{CD}
+\]
+
+\texttt{CD} is the only diagram environment KaTeX supports. Anything richer — \texttt{tikz-cd}, \texttt{pgfplots}, a real figure — has to be drawn elsewhere and included as an image, using this blog's own figure syntax with an optional width: \texttt{![Block diagram|60\%](/blog-example.png)}.
+
+\section{Chemistry and units}
+
+The mhchem extension is loaded, so \texttt{\textbackslash\{\}ce\{\}} works. Simple formulas get their subscripts automatically: $\ce{H2O}$, $\ce{CaCO3}$, $\ce{LiFePO4}$.
+
+Reactions, with the usual arrow vocabulary:
+
+\[
+\ce{2H2 + O2 -> 2H2O}
+\]
+
+\[
+\ce{CaCO3(s) <=> CaO(s) + CO2(g)}
+\]
+
+\[
+\ce{N2(g) + 3H2(g) <=>> 2NH3(g)}
+\]
+
+Conditions go above and below the arrow:
+
+\[
+\ce{A ->[\text{Pt}][\Delta] B}
+\]
+
+Charges, isotopes and bonds:
+
+\[
+\ce{SO4^2-} \qquad \ce{^{227}_{90}Th+} \qquad \ce{A-B=C#D} \qquad \ce{Zn^2+ + 2e- -> Zn(s)}
+\]
+
+Precipitates and evolved gases:
+
+\[
+\ce{AgNO3 + NaCl -> AgCl v + NaNO3}
+\]
+
+\texttt{\textbackslash\{\}pu} typesets physical units with correct spacing:
+
+\[
+\pu{123 kJ//mol} \qquad \pu{5 V} \qquad \pu{3.3e-6 F} \qquad \pu{9.81 m/s^2}
+\]
+
+Without mhchem you can still write units by hand, and this blog defines a \texttt{\textbackslash\{\}unit} macro for the common case:
+
+\[
+1.5\unit{k\Omega} \qquad 9.81\,\mathrm{m\,s^{-2}} \qquad 6.022 \times 10^{23}\,\mathrm{mol^{-1}}
+\]
+
+\section{Macros}
+
+A handful of macros are defined site-wide and are available in every post without declaring anything:
+
+\begin{tabular}{lll}
+\hline
+Macro & Expands to & Example \\
+\hline
+\texttt{\textbackslash\{\}R} \texttt{\textbackslash\{\}C} \texttt{\textbackslash\{\}Z} \texttt{\textbackslash\{\}N} & Blackboard bold number sets & $\R,\ \C,\ \Z,\ \N$ \\
+\texttt{\textbackslash\{\}eps} & \texttt{\textbackslash\{\}varepsilon} & $\eps$ \\
+\texttt{\textbackslash\{\}dd} & Upright differential with spacing & $\int f\,\dd x$ \\
+\texttt{\textbackslash\{\}abs\{x\}} & Scaling absolute value & $\abs{\frac{a}{b}}$ \\
+\texttt{\textbackslash\{\}norm\{v\}} & Scaling norm & $\norm{\vect{v}}$ \\
+\texttt{\textbackslash\{\}set\{x\}} & Scaling set braces & $\set{1, 2, 3}$ \\
+\texttt{\textbackslash\{\}vect\{v\}} & Bold vector & $\vect{v}$ \\
+\texttt{\textbackslash\{\}unit\{V\}} & Upright unit with thin space & $5\unit{V}$ \\
+\hline
+\end{tabular}
+
+Adding one means editing \texttt{KATEX\_MACROS} in the blog library — the keys are escaped TeX names and the values are their replacement text, where \texttt{\#1} is the first argument.
+
+You can also define a macro inside a formula with \texttt{\textbackslash\{\}def} or \texttt{\textbackslash\{\}newcommand}:
+
+\[
+\def\myvec#1{\mathbf{#1}}
+\myvec{a} \cdot \myvec{b} = \abs{\myvec{a}}\,\abs{\myvec{b}}\cos\theta
+\]
+
+There is one catch: each block of math is rendered independently, so a macro defined in one block does \textbf{not} survive into the next. Define it again, or add it site-wide. \texttt{\textbackslash\{\}gdef} looks like the answer but is not — it writes into the shared macro table and would leak the definition into unrelated posts, so treat it as unavailable.
+
+\section{Edge cases and pitfalls}
+
+This last chapter is the regression test. Everything below should render correctly on a chapter page.
+
+\textbf{Math in a table cell.} A literal pipe would end the cell, so use \texttt{\textbackslash\{\}mid}:
+
+\begin{tabular}{ll}
+\hline
+Expression & Meaning \\
+\hline
+$a \mid b$ & $a$ divides $b$ \\
+$\lvert x \rvert$ & absolute value \\
+$\set{x \mid x > 0}$ & set-builder notation \\
+\hline
+\end{tabular}
+
+\textbf{Math in a list.}
+
+\begin{enumerate}
+  \item The first term is $a_1 = 1$.
+  \item Each next term satisfies $a_{n+1} = a_n + d$.
+  \item So the sum is $S_n = \frac{n}{2}\left(2a_1 + (n-1)d\right)$.
+\end{enumerate}
+
+\textbf{Math in a blockquote.}
+
+\begin{quote}
+By the triangle inequality, $\norm{a + b} \le \norm{a} + \norm{b}$ for any $a, b$ in a normed space.
+\end{quote}
+
+\textbf{Math next to a footnote reference.} The constant $\gamma \approx 0.5772$ is the Euler–Mascheroni constant.\footnote{$\gamma = \lim_{n\to\infty}\left(\sum_{k=1}^{n} \tfrac{1}{k} - \ln n\right)$.}
+
+\textbf{A figure between two equations}, to confirm figure numbering is unaffected by the math:
+
+\[
+y = \sin(2\pi f t + \phi)
+\]
+
+\begin{figure}
+\includegraphics[width=0.4\textwidth]{/blog-example.png}
+\caption{A sine wave}
+\label{fig-sine}
+\end{figure}
+
+\[
+\frac{\dd y}{\dd t} = 2\pi f \cos(2\pi f t + \phi)
+\]
+
+\textbf{A deliberately broken formula.} The next one is missing a closing brace, and instead of breaking the build it renders in red with the parse error in its tooltip: $\frac{1}{$
+
+\textbf{Dollar signs in prose and in code.} A part that costs \textbackslash{}$2 instead of \textbackslash{}$3 saves \textbackslash{}$1, and this shell snippet is untouched:
+
+\begin{lstlisting}[language=bash]
+PRICE=$2
+echo "total: $PRICE"
+\end{lstlisting}
+
+\textbf{A \texttt{\#\#} inside a code fence}, which must not start a new chapter:
+
+\begin{lstlisting}[language=python]
+## This is a comment, not a heading
+def f(x):
+    return x ** 2
+\end{lstlisting}
+
+If this paragraph is still part of chapter 13, the chapter splitter is doing its job.
+
+\end{document}
+

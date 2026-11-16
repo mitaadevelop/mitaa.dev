@@ -58,6 +58,22 @@ function mergeProps<T extends HTMLElement>(
   return merged;
 }
 
+/**
+ * `motion.create()` mints a brand-new component type on every call, so calling
+ * it during render (even inside `useMemo`, which React is free to discard)
+ * can swap the component identity and reset its state. Caching by element
+ * type at module scope gives each tag or component one stable counterpart.
+ */
+const motionComponents = new Map<React.ElementType, React.ElementType>();
+
+function getMotionComponent(type: React.ElementType): React.ElementType {
+  const cached = motionComponents.get(type);
+  if (cached) return cached;
+  const created = motion.create(type);
+  motionComponents.set(type, created);
+  return created;
+}
+
 function Slot<T extends HTMLElement = HTMLElement>({
   children,
   ref,
@@ -68,13 +84,9 @@ function Slot<T extends HTMLElement = HTMLElement>({
     children.type !== null &&
     isMotionComponent(children.type);
 
-  const Base = React.useMemo(
-    () =>
-      isAlreadyMotion
-        ? (children.type as React.ElementType)
-        : motion.create(children.type as React.ElementType),
-    [isAlreadyMotion, children.type],
-  );
+  const Base = isAlreadyMotion
+    ? (children.type as React.ElementType)
+    : getMotionComponent(children.type as React.ElementType);
 
   if (!React.isValidElement(children)) return null;
 
@@ -83,6 +95,12 @@ function Slot<T extends HTMLElement = HTMLElement>({
   const mergedProps = mergeProps(childProps, props);
 
   return (
+    // `Base` comes from the module-level cache above, so its identity is stable
+    // across renders and instances — the state reset this rule guards against
+    // cannot happen. The rule is syntactic and can't see through the call, and
+    // an `asChild` slot can't know its child's type statically, so there is no
+    // formulation that satisfies it.
+    // eslint-disable-next-line react-hooks/static-components
     <Base {...mergedProps} ref={mergeRefs(childRef as React.Ref<T>, ref)} />
   );
 }
