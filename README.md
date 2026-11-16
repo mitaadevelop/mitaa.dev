@@ -325,6 +325,7 @@ Other scripts:
 
 ```bash
 npm run blog:check <post> [-- --publish]          # latexmk build + numbering check
+npm run downloads:build [-- <name> …]             # LaTeX templates + shop ZIPs → public/downloads/ (local)
 npm run pcb:render <board.kicad_pcb> [sch]        # kicad-cli → schematic/PCB/X-ray SVGs (local)
 npm run pcb:convert <in.step> <out.glb>           # STEP → GLB
 npm run pcb:recolor <in.glb> <out.glb> --board "#1b2a4a" [--silk "#fff"] [--finish "#d4af37"]
@@ -342,6 +343,20 @@ npx tsc --noEmit && npm run lint && npm test
 
 `prebuild` first fetches GitHub data and converts any PCB models, then Next.js
 builds the app into `.next/`. Vercel runs this for you on every push.
+
+### Make shortcuts
+
+The `Makefile` wraps all of the above; `make` lists every target.
+
+```bash
+make install        # npm ci
+make run            # dev server (PORT=4000 for another port)
+make build          # full production build, GitHub fetch included
+make preview        # build without the GitHub fetch, then serve it
+make check          # typecheck + lint + test
+make downloads      # rebuild the shop downloads (ONLY="cheatsheet" for one)
+make blog-check POST=report-design-showcase
+```
 
 ---
 
@@ -362,6 +377,17 @@ To create a token:
 3. Copy the token into `.env.local`
 
 > The token is only used at build time by `scripts/fetch-github-data.mjs`. It is never exposed to the client bundle. Without it, contributions data will be skipped (repos are public and will still be fetched).
+
+#### Download counts (optional)
+
+The shop counts its free downloads in [Upstash Redis](https://upstash.com). In Vercel, open **Storage → Marketplace → Upstash for Redis**, create a free database and connect it to the project; Vercel then sets `KV_REST_API_URL` and `KV_REST_API_TOKEN` for you. For `next dev`, copy them into `.env.local` (or use `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` from the Upstash console):
+
+```env
+KV_REST_API_URL=https://xxxx.upstash.io
+KV_REST_API_TOKEN=xxxxxxxx
+```
+
+Without them every download still works; nothing is counted and no count is shown.
 
 ---
 
@@ -530,6 +556,9 @@ conversion).
 > Add `GITHUB_TOKEN` as an environment variable in your Vercel project settings
 > so the pre-build script can fetch GitHub data. Without it the build still
 > succeeds, but GitHub-sourced projects are missing.
+>
+> Connect an Upstash Redis database (Storage → Marketplace) to show download
+> counts in the shop; see [Download counts](#download-counts-optional).
 
 Because it's a native Next.js deployment, server rendering, image optimization,
 dynamic routes (`/feed.xml`, `/api`) and the build-time PCB fetch all work

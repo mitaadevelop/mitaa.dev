@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { GitHubIcon } from "@/components/site/icons";
 import { CountingNumber } from "@/components/animate-ui/primitives/texts/counting-number";
+import ScrollReveal from "@/components/site/ScrollReveal";
 import { formatDate } from "@/lib/date";
 
 const GITHUB_URL = "https://github.com/mitaadevelop";
@@ -145,8 +146,14 @@ export default function GitHubContributions() {
               </a>
             </div>
 
-            {/* Heatmap */}
-            <div className="overflow-x-auto pb-1">
+            {/* Heatmap — the week columns sweep in the first time it scrolls into view */}
+            <ScrollReveal
+              variant="stagger"
+              selector="[data-week]"
+              stagger={0.012}
+              rise={0}
+              className="overflow-x-auto pb-1"
+            >
               <div className="inline-block">
                 {/* Month labels */}
                 <div
@@ -178,7 +185,7 @@ export default function GitHubContributions() {
                   </div>
 
                   {data.weeks.map((week, wi) => (
-                    <div key={wi} className="flex flex-col" style={{ gap: GAP }}>
+                    <div key={wi} data-gsap data-week className="flex flex-col" style={{ gap: GAP }}>
                       {week.contributionDays.map((day) => {
                         const level = getLevel(day.contributionCount);
                         return (
@@ -196,7 +203,7 @@ export default function GitHubContributions() {
                   ))}
                 </div>
               </div>
-            </div>
+            </ScrollReveal>
 
             {/* Legend */}
             <div className="flex items-center justify-end gap-1.5 mt-4 text-[11px] text-muted">

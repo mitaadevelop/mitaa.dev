@@ -4,19 +4,36 @@ import Link from "next/link";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { Blur } from "@/components/animate-ui/primitives/effects/blur";
 import { Fade } from "@/components/animate-ui/primitives/effects/fade";
+import DownloadCount from "@/components/shop/DownloadCount";
 import { shopProduct } from "@/data/shop";
+import {
+  latexCheatsheet,
+  latexTemplates,
+  templateDownloadId,
+  templateFiles,
+} from "@/data/latex-templates";
+import { getDownloadCounts, sumCounts } from "@/lib/downloads";
+
+// Download counts are read from Redis at most once a minute.
+// Must be a literal — keep in sync with COUNTS_REVALIDATE in @/lib/downloads.
+export const revalidate = 60;
 
 export const metadata: Metadata = {
   title: "Shop",
   description:
-    "Original minimal-tech wallpaper packs for desktop and mobile by mitaa.dev.",
+    "Free downloads by mitaa.dev: minimal-tech wallpapers for desktop and mobile, LaTeX templates for essays, reports and research, and a LaTeX cheat sheet.",
   alternates: {
     canonical: "/shop",
   },
 };
 
-export default function ShopPage() {
+export default async function ShopPage() {
   const featuredArtwork = shopProduct.artworks[0];
+  const counts = await getDownloadCounts();
+  const latexDownloads = sumCounts(counts, [
+    ...latexTemplates.map((template) => templateDownloadId(template.slug)),
+    latexCheatsheet.id,
+  ]);
 
   return (
     <div className="mx-auto max-w-[1440px] px-6 py-20 sm:px-12 lg:px-20">
@@ -35,8 +52,9 @@ export default function ShopPage() {
             Shop
           </h1>
           <p className="mt-4 text-[15px] leading-7 text-foreground">
-            Original digital wallpapers designed to make technical screens feel
-            calm, focused, and considered.
+            Free downloads: original wallpapers that make technical screens
+            feel calm and considered, clean LaTeX templates for your essays,
+            reports and research, and a LaTeX cheat sheet to keep next to them.
           </p>
         </div>
       </Blur>
@@ -115,7 +133,7 @@ export default function ShopPage() {
 
               <div className="mt-10 border-t border-divider pt-6 lg:mt-auto">
                 <p className="text-[11px] font-medium uppercase tracking-[0.8px] text-date">
-                  One-time payment
+                  Free download
                 </p>
                 <div className="mt-1 flex items-end justify-between gap-4">
                   <p className="text-[32px] font-semibold tracking-[-0.8px] text-foreground">
@@ -126,10 +144,92 @@ export default function ShopPage() {
                     <ArrowRight size={14} aria-hidden="true" />
                   </span>
                 </div>
-                <p className="mt-4 text-[12px] leading-5 text-date">
-                  Checkout is not active yet. No payment or download will be
-                  started.
+                <DownloadCount
+                  count={counts?.[shopProduct.download.id] ?? null}
+                  className="mt-3"
+                />
+              </div>
+            </div>
+          </div>
+        </Link>
+      </Fade>
+
+      <Fade delay={150}>
+        <Link
+          href="/shop/latex-templates"
+          aria-labelledby="latex-templates-title"
+          className="group mt-8 block overflow-hidden rounded-lg border border-divider bg-card transition-colors hover:bg-card-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-4 focus-visible:ring-offset-background"
+        >
+          <div className="grid lg:grid-cols-[minmax(0,1.35fr)_minmax(320px,0.65fr)]">
+            <div className="flex items-center justify-center gap-3 bg-secondary px-6 py-10 sm:gap-5 sm:px-10 sm:py-14">
+              {latexTemplates.map((template, i) => (
+                <div
+                  key={template.slug}
+                  className={`relative aspect-[1/1.414] w-[30%] max-w-[210px] overflow-hidden rounded-[3px] bg-white shadow-lg ring-1 ring-black/5 transition-transform duration-500 motion-reduce:transition-none ${
+                    i === 1 ? "group-hover:-translate-y-1" : "group-hover:translate-y-0.5"
+                  }`}
+                >
+                  <Image
+                    src={templateFiles(template).previews[0]}
+                    alt={`Title page of the ${template.title.toLowerCase()} template`}
+                    fill
+                    sizes="(max-width: 1023px) 30vw, 210px"
+                    className="object-cover object-top"
+                  />
+                </div>
+              ))}
+            </div>
+
+            <div className="flex flex-col p-6 sm:p-9 lg:p-10">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="rounded-full bg-badge-bg px-2.5 py-1 text-[11px] font-medium text-badge-text">
+                  Free
+                </span>
+                <span className="rounded-full bg-secondary px-2.5 py-1 text-[11px] font-medium text-muted">
+                  LaTeX templates
+                </span>
+              </div>
+
+              <h2
+                id="latex-templates-title"
+                className="mt-6 text-[28px] font-semibold leading-tight tracking-[-0.8px] text-foreground sm:text-[34px]"
+              >
+                LaTeX templates &amp; cheat sheet
+              </h2>
+              <p className="mt-4 text-[14px] leading-7 text-muted">
+                Clean, ready-to-write templates for an essay, a report and a
+                research report, with APA references. Open one in Overleaf
+                with a single click, and keep the two-page cheat sheet close.
+              </p>
+
+              <ul
+                aria-label="Template details"
+                className="mt-6 flex flex-wrap gap-2 lg:mb-10"
+              >
+                {["3 templates", "Cheat sheet", "Overleaf-ready"].map((tag) => (
+                  <li
+                    key={tag}
+                    className="rounded-full border border-divider px-2.5 py-1 text-[11px] text-muted"
+                  >
+                    {tag}
+                  </li>
+                ))}
+              </ul>
+
+              <div className="mt-10 border-t border-divider pt-6 lg:mt-auto">
+                <p className="text-[11px] font-medium uppercase tracking-[0.8px] text-date">
+                  Free download
                 </p>
+                <div className="mt-1 flex items-end justify-between gap-4">
+                  <p className="text-[32px] font-semibold tracking-[-0.8px] text-foreground">
+                    Free
+                  </p>
+                  <span className="inline-flex items-center gap-2 text-[13px] font-medium text-foreground transition-opacity group-hover:opacity-60">
+                    View templates
+                    <ArrowRight size={14} aria-hidden="true" />
+                  </span>
+                </div>
+                <DownloadCount count={latexDownloads} className="mt-3" />
               </div>
             </div>
           </div>

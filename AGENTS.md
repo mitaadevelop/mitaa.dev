@@ -14,6 +14,7 @@ npm run lint     # eslint (eslint-config-next)
 npm test         # node --test via tsx: snapshot + regression tests for the blog pipeline
 npm start        # serve a production build
 npm run blog:check <post> [-- --publish]   # compile a post with latexmk, compare its numbering with the site's; --publish copies the PDF to public/docs/blog/
+npm run downloads:build [-- <name> …]      # compile the LaTeX templates + zip the shop downloads into public/downloads/ (local; output is committed)
 
 # PCB tooling (run locally — kicad-cli / occt run on your machine, not on Vercel):
 npm run pcb:convert <in.step> <out.glb>                         # STEP → GLB (occt-import-js)
@@ -22,6 +23,8 @@ npm run pcb:recolor <in.glb> <out.glb> --board "#hex" [--silk "#hex"] [--finish 
 ```
 
 Typecheck with `npx tsc --noEmit` (strict; keep it green).
+
+The `Makefile` wraps these scripts (`make` lists the targets; `make check` = typecheck + lint + test). It targets the GNU Make 3.81 that ships with macOS, so no `.ONESHELL` or `.RECIPEPREFIX`. Keep it in step when a script is added or renamed.
 
 ### Tests
 `tests/blog.test.ts` runs the real LaTeX pipeline over the fixture posts: twelve HTML snapshots plus regression tests for the things that have actually broken — footnote heading ids, citation numbering, figure labels, cross-chapter counters, forward `\ref`s, swallowed spaces after control symbols, and untranslated macros leaking into the page. Accept intended output changes with `UPDATE_SNAPSHOTS=1 npm test`, and read the diff before you do.
@@ -65,14 +68,14 @@ src/lib/projects/
   github.ts      GitHub repos → Project objects, reading public/data/github-repos.json
   types.ts       Project, PcbAssets, Measurement, … — no fs/path
 
-src/lib/          date.ts (UTC date formatting), bio.ts, pcb.ts, site.ts, utils.ts (cn)
+src/lib/          date.ts (UTC date formatting), bio.ts, gsap.ts, pcb.ts, site.ts, utils.ts (cn)
 
 src/components/
   blog/     post chrome: TOC, chapter nav/meta, keyboard nav, progress bar
   pcb/      hardware viewer: schematic/PCB/3D/BOM
   project/  project pages: docs, gallery, video, charts, language bar, contributions
-  shop/     shop gallery
-  site/     global chrome: footer, theme provider/toggle, icons
+  shop/     shop gallery, download counts
+  site/     global chrome: footer, theme provider/toggle, icons, HomeHero, ScrollReveal
 ```
 
 **Client components import types from `@/lib/blog/types` and `@/lib/projects/types`, never from the index** — both indexes pull in `fs`. Today every such import is `import type` and gets erased, so nothing leaks; the separate modules exist so that one careless edit to a value import cannot drag Node built-ins into the browser bundle.
@@ -107,6 +110,8 @@ All post chrome — back link, header (with the "Page N of M" pill), table of co
 The consequence: **nothing in the layout can receive the active chapter as a prop.** `ChapterMeta`, `ChapterNav`, `ChapterKeyboardNav` and `TableOfContents` are client components that derive it from the URL via `useCurrentChapter(outline)`. Whatever exists on some pages only — the abstract on page 1, the citation block and other-post links on the last — is part of the page's text in `ChapterBody`, not the layout, so nothing outside the text changes size when the reader turns a page.
 
 **Turning a page animates only the text.** `ChapterBody` wraps it in React's `<ViewTransition>` (keyed by chapter, in the page — a layout never unmounts, so enter/exit would never fire there). Links carry `transitionTypes` `page-forward` / `page-back` (`pageTransition()` in `useCurrentChapter.ts`; `router.push` in `ChapterKeyboardNav`), which the `::view-transition-*` rules in `globals.css` turn into a short fade with a 12px nudge; anything else fades. `prefers-reduced-motion` swaps instantly. Copy buttons in the injected HTML work through one delegated listener (`CopyButtons`). The layout therefore needs every chapter's data up front, which is what `getPostShell(slug)` returns (memoized alongside `getPostChapter`, so it costs one render). If you add chapter-dependent chrome, follow the same pattern — moving it back into the page would undo the whole point.
+
+**Live preview under `npm run dev`.** Saving a `.tex` in `content/blog/` refreshes the open post by itself; nothing is compiled, the pipeline just reads the file on the next request. `src/app/api/blog-watch/route.ts` is a dev-only SSE stream (`fs.watch` on `content/blog/`, 404 in production), and `LivePreview` (mounted in the post layout under `NODE_ENV === "development"`) turns each message into `router.refresh()`. It refreshes on save, not per keystroke. Renaming the section you are on changes the chapter URL, and `[chapter]` has `dynamicParams = false`, so go back to `/blog/<post>`. `mitaa.sty` is not read by the site, so editing it refreshes nothing.
 
 `TableOfContents` keeps a module-level `NO_ITEMS` constant: the scroll-spy effect depends on `items`, and a fresh `[]` fallback per render would restart the `IntersectionObserver` on every render.
 
@@ -146,10 +151,25 @@ Switching documents fades like a blog page — as do the hardware viewer's tabs,
 ### Measurement charts
 `fetchMeasurements` pulls `.csv` files from a repo's `measurements/`/`data/` folder into `public/media/<repo>/`; curated projects set a `measurements:` frontmatter array (`Measurement` in `src/lib/projects/types.ts`). `MeasurementChart.tsx` draws a dependency-free multi-series SVG line chart (first CSV column = X, rest = Y series) with crosshair+tooltip, legend, table-view toggle, and a **CVD-validated categorical palette** (validated per the dataviz skill for both light `#fcfcfb` and dark `#1a1a19` surfaces; light has a contrast WARN relieved by the legend + table view). Dark-mode series steps come from `next-themes` `resolvedTheme`, not an auto-flip.
 
+### Shop downloads and counts
+The shop's files are free: the Signal No. 01 wallpaper pack (`src/data/shop.ts`) three LaTeX templates — essay, report and research report — and a two-page LaTeX cheat sheet (`src/data/latex-templates.ts`), all in English. The blog post `free-latex-cheat-sheet` announces the cheat sheet and links to `/shop/latex-templates#cheatsheet`. Every download link goes through **`/api/download/<id>`** (`src/app/api/download/[id]/route.ts`), which redirects to the static file under `public/downloads/` — or, with `?open=overleaf`, to Overleaf, which fetches the ZIP itself — and counts the download in `after()`, once the redirect is sent. `DOWNLOADS` in `src/lib/downloads.ts` is the list of valid ids; an unknown id is a 404.
+- **Counts live in Upstash Redis**, reached with plain `fetch` over its REST API (no SDK): `KV_REST_API_URL`/`KV_REST_API_TOKEN` (Vercel Marketplace) or `UPSTASH_REDIS_REST_*`. Without them nothing is counted and `getDownloadCounts()` returns null, so no count is shown; downloads still work. A visitor counts once per file per day: a Lua `EVAL` sets a hashed (IP, user agent, file, date) key with a 24-hour expiry and increments only when that key is new. No IP is stored. Crawlers, scripts and HEAD requests are not counted.
+- **The redirect must stay uncached** (`Cache-Control: no-store`), or the CDN answers repeat clicks without running the handler. The shop pages are ISR with `revalidate = 60` (a literal in each page; keep it in step with `COUNTS_REVALIDATE`), and `DownloadCount` hides a zero.
+- **Template sources** are `content/shop/latex-templates/<slug>/` (`main.tex` for the text, `setup.tex` for the styling, `references.bib`; pdfLaTeX + Biber + biblatex-apa, standard TeX Live packages only, so Overleaf compiles them unchanged). **`npm run downloads:build`** compiles each one and writes the ZIP (sources plus a generated `README.txt`), the example PDF and the preview PNGs to `public/downloads/latex/`; compiles the cheat sheet (`content/shop/latex-cheatsheet/main.tex`, `extarticle` 8pt, three columns over two landscape pages — keep it at exactly two) to a PDF with both pages as previews; and zips the git-ignored `private-products/signal-no-01/delivery/` into `public/downloads/signal-no-01.zip`. Like `blog:check --publish` it runs locally and its output is committed. It is reproducible (fixed `SOURCE_DATE_EPOCH`, fixed ZIP timestamps), so a rebuild of unchanged sources leaves git clean. `tests/downloads.test.ts` fails when a template's ZIP no longer matches its sources: rebuild with `npm run downloads:build -- <slug>` (or `cheatsheet`).
+- Biber's unpacked cache can go stale after a TeX Live update ("failed to find unicore/version"); the build gives it a fresh `PAR_GLOBAL_TEMP` per run.
+
+### Animations: Motion + GSAP
+Two libraries, each for what it does best. **Motion** (`motion/react`, through the animate-ui `Fade` / `Blur` / `CountingNumber` / `ScrollProgress`) handles single-element entrances. **GSAP** handles timelines, ScrollTrigger and SplitText. Today that means the homepage intro (`HomeHero.tsx`), the contribution heatmap's sweep, and the shop hero's parallax (both through `ScrollReveal.tsx`).
+- **Import GSAP only from `@/lib/gsap`.** It registers the plugins once, and pages that never import it never load it.
+- **Write every animation as `useGSAP(() => { gsap.matchMedia().add(MOTION_OK, …) }, { scope })`.** `useGSAP` reverts tweens, ScrollTriggers and SplitText on unmount. `matchMedia` is the only thing that honours reduced motion, because the `prefers-reduced-motion` rule in `globals.css` cannot reach GSAP's inline styles. Read refs inside the callback only: the React Compiler and the `react-hooks` lint rules require it.
+- **Elements that start hidden carry `data-gsap`.** A rule in `globals.css` hides them only under `(scripting: enabled) and (prefers-reduced-motion: no-preference)`, and the component reveals them with `autoAlpha`. Without it, the server-rendered content would flash before hydration. Every `data-gsap` element needs an animation that reveals it, or it stays invisible.
+- **No GSAP inside a `<ViewTransition>` body** (`ChapterBody`, the project page). The two would animate the same pixels.
+- **Before adding `pin`**, remove or narrow `html { scroll-behavior: smooth }`. ScrollTrigger scrolls the page during `refresh()`, and smooth scrolling turns that into visible jumps.
+
 ### Conventions
 - Reference files/lines as clickable markdown links (`[file.tsx:42](path#L42)`), not backticks (see repo `.md` conventions).
 - `Date.now()` / non-deterministic values are fine in app code but the workflow/scripts avoid them where reproducibility matters.
-- Env: `GITHUB_TOKEN*` (build-time GitHub fetch), `KICAD_CLI` (override kicad-cli path for `pcb:render`), `NEXT_PUBLIC_SITE_URL` (canonical URLs / feeds).
+- Env: `GITHUB_TOKEN*` (build-time GitHub fetch), `KICAD_CLI` (override kicad-cli path for `pcb:render`), `NEXT_PUBLIC_SITE_URL` (canonical URLs / feeds), `KV_REST_API_URL` / `KV_REST_API_TOKEN` (download counts; optional).
 
 <!-- BEGIN:nextjs-agent-rules -->
 

@@ -126,6 +126,15 @@ html {
   scroll-behavior: smooth;
 }
 
+/* GSAP entrances (src/lib/gsap.ts) — an element marked data-gsap starts hidden
+   and its component reveals it with autoAlpha. Only when scripts run and
+   motion is welcome: without JS, or with reduced motion, it is simply there. */
+@media (scripting: enabled) and (prefers-reduced-motion: no-preference) {
+  [data-gsap] {
+    visibility: hidden;
+  }
+}
+
 /* Blog prose styling — clean minimalist */
 .prose-blog {
   counter-reset: h2counter 0;

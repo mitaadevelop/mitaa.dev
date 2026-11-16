@@ -42,6 +42,12 @@ export default async function BlogPostLayout({
 }) {
   const { slug } = await params;
   const shell = await getPostShell(slug);
+  // Dev only, and imported inside the condition so a production build does not
+  // bundle it: NODE_ENV is a constant there and the branch is dropped.
+  const LivePreview =
+    process.env.NODE_ENV === "development"
+      ? (await import("@/components/blog/LivePreview")).default
+      : null;
 
   if (!shell) {
     notFound();
@@ -54,6 +60,7 @@ export default async function BlogPostLayout({
   return (
     <div lang={post.lang} className="mx-auto max-w-[1100px] px-6 py-20">
       <CopyButtons />
+      {LivePreview && <LivePreview />}
       {paginated && (
         <>
           <ScrollProgressBar />

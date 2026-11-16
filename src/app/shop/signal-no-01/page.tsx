@@ -12,8 +12,15 @@ import {
 } from "lucide-react";
 import { Blur } from "@/components/animate-ui/primitives/effects/blur";
 import { Fade } from "@/components/animate-ui/primitives/effects/fade";
+import DownloadCount, { downloadHref } from "@/components/shop/DownloadCount";
 import ShopProductGallery from "@/components/shop/ShopProductGallery";
+import ScrollReveal from "@/components/site/ScrollReveal";
 import { shopProduct } from "@/data/shop";
+import { getDownloadCounts } from "@/lib/downloads";
+
+// The download count is read from Redis at most once a minute.
+// Must be a literal — keep in sync with COUNTS_REVALIDATE in @/lib/downloads.
+export const revalidate = 60;
 
 export const metadata: Metadata = {
   title: `${shopProduct.title} — Shop`,
@@ -39,8 +46,10 @@ export const metadata: Metadata = {
   },
 };
 
-export default function SignalNo01Page() {
+export default async function SignalNo01Page() {
   const featuredArtwork = shopProduct.artworks[0];
+  const counts = await getDownloadCounts();
+  const downloads = counts?.[shopProduct.download.id] ?? null;
 
   return (
     <div className="mx-auto max-w-[1440px] px-6 py-20 sm:px-12 lg:px-20">
@@ -56,14 +65,16 @@ export default function SignalNo01Page() {
       <section className="grid overflow-hidden rounded-lg border border-divider bg-card lg:grid-cols-[minmax(0,1.25fr)_minmax(340px,0.75fr)]">
         <Fade delay={50}>
           <div className="relative min-h-[340px] overflow-hidden bg-[#0b0d10] sm:min-h-[520px] lg:min-h-[680px]">
-            <Image
-              src={featuredArtwork.preview.landscape}
-              alt={featuredArtwork.alt.landscape}
-              fill
-              priority
-              sizes="(max-width: 1023px) 100vw, 63vw"
-              className="object-cover"
-            />
+            <ScrollReveal variant="parallax">
+              <Image
+                src={featuredArtwork.preview.landscape}
+                alt={featuredArtwork.alt.landscape}
+                fill
+                priority
+                sizes="(max-width: 1023px) 100vw, 63vw"
+                className="object-cover"
+              />
+            </ScrollReveal>
 
             <div className="absolute bottom-5 right-5 w-[23%] min-w-[92px] max-w-[170px] sm:bottom-9 sm:right-9">
               <div className="relative aspect-[9/20] overflow-hidden rounded-[1.2rem] border-[4px] border-white/20 bg-black shadow-2xl sm:rounded-[1.8rem] sm:border-[5px]">
@@ -120,32 +131,30 @@ export default function SignalNo01Page() {
             </ul>
 
             <aside
-              aria-label="Purchase information"
+              aria-label="Download"
               className="mt-10 border-t border-divider pt-7 lg:mt-auto"
             >
               <p className="text-[11px] font-medium uppercase tracking-[0.8px] text-date">
-                One-time payment
+                Free download
               </p>
-              <p className="mt-1 text-[36px] font-semibold tracking-[-1px] text-foreground">
-                {shopProduct.price}
-              </p>
+              <div className="mt-1 flex items-end justify-between gap-4">
+                <p className="text-[36px] font-semibold tracking-[-1px] text-foreground">
+                  {shopProduct.price}
+                </p>
+                <DownloadCount count={downloads} className="mb-3" />
+              </div>
               <p className="mt-1 text-[12px] text-muted">
-                {shopProduct.fileCount} high-resolution JPGs · Personal use
+                {shopProduct.fileCount} high-resolution JPGs · {shopProduct.download.size} ZIP · Personal use
               </p>
-              <button
-                type="button"
-                disabled
-                aria-describedby="checkout-status"
-                className="mt-6 inline-flex w-full cursor-not-allowed items-center justify-center rounded-md bg-secondary px-4 py-3 text-[13px] font-medium text-muted opacity-70"
+              <a
+                href={downloadHref(shopProduct.download.id)}
+                rel="nofollow"
+                className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-md bg-primary px-4 py-3 text-[13px] font-medium text-primary-foreground transition-opacity hover:opacity-85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
               >
-                Coming soon
-              </button>
-              <p
-                id="checkout-status"
-                className="mt-4 text-[12px] leading-5 text-date"
-              >
-                Checkout is not active yet. No payment or download will be
-                started.
+                <Download size={15} aria-hidden="true" /> Download the pack
+              </a>
+              <p className="mt-4 text-[12px] leading-5 text-date">
+                No account or email needed. The download starts straight away.
               </p>
             </aside>
           </div>
@@ -261,10 +270,10 @@ export default function SignalNo01Page() {
               id="how-it-works"
               className="text-[13px] font-medium uppercase tracking-[0.8px] text-muted"
             >
-              How it will work
+              How it works
             </h2>
             <ol className="mt-7 space-y-5">
-              {["Purchase securely", "Download one ZIP", "Choose your screen format"].map(
+              {["Download one ZIP", "Choose your screen format", "Set it as your wallpaper"].map(
                 (step, index) => (
                   <li
                     key={step}

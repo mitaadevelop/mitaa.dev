@@ -4,6 +4,7 @@ import { getBio } from "@/lib/bio";
 import { Blur } from "@/components/animate-ui/primitives/effects/blur";
 import { Fade } from "@/components/animate-ui/primitives/effects/fade";
 import GitHubContributions from "@/components/project/GitHubContributions";
+import HomeHero from "@/components/site/HomeHero";
 import { formatDate } from "@/lib/date";
 
 export default function Home() {
@@ -13,44 +14,7 @@ export default function Home() {
   return (
     <div className="mx-auto max-w-[1440px] px-6 sm:px-12 lg:px-20">
       {/* Bio Section */}
-      <section className="pt-20 sm:pt-28 pb-16">
-        <Blur delay={0}>
-          <h1 className="text-[40px] sm:text-[48px] font-semibold tracking-[-1.5px] leading-tight text-foreground">
-            {bio.title}
-          </h1>
-        </Blur>
-
-        <Blur delay={50}>
-          <div className="mt-2 flex items-center gap-4">
-            <p className="text-[13px] text-date font-medium">
-              Updated {bio.updated}
-            </p>
-            <span className="text-border">·</span>
-            <nav className="flex items-center gap-3">
-              <Link href="/projects" className="text-[13px] text-muted hover:text-foreground transition-colors font-medium">
-                Projects
-              </Link>
-              <Link href="/blog" className="text-[13px] text-muted hover:text-foreground transition-colors font-medium">
-                Blog
-              </Link>
-              <Link href="/shop" className="text-[13px] text-muted hover:text-foreground transition-colors font-medium">
-                Shop
-              </Link>
-            </nav>
-          </div>
-        </Blur>
-
-        <div className="mt-10 max-w-[720px] space-y-6">
-          {bio.paragraphs.map((html, i) => (
-            <Fade key={i} delay={100 + i * 100}>
-              <p
-                className="text-[13px] leading-[1.7] text-foreground"
-                dangerouslySetInnerHTML={{ __html: html }}
-              />
-            </Fade>
-          ))}
-        </div>
-      </section>
+      <HomeHero title={bio.title} updated={bio.updated} paragraphs={bio.paragraphs} />
 
       {/* GitHub Contributions */}
       <GitHubContributions />

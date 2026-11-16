@@ -28,8 +28,14 @@ export type ShopProduct = {
   slug: string;
   title: string;
   type: string;
-  status: "Coming soon";
+  status: "Free" | "Coming soon";
   price: string;
+  /** The file behind the download button, counted under `id` (see src/lib/downloads.ts). */
+  download: {
+    id: string;
+    file: string;
+    size: string;
+  };
   description: string;
   overview: string;
   tags: string[];
@@ -50,8 +56,13 @@ export const shopProduct: ShopProduct = {
   slug: "signal-no-01",
   title: "Signal No. 01",
   type: "Wallpaper pack",
-  status: "Coming soon",
-  price: "€12",
+  status: "Free",
+  price: "Free",
+  download: {
+    id: "signal-no-01",
+    file: "/downloads/signal-no-01.zip",
+    size: "28 MB",
+  },
   description:
     "Six calm, minimal-tech wallpapers for desktop and mobile, built from quiet grids, circuit traces, and restrained signal accents.",
   overview:
@@ -180,13 +191,13 @@ export const shopProduct: ShopProduct = {
         "Four ready-to-use screen formats per design, exported in the sRGB colour space.",
     },
     {
-      title: "Simple personal license",
+      title: "Free for personal use",
       description:
-        "Use the wallpapers on devices you personally own without recurring fees.",
+        "Use the wallpapers on every device you personally own, at no cost and without an account.",
     },
   ],
   license:
-    "The personal-use license covers devices you personally own and use. Sharing, redistribution, resale, commercial publication, and inclusion in another product are not permitted.",
+    "The download is free and the personal-use license covers devices you personally own and use. Redistribution, resale, commercial publication, and inclusion in another product are not permitted; link to this page instead.",
   faqs: [
     {
       question: "What will I receive?",
@@ -204,9 +215,9 @@ export const shopProduct: ShopProduct = {
         "The JPG files work on macOS, Windows, Linux, iPhone, and Android. Choose the closest aspect ratio and use your system’s Fill setting if your display differs slightly.",
     },
     {
-      question: "Is this a subscription?",
+      question: "Is it really free?",
       answer:
-        "No. Signal No. 01 will be a one-time €12 purchase with no recurring charge.",
+        "Yes. Signal No. 01 is a free download: no payment, no account, and no email address needed.",
     },
     {
       question: "Can I use the wallpapers commercially?",
@@ -216,22 +227,12 @@ export const shopProduct: ShopProduct = {
     {
       question: "Can I share the files with someone else?",
       answer:
-        "No. The license is personal and non-transferable. Anyone else who wants the pack should purchase their own copy when it becomes available.",
+        "Please share the link to this page rather than the files. Anyone can download their own copy here for free.",
     },
     {
-      question: "Are future wallpaper packs included?",
+      question: "How does the download work?",
       answer:
-        "No. Your purchase covers Signal No. 01. Any future collection will be offered separately unless stated otherwise.",
-    },
-    {
-      question: "How will delivery work?",
-      answer:
-        "Once checkout is enabled, the download will be delivered after payment. The exact checkout and delivery details will be published before launch.",
-    },
-    {
-      question: "What is the refund policy?",
-      answer:
-        "The final digital-product refund terms will be shown before checkout is enabled, so you can review them before purchasing.",
+        "The download button starts the ZIP straight away. The page counts each download once per visitor per day, without storing who downloaded it.",
     },
   ],
 };

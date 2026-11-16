@@ -4,7 +4,7 @@ import { getAllSlugs, getChapterOutline } from "@/lib/blog";
 import { getAllProjectSlugs } from "@/lib/projects";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const staticRoutes = ["", "/projects", "/blog", "/shop"].map(
+  const staticRoutes = ["", "/projects", "/blog", "/shop", "/shop/latex-templates"].map(
     (route) => ({
       url: `${SITE_URL}${route || "/"}`,
       changeFrequency: "monthly" as const,

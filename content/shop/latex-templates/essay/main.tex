@@ -1,0 +1,75 @@
+% =====================================================================
+%  Essay — free LaTeX template by mitaa.dev
+%  Compile with pdfLaTeX + Biber (Overleaf does this for you).
+%  Locally:  latexmk -pdf main.tex
+% =====================================================================
+\documentclass[11pt, a4paper]{article}
+\input{setup}
+
+% --- Details: fill these in -------------------------------------------
+\doctitle{The Title of Your Essay}
+\docsubtitle{A subtitle that sums up your thesis in one sentence}
+\docauthor{First Last}
+\docstudentnumber{1234567}
+\doccourse{Course name}
+\docsupervisor{Lecturer's name}
+\docdate{\today}
+\docwords{1,500}               % leave empty if no word count is needed
+
+\begin{document}
+
+\makeheader
+
+% ---------------------------------------------------------------------
+\section{Introduction}
+% ---------------------------------------------------------------------
+Open with a hook that pulls the reader straight into the subject: a
+recent event, a striking figure or a familiar situation. Then lead, in a
+few sentences, to the question your essay answers.
+
+End the introduction with your \textbf{thesis}: one clear claim that the
+rest of the essay argues for. A good thesis is debatable, specific and
+can be said in a single sentence.
+
+% ---------------------------------------------------------------------
+\section{First argument}
+% ---------------------------------------------------------------------
+Start every paragraph with a topic sentence that states the argument.
+Then support it with evidence: a study, an example or a figure. Cite your
+sources in APA style, in parentheses \parencite{apa2020} or in the
+running text, as with \textcite{booth2016}.
+
+Put a direct quotation in quotation marks and add the page:
+\enquote{Every good research question starts with a problem}
+\parencite[p.~51]{lastname2024}. Use quotations sparingly; your own
+words show better that you understand the source.
+
+% ---------------------------------------------------------------------
+\section{Second argument}
+% ---------------------------------------------------------------------
+Build on the first argument or show another side of your thesis. A list
+can briefly show what is at stake:
+
+\begin{itemize}
+  \item a first consideration, short and concrete;
+  \item a second consideration that strengthens the argument;
+  \item a third consideration that leads to the next part.
+\end{itemize}
+
+% ---------------------------------------------------------------------
+\section{Counterargument and rebuttal}
+% ---------------------------------------------------------------------
+A strong essay takes the other side seriously. Describe the best
+counterargument as fairly as you can, then show why your thesis still
+stands. That convinces more than arguments in favour alone.
+
+% ---------------------------------------------------------------------
+\section{Conclusion}
+% ---------------------------------------------------------------------
+Restate your thesis in different words and sum up the main arguments.
+Bring in nothing new, but close with a look ahead: what does your
+conclusion mean for the reader, or which question remains open?
+
+\printbibliography[title={References}]
+
+\end{document}
