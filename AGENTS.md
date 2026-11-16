@@ -41,7 +41,7 @@ A project page can come from either source, merged + deduplicated on `/projects`
 
 Blog posts are **LaTeX**: `content/blog/*.tex`, parsed and rendered by the modules in `src/lib/blog/` (map below). Markdown is used elsewhere on the site (projects, bio, GitHub READMEs) but never for the blog.
 
-`templates/` holds the starting points for both, one folder each: `templates/blog/` (a post) and `templates/project/` (a repo skeleton in `repo/`, a curated page in `curated.md`). Each folder's `README.md` lists the folder and file-name rules the build scripts match on. Keep it in sync when those rules change. Under `npm run dev` only (`NODE_ENV === "development"`), the blog template is served as `/blog/template` (`devTemplatePost` in `src/lib/blog/source.ts`) and `templates/project/repo/` as the repo `project-template` (`readTemplateRepo` in `src/lib/projects/github.ts`).
+`templates/` holds the starting points for both, one folder each: `templates/blog/` (a post) and `templates/project/` (a repo skeleton in `repo/`, a curated page in `curated.md`). Each folder's `README.md` lists the folder and file-name rules the build scripts match on. Keep it in sync when those rules change. Under `npm run dev` only (`NODE_ENV === "development"`), the blog template is served as `/blog/template` (`devTemplatePost` in `src/lib/blog/source.ts`). The project template has no preview: copy `templates/project/repo/` into a real repo to see it.
 
 #### Where things live
 ```
@@ -117,7 +117,7 @@ The consequence: **nothing in the layout can receive the active chapter as a pro
 - `scripts/fetch-github-data.mjs` — GitHub REST + GraphQL (repos, contributions, commits, contributors, releases, dependency manifests) **and** per-repo PCB assets and `project/**/*.pdf` documents (see below). Needs `GITHUB_TOKEN` (or `GITHUB_TOKEN_PUBLIC_REPO` / `GITHUB_TOKEN_CONTRIBUTIONS`); degrades to public-rate-limited fetches without one.
 - `scripts/convert-step-models.mjs` → `scripts/step-to-glb.mjs` — converts curated `.step` models referenced in project frontmatter to `.glb` (OpenCascade via `occt-import-js`, WASM — runs on Vercel).
 
-`public/pcb/*`, `public/docs/*`, `public/media/*` and `public/data/` are build artifacts. `.gitignore` ignores all of `public/data/` (readers fall back to empty data when it is missing — run `node scripts/fetch-github-data.mjs` to populate it for `next dev`), `public/pcb/*` except the committed `demo-board`, `public/docs/*` except `curated/` (hand-added PDFs) and `blog/` (PDFs from `blog:check --publish`), and `public/media/*` except `curated/`. Design files (`*.pen`) stay out of git.
+`public/pcb/*`, `public/docs/*`, `public/media/*` and `public/data/` are build artifacts. `.gitignore` ignores all of `public/data/` (readers fall back to empty data when it is missing — run `node scripts/fetch-github-data.mjs` to populate it for `next dev`), `public/pcb/*`, `public/docs/*` except `curated/` (hand-added PDFs) and `blog/` (PDFs from `blog:check --publish`), and `public/media/*` except `curated/`. Design files (`*.pen`) stay out of git.
 
 ### The PCB viewer subsystem (most distinctive area)
 A project's optional `pcb` block (`PcbAssets` in `src/lib/projects/types.ts`) drives a tabbed hardware viewer rendered by `src/components/pcb/PcbViewer.tsx` (Schematic / PCB / 3D / BOM). Where assets come from:

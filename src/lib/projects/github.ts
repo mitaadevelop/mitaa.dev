@@ -10,68 +10,9 @@ const GITHUB_USERNAME = "mitaadevelop";
 /** Read pre-fetched GitHub repos from the static data file. */
 export function readGitHubRepos() {
   const filePath = path.join(process.cwd(), "public", "data", "github-repos.json");
-  const repos = fs.existsSync(filePath)
+  return fs.existsSync(filePath)
     ? (JSON.parse(fs.readFileSync(filePath, "utf8")) as GitHubRepo[])
     : [];
-  const template = readTemplateRepo();
-  return template ? [template, ...repos] : repos;
-}
-
-/**
- * `templates/project/repo/`, read from disk as if it were a fetched repo, under
- * `npm run dev` only — so the template previews through the same code path as a
- * real repo, at /projects/project-template. Its PCB/, images/ and measurements/
- * folders are empty placeholders, so those sections borrow the demo-board assets.
- */
-function readTemplateRepo(): GitHubRepo | null {
-  if (process.env.NODE_ENV !== "development") return null;
-  const root = path.join(process.cwd(), "templates", "project", "repo");
-  if (!fs.existsSync(root)) return null;
-
-  const read = (rel: string) => fs.readFileSync(path.join(root, rel), "utf8");
-  const docsDir = path.join(root, "project");
-  const markdownFiles = fs.existsSync(docsDir)
-    ? fs
-        .readdirSync(docsDir, { recursive: true, encoding: "utf8" })
-        .filter((rel) => /\.(md|markdown|mdoc)$/i.test(rel))
-        .map((rel) => `project/${rel.split(path.sep).join("/")}`)
-        .map((rel) => ({ path: rel, content: read(rel) }))
-    : [];
-  const readmePath = path.join(root, "README.md");
-  const updated = fs.statSync(fs.existsSync(readmePath) ? readmePath : root).mtime.toISOString();
-
-  return {
-    name: "project-template",
-    description:
-      "Dev-only preview of templates/project/repo. The docs are the template's own; the PCB, gallery and chart borrow the demo-board assets.",
-    html_url: `https://github.com/${GITHUB_USERNAME}/project-template`,
-    homepage: null,
-    language: "C",
-    topics: ["embedded", "kicad", "template"],
-    stargazers_count: 0,
-    forks_count: 0,
-    created_at: updated,
-    updated_at: updated,
-    fork: false,
-    archived: false,
-    default_branch: "main",
-    markdownFiles,
-    readme: fs.existsSync(readmePath) ? read("README.md") : null,
-    pcb: {
-      schematic: "/pcb/demo-board/board.kicad_sch",
-      board: "/pcb/demo-board/board.kicad_pcb",
-      model3d: "/pcb/demo-board/board.glb",
-      bom: "/pcb/demo-board/bom.csv",
-      schematicImage: "/pcb/demo-board/img/schematic.svg",
-      pcbImage: "/pcb/demo-board/img/pcb-top.svg",
-      pcbBackImage: "/pcb/demo-board/img/pcb-bottom.svg",
-      pcbXrayImage: "/pcb/demo-board/img/pcb-xray.svg",
-    },
-    gallery: ["/media/curated/rtos-dev-board/photo-1.png", "/media/curated/rtos-dev-board/photo-2.svg"],
-    measurements: [
-      { src: "/media/curated/rtos-dev-board/measurements/step-response.csv", title: "step response" },
-    ],
-  };
 }
 
 export interface GitHubRepo {

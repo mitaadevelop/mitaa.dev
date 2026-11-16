@@ -7,7 +7,7 @@ Two ways to get a project onto mitaa.dev:
 | [repo/](repo/) | A GitHub repo that should show up as a full project page — **the default** | the root of the new repo |
 | [curated.md](curated.md) | A hand-written project page (rarely needed — see the end of this page) | `content/projects/<slug>.md` |
 
-Preview under `npm run dev`: [/projects/project-template](http://localhost:3000/projects/project-template) renders [repo/](repo/) as if it were a fetched GitHub repo. Its `PCB/`, `images/` and `measurements/` folders are empty placeholders, so the preview borrows the demo-board PCB, photos and chart.
+There is no preview of [repo/](repo/) on the dev site: its `PCB/`, `images/` and `measurements/` folders are empty placeholders. Copy it into a GitHub repo, add your files and redeploy.
 
 Everything below describes what `scripts/fetch-github-data.mjs` looks for. Folder names and file names are the interface: get them right and the page assembles itself on the next build.
 

@@ -120,7 +120,7 @@ mitaa.dev/
 │   ├── data/                   # Pre-fetched GitHub data (git-ignored; generated at build time)
 │   ├── docs/                   # PDFs: blog/ committed, <repo>/ pulled at build time
 │   ├── media/                  # Gallery/video/CSV: curated/ committed, <repo>/ pulled at build time
-│   ├── pcb/                    # PCB assets: demo-board/ committed, <repo>/ pulled at build time
+│   ├── pcb/                    # PCB assets: <repo>/ pulled at build time
 │   └── shop/                   # Shop preview images
 ├── scripts/
 │   ├── fetch-github-data.mjs   # Pre-build: GitHub data + PCB/doc/media assets
