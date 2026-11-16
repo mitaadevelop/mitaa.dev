@@ -61,3 +61,11 @@ Thumbs.db
 # Private, sale-ready digital product masters and delivery archives.
 # Public storefront previews live separately under /public/shop/.
 /private-products/
+
+# Tooling that writes into the repo folder on each machine; not part of the site.
+/.claude/worktrees/
+/.claude/settings.local.json
+/.codegraph/
+/.codeatlas/
+/graft/
+/.trail/cache/
