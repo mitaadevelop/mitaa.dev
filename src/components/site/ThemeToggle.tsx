@@ -3,6 +3,7 @@
 import { useSyncExternalStore } from "react";
 import { useTheme } from "next-themes";
 import { Moon, Sun } from "lucide-react";
+import { useDictionary } from "@/components/site/LangProvider";
 
 /** Never changes, so the snapshot below is read once per render pass. */
 const subscribe = () => () => {};
@@ -16,8 +17,9 @@ export default function ThemeToggle() {
   // `resolvedTheme` is only known in the browser, so until hydration both sides
   // have to render the same thing. Every attribute derived from it must follow
   // `mounted` — guarding only the icon leaves aria-label and title mismatching.
+  const { theme: words } = useDictionary();
   const isDark = mounted && resolvedTheme === "dark";
-  const label = isDark ? "Switch to light mode" : "Switch to dark mode";
+  const label = isDark ? words.toLight : words.toDark;
 
   return (
     <button

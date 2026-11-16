@@ -1,12 +1,13 @@
 ---
 title: mitaa.dev
-updated: Feb 28, 2026
+updated: 2026-02-28
+lang: nl
 ---
 
-I'm a junior electrical engineer and developer with an agentic approach to work, focused on microcontroller programming, PCB design, and application development. I recently graduated in Electrical Engineering from the University of Hogeschool Rotterdam with my bachelor's degree.
+Ik ben een junior elektrotechnisch ingenieur en ontwikkelaar met een agentic werkwijze, gericht op microcontrollerprogrammering, PCB-ontwerp en applicatieontwikkeling. Onlangs ben ik aan de Hogeschool Rotterdam afgestudeerd in Elektrotechniek (bachelor).
 
-My journey started with curiosity about how electronics work at a fundamental level — from circuit design and signal processing to firmware development and communication protocols. Over time, that curiosity grew into an interest in web development, giving me a perspective that spans everything from register-level programming to cloud deployment.
+Mijn reis begon met nieuwsgierigheid naar hoe elektronica op fundamenteel niveau werkt — van schakelingontwerp en signaalverwerking tot firmwareontwikkeling en communicatieprotocollen. Na verloop van tijd groeide die nieuwsgierigheid uit tot interesse in webontwikkeling, waardoor ik een perspectief heb dat loopt van programmeren op registerniveau tot cloud-deployment.
 
-I'm passionate about writing efficient, close-to-hardware code and designing robust, maintainable systems with an agentic workflow. Whether it's bare-metal firmware for an STM32, ESP32, or NXP chip, a real-time sensor network, or a React dashboard, I bring the same engineering discipline and attention to every project.
+Ik schrijf graag efficiënte code dicht op de hardware en ontwerp robuuste, onderhoudbare systemen met een agentic workflow. Of het nu gaat om bare-metal firmware voor een STM32, ESP32 of NXP-chip, een realtime sensornetwerk of een React-dashboard: ik breng dezelfde technische discipline en aandacht in elk project.
 
-Outside of engineering, I follow open-source projects and keep an eye on the latest trends in technology. I enjoy building projects and sharing what I learn through blogging, and in my free time I love playing padel, working out, and building cool side projects.
+Naast engineering volg ik open-sourceprojecten en houd ik de nieuwste technologische ontwikkelingen in de gaten. Ik bouw graag projecten en deel wat ik leer via bloggen, en in mijn vrije tijd speel ik graag padel, train ik en bouw ik leuke zijprojecten.
