@@ -39,7 +39,18 @@ The question, the method and the answer, in four or five sentences.
 
 Open with the problem in two or three sentences: what you were trying to do, and why it was harder than it looked.
 
-Each \texttt{\textbackslash{}section} is numbered and listed in the table of contents; \texttt{\textbackslash{}subsection} and \texttt{\textbackslash{}subsubsection} go deeper.
+Each \texttt{\textbackslash{}section} is numbered and listed in the table of contents; \texttt{\textbackslash{}subsection} and \texttt{\textbackslash{}subsubsection} go deeper, and \texttt{\textbackslash{}section*} gives an unnumbered heading. Lists come in two kinds:
+
+\begin{itemize}
+  \item \texttt{itemize} for points without an order;
+  \item \texttt{enumerate} for steps that follow each other.
+\end{itemize}
+
+\begin{enumerate}
+  \item State the problem.
+  \item Describe what you tried.
+  \item Give the result.
+\end{enumerate}
 
 \begin{note}
 Callouts: \texttt{note}, \texttt{tip}, \texttt{warning}, \texttt{important}, \texttt{caution}.
@@ -79,6 +90,13 @@ void control_loop(void) {
 }
 \end{lstlisting}
 
+Give a listing a \texttt{caption=} and a \texttt{label=} and it is numbered like a figure, so \Cref{lst:pid} can point at it. \texttt{minted} works the same way, with \texttt{filename=} for the title.
+
+\begin{lstlisting}[language=c, caption={The integral term with anti-windup}, label=lst:pid]
+integral += error * dt;
+integral = clamp(integral, -I_MAX, I_MAX);
+\end{lstlisting}
+
 Inline math like $K_p$ and display math both go through KaTeX. A numbered \texttt{equation} can be pointed at with \texttt{\textbackslash{}eqref}: the controller is \eqref{eq:pi}.
 \begin{equation}
 u(t) = K_p \, e(t) + K_i \int_0^t e(\tau)\, d\tau
@@ -88,6 +106,21 @@ u(t) = K_p \, e(t) + K_i \int_0^t e(\tau)\, d\tau
 \begin{definition}[Settling time]
 The time after which the output stays within 2\,\% of its final value.
 \end{definition}
+
+Theorems, lemmas, propositions, corollaries and definitions share one counter; examples have their own. A \texttt{proof} is not numbered.
+
+\begin{theorem}[Stability]
+\label{thm:stable}
+The closed loop is stable for every $K_p > 0$ and $K_i \ge 0$.
+\end{theorem}
+
+\begin{proof}
+Both poles of the characteristic polynomial lie in the left half-plane.
+\end{proof}
+
+\begin{example}
+\Cref{thm:stable} still says nothing about how fast the loop settles.
+\end{example}
 
 \section{Results}
 
@@ -114,5 +147,14 @@ What worked, what didn't, and what is next. Cite sources with \texttt{\textbacks
 \begin{thebibliography}{9}
 \bibitem{datasheet} Manufacturer, \emph{Part Datasheet}, rev.~3, 2025.
 \end{thebibliography}
+
+% \appendix starts the appendices: their sections are lettered A, B, … and the
+% page is called "Appendices". Delete this part if the post has none.
+\appendix
+
+\section{Wiring}
+\label{app:wiring}
+
+Material that would interrupt the argument, such as the full wiring table, goes here and is cited from the text as \Cref{app:wiring}.
 
 \end{document}
