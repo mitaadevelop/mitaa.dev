@@ -12,24 +12,39 @@ is built; there is no database.
 
 ## Writing a blog post
 
-```bash
-npm run new:post can-bus-sniffer "A CAN bus sniffer"
-```
+A post is one LaTeX file in `content/blog/`; its file name is its address
+(`content/blog/can-bus-sniffer.tex` is `/blog/can-bus-sniffer`). Its images go in
+`public/blog/<name>/` and are referred to from the site root:
+`\includegraphics{/blog/can-bus-sniffer/scope.png}`.
 
-This makes two things:
+### Ways to make one
 
-- `content/blog/can-bus-sniffer.tex` — the post, in LaTeX. The file name is the URL (`/blog/can-bus-sniffer`). It starts as the template that shows every feature of the blog, so delete what you do not need.
-- `public/blog/can-bus-sniffer/` — put its images here and refer to them from the site root: `\includegraphics{/blog/can-bus-sniffer/scope.png}`.
+1. **Write it yourself, with a live preview** (the usual way).
 
-Then:
+   ```bash
+   npm run new:post can-bus-sniffer "A CAN bus sniffer"
+   npm run dev
+   ```
 
-1. `npm run dev` and open <http://localhost:3000/blog/can-bus-sniffer>. Saving the `.tex` file refreshes the page.
-2. The new post is a **draft**: it shows on your machine only. Delete the `\draft` line near the top when it should be public.
-3. Commit and push (`git add content/blog public/blog && git commit && git push`). When the repository is connected to Vercel, the site updates by itself; otherwise see [Deployment](../README.md#deployment).
+   `new:post` makes `content/blog/can-bus-sniffer.tex` from the template, which shows every feature of the blog (headings, maths, code, figures, tables, callouts, diagrams): delete what you do not need. It also makes the folder `public/blog/can-bus-sniffer/` for the images. Then open <http://localhost:3000/blog/can-bus-sniffer>: the page refreshes by itself each time you save the `.tex` file (on save, not on every keystroke), in the site's real layout. To see what is possible first, open `/blog/template` while `npm run dev` runs; it is never part of the production site.
 
-The template post is also on screen at `/blog/template` while `npm run dev` runs. It is never part of the production site.
+2. **Let a coding agent write it.** Give Claude Code your notes, a list of points or a rough text and ask for a post in `content/blog/`. It writes the `.tex`; you read it with the live preview from way 1 and ask for changes.
 
-`mitaa.sty` in `content/blog/` is not a post: it holds the site's own macros as real LaTeX, so a post also compiles to a PDF (`npm run blog:check <name>`). Leave it where it is.
+3. **A preview at a real address before you publish.** Take `\draft` out, put the post on its own branch and push it. Vercel builds a preview link for that branch alone, which you can open on any device. Drafts are left out of every production build, previews included, so the line has to go for a post to show there.
+
+Writing it in Overleaf works for the text, but you only see the site's layout once the file is in `content/blog/`.
+
+### Publishing
+
+1. A new post is a **draft**: it shows on your machine only. Delete the `\draft` line near the top when it should be public.
+2. Commit and push (`git add content/blog public/blog && git commit && git push`). When the repository is connected to Vercel, the site updates by itself; otherwise see [Deployment](../README.md#deployment).
+3. Write in one language; the other is made at build time (see [The other language](#the-other-language)).
+
+### Good to know
+
+- Run `npm run dev` in the folder that has `node_modules` (the main checkout). In a Git worktree without its own `node_modules` the dev server does not start.
+- `npm run blog:check <name>` also compiles the post to a PDF with `latexmk` (which has to be installed) and checks that the numbering of sections, figures, equations and references matches the site. It is optional.
+- `mitaa.sty` in `content/blog/` is not a post: it holds the site's own macros as real LaTeX, so a post can compile to a PDF. Leave it where it is.
 
 ## Where *not* to put things
 
