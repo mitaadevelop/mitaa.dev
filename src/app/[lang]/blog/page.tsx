@@ -4,6 +4,7 @@ import Link from "@/components/site/LocaleLink";
 import Image from "next/image";
 import { ArrowLeft } from "lucide-react";
 import { getAllPosts } from "@/lib/blog";
+import { strings } from "@/lib/blog/i18n";
 import { Blur } from "@/components/animate-ui/primitives/effects/blur";
 import { Fade } from "@/components/animate-ui/primitives/effects/fade";
 import { formatDate } from "@/lib/date";
@@ -77,7 +78,8 @@ export default async function BlogPage({ params }: Props) {
                   </p>
                   <div className="mt-3 flex items-center gap-4">
                     <span className="text-[13px] text-date">
-                      {post.readTime}
+                      {/* In the post's own language, as on the post itself. */}
+                      {strings(post.lang).readTime(post.readMinutes)}
                     </span>
                     <span className="text-[13px] text-date">
                       {formatDate(post.date, "short", words.locale)}
