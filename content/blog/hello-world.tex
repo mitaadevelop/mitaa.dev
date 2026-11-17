@@ -2,47 +2,83 @@
 % Images for this post go in public/blog/hello-world/ and are referenced from the site root.
 % It compiles with latexmk too: npm run blog:check hello-world
 \documentclass[11pt,a4paper]{article}
+\usepackage[dutch]{babel}
 \usepackage{amsmath, booktabs, graphicx}
 \usepackage{mitaa}
 
-\title{Hello, world}
-\subtitle{What this site is, and how a post gets onto it}
+\title{Hallo wereld}
+\subtitle{Wie ik ben, wat je hier gaat lezen en hoe zo'n post op de site belandt}
 \author{Mitchel Reints}
-\date{2026-11-16}
-\excerpt{A first, short post: what is on this site, and how a LaTeX file becomes a page on it.}
-\tags{Meta, LaTeX}
+\date{2026-11-17}
+\excerpt{Mijn eerste post: wat ik bouw, wat je hier kunt verwachten, en waarom het eerste programma op een microcontroller altijd een knipperende led is.}
+\tags{Meta, Elektronica, LaTeX}
 \paginate{never}
 
 \begin{document}
 \maketitle
 
-\section{What this site is}
+\section{Hoi, ik ben Mitchel}
 
-This is the personal site of Mitchel Reints: projects, a blog and a few free downloads.
+Ik ben elektrotechnisch ingenieur, net afgestudeerd aan de Hogeschool Rotterdam, en ik bouw dingen die in de buurt van de hardware leven: firmware voor microcontrollers (STM32, ESP32, NXP), printplaten, en de apps en dashboards eromheen. Ik werk graag met AI-agents die het saaie werk doen, terwijl ik de beslissingen neem.
 
-The projects page fills itself. Every public repository on GitHub becomes a project, with its README, and with schematics, PCB layouts and measurement charts when the repository has them. The blog is written in LaTeX, so maths such as $e^{i\pi} + 1 = 0$ is typeset the way it is in a paper. The shop holds free LaTeX templates (an essay, a report and a research report) and a two-page cheat sheet.
+Dit is de eerste post op mijn site. Er komt een blog bij te staan, omdat ik vaker iets opschrijf dan ik met iemand deel, en omdat je een onderwerp pas echt snapt als je het kunt uitleggen.
 
-\section{How a post gets here}
+\begin{tip}[Waarom een blog?]
+Wat je opschrijft, onthoud je. En als een ander er iets aan heeft, is het een mooie bijkomstigheid.
+\end{tip}
 
-A post is one \texttt{.tex} file. When the site is built, the file is read, the maths is typeset with KaTeX, and a diagram written as Mermaid text is drawn to SVG. \Cref{fig:pipeline} shows the path, and it is itself such a diagram.
+\section{Wat je hier kunt verwachten}
+
+Geen vaste planning, wel een paar vaste thema's:
+
+\begin{itemize}
+  \item \textbf{Hardware}: schema's, printplaten en wat er misging toen de eerste prototypes uit de oven kwamen.
+  \item \textbf{Firmware}: code die dicht op de chip zit, tot op registerniveau.
+  \item \textbf{Webprojecten}: ook de site waar je nu op zit.
+  \item \textbf{Zijprojecten}: alles wat ik bouw omdat het leuk is, en de dingen die ik daarvan leer.
+\end{itemize}
+
+Naast het werk speel ik padel en train ik, dus verwacht af en toe een uitstapje.
+
+\section{Het verplichte hello world}
+
+In de elektronica is het eerste programma op een nieuw bordje geen tekst op een scherm, maar een led die knippert. Het bewijst dat de klok loopt, de pin werkt en je code echt op de chip draait.
+
+\begin{lstlisting}[language=c, title=blink.c]
+while (1) {
+    HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
+    HAL_Delay(500);   /* een halve seconde aan, een halve uit */
+}
+\end{lstlisting}
+
+Een led aansluiten zonder weerstand is de snelste manier om een led of een pin te slopen. De voorschakelweerstand volgt uit de wet van Ohm:
+\begin{equation}
+  R = \frac{V_s - V_f}{I_f}
+  \label{eq:led}
+\end{equation}
+Met een voeding van $V_s = 3{,}3\,\mathrm{V}$, een led met $V_f = 2{,}0\,\mathrm{V}$ en een stroom van $I_f = 10\,\mathrm{mA}$ geeft \eqref{eq:led} een weerstand van $130\,\Omega$. De eerstvolgende standaardwaarde is $150\,\Omega$, en dan brandt hij iets minder fel, maar je bent zeker van je led.
+
+\section{Hoe zo'n post op de site komt}
+
+Een post is één \texttt{.tex}-bestand. Als de site wordt gebouwd, leest hij het bestand, zet hij de formules op met KaTeX en tekent hij diagrammen die als Mermaid-tekst zijn geschreven. \Cref{fig:pipeline} laat zien hoe dat gaat, en is zelf zo'n diagram.
 
 \begin{figure}
-\begin{lstlisting}[language=mermaid, title={From a .tex file to a page}]
+\begin{lstlisting}[language=mermaid, title={Van .tex-bestand naar pagina}]
 flowchart LR
-  A[post.tex] --> B[Read the LaTeX]
-  B --> C[Maths: KaTeX]
-  B --> D[Diagrams: pele]
-  C --> E[Page on the site]
+  A[post.tex] --> B[LaTeX lezen]
+  B --> C[Formules: KaTeX]
+  B --> D[Diagrammen: pele]
+  C --> E[Pagina op de site]
   D --> E
 \end{lstlisting}
-\caption{How a LaTeX post becomes a page}
+\caption{Hoe een LaTeX-post een pagina wordt}
 \label{fig:pipeline}
 \end{figure}
 
-The same file also compiles to a PDF with \texttt{latexmk}, and a small check compares the numbers LaTeX prints (sections, figures, equations) with the ones on the page, so the two always agree.
+Hetzelfde bestand wordt met \texttt{latexmk} ook een PDF, en een kleine controle vergelijkt de nummers die LaTeX afdrukt (hoofdstukken, figuren, formules) met die op de pagina, zodat de twee altijd kloppen.\footnote{Dit bericht is in het Nederlands geschreven; de Engelse versie wordt bij het bouwen van de site automatisch vertaald.}
 
-\section{What comes next}
+\section{Wat nu}
 
-Posts about the projects can follow here. For now this one only has to show that a post goes from a \texttt{.tex} file to a page.
+De volgende posts gaan over de projecten die hier al op staan, en over wat ik leer terwijl ik ze bouw. Heb je een vraag of een idee? Laat het me weten via GitHub.
 
 \end{document}
