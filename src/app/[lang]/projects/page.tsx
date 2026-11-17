@@ -1,13 +1,28 @@
+import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 import { getAllProjects } from "@/lib/projects";
 import { readGitHubRepos, mapReposToProjects } from "@/lib/projects/github";
+import { isLang } from "@/lib/i18n";
+import { dictionary } from "@/lib/i18n/dictionary";
+import { languageAlternates } from "@/lib/i18n/metadata";
 import ProjectsList from "./ProjectsList";
 
-export const metadata = {
-  title: "Projects | mitaa.dev",
-  description: "A collection of projects.",
-};
+type Props = Readonly<{ params: Promise<{ lang: string }> }>;
 
-export default async function ProjectsPage() {
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { lang } = await params;
+  if (!isLang(lang)) return {};
+  const words = dictionary(lang).projects;
+  return {
+    title: words.title,
+    description: words.description,
+    alternates: languageAlternates(lang, "/projects"),
+  };
+}
+
+export default async function ProjectsPage({ params }: Props) {
+  const { lang } = await params;
+  if (!isLang(lang)) notFound();
   const projects = getAllProjects();
 
   // Read pre-fetched GitHub repos for static export

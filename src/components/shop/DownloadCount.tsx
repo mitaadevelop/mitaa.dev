@@ -1,20 +1,23 @@
 import { Download } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-const format = new Intl.NumberFormat("en-US");
+import type { Lang } from "@/lib/i18n";
+import { dictionary } from "@/lib/i18n/dictionary";
 
 /**
- * "1,234 downloads". Renders nothing while counting is off (null) or nobody
+ * "1,234 downloads" ("1.234 downloads" in Dutch). Renders nothing while counting is off (null) or nobody
  * has downloaded yet, so a fresh file never advertises a zero.
  */
 export default function DownloadCount({
   count,
+  lang,
   className,
 }: {
   count: number | null;
+  lang: Lang;
   className?: string;
 }) {
   if (!count) return null;
+  const words = dictionary(lang);
   return (
     <span
       className={cn(
@@ -23,7 +26,7 @@ export default function DownloadCount({
       )}
     >
       <Download size={12} aria-hidden="true" />
-      {format.format(count)} {count === 1 ? "download" : "downloads"}
+      {new Intl.NumberFormat(words.locale).format(count)} {words.shop.downloads(count).replace(/^\S+\s/, "")}
     </span>
   );
 }

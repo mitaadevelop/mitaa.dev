@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Search, ArrowUp, ArrowDown } from "lucide-react";
+import { useDictionary } from "@/components/site/LangProvider";
 
 /**
  * Renders a Bill of Materials from a CSV artifact as an interactive table
@@ -48,6 +49,7 @@ interface BomData {
 }
 
 export function BomTable({ src }: { src: string }) {
+  const { pcb: words } = useDictionary();
   const [data, setData] = useState<BomData | null>(null);
   const [error, setError] = useState(false);
   const [query, setQuery] = useState("");
@@ -142,12 +144,12 @@ export function BomTable({ src }: { src: string }) {
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Filter parts…"
+            placeholder={words.filterParts}
             className="w-48 rounded-md bg-background/60 pl-7 pr-2 py-1 text-[12px] text-foreground placeholder:text-date focus:outline-none focus:ring-1 focus:ring-foreground/10"
           />
         </div>
         <span className="text-[11px] text-date">
-          {rows.length} line{rows.length === 1 ? "" : "s"}
+          {words.lines(rows.length)}
           {totalQty !== null ? ` · ${totalQty} parts` : ""}
         </span>
       </div>

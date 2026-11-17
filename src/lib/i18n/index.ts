@@ -67,3 +67,11 @@ export function switchPath(lang: Lang, pathname: string): string {
   const { path, suffix } = parseLocale(pathname);
   return localePath(otherLang(lang), `${path}${suffix}`);
 }
+
+/** A text that exists in both languages: `{ nl: "Gratis", en: "Free" }`. Used by data files, where there is no dictionary key. */
+export type Localized<T = string> = { nl: T; en: T };
+
+/** The text of a `Localized` value in `lang`. */
+export function pick<T>(lang: Lang, value: Localized<T>): T {
+  return value[lang];
+}

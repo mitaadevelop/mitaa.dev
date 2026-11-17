@@ -4,6 +4,8 @@ import Image from "next/image";
 import { ChevronLeft, ChevronRight, Expand, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { ShopArtwork } from "@/data/shop";
+import { useDictionary, useLang } from "@/components/site/LangProvider";
+import { pick } from "@/lib/i18n";
 
 type ShopProductGalleryProps = {
   artworks: ShopArtwork[];
@@ -12,6 +14,8 @@ type ShopProductGalleryProps = {
 export default function ShopProductGallery({
   artworks,
 }: ShopProductGalleryProps) {
+  const lang = useLang();
+  const { shop: words } = useDictionary();
   const dialogRef = useRef<HTMLDialogElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -68,13 +72,13 @@ export default function ShopProductGallery({
               setSelectedIndex(index);
               setIsOpen(true);
             }}
-            aria-label={`View larger previews of ${artwork.title}`}
+            aria-label={words.viewLarger(artwork.title)}
             className="group rounded-md text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-4 focus-visible:ring-offset-background"
           >
             <span className="relative block aspect-[16/10] overflow-hidden rounded-md border border-divider bg-secondary">
               <Image
                 src={artwork.preview.landscape}
-                alt={artwork.alt.landscape}
+                alt={pick(lang, artwork.alt.landscape)}
                 fill
                 sizes="(max-width: 767px) 100vw, (max-width: 1279px) 50vw, 33vw"
                 className="object-cover transition-transform duration-500 group-hover:scale-[1.015] motion-reduce:transition-none"
@@ -89,11 +93,11 @@ export default function ShopProductGallery({
                   {artwork.title}
                 </span>
                 <span className="mt-1 block text-[12px] leading-5 text-muted">
-                  {artwork.description}
+                  {pick(lang, artwork.description)}
                 </span>
               </span>
               <span className="shrink-0 rounded-full border border-divider px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.6px] text-date">
-                {artwork.theme}
+                {words.theme[artwork.theme]}
               </span>
             </span>
           </button>
@@ -116,7 +120,7 @@ export default function ShopProductGallery({
         <div className="flex min-h-16 items-center justify-between gap-4 border-b border-white/10 px-4 sm:px-6">
           <div>
             <p className="text-[10px] font-medium uppercase tracking-[0.8px] text-white/45">
-              {selectedIndex + 1} / {artworks.length} · {selected.theme}
+              {selectedIndex + 1} / {artworks.length} · {words.theme[selected.theme]}
             </p>
             <h3
               id="wallpaper-preview-title"
@@ -129,7 +133,7 @@ export default function ShopProductGallery({
             ref={closeButtonRef}
             type="button"
             onClick={closeGallery}
-            aria-label="Close wallpaper preview"
+            aria-label={words.closePreview}
             className="flex size-11 items-center justify-center rounded-full text-white/70 transition-colors hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
           >
             <X size={18} aria-hidden="true" />
@@ -140,7 +144,7 @@ export default function ShopProductGallery({
           <div className="relative aspect-[16/10] overflow-hidden rounded-md border border-white/10 bg-black">
             <Image
               src={selected.preview.landscape}
-              alt={selected.alt.landscape}
+              alt={pick(lang, selected.alt.landscape)}
               fill
               sizes="(max-width: 1023px) 100vw, 75vw"
               className="object-cover"
@@ -150,7 +154,7 @@ export default function ShopProductGallery({
             <div className="relative aspect-[9/20] overflow-hidden rounded-[1.6rem] border-[5px] border-white/15 bg-black shadow-2xl">
               <Image
                 src={selected.preview.mobile}
-                alt={selected.alt.mobile}
+                alt={pick(lang, selected.alt.mobile)}
                 fill
                 sizes="260px"
                 className="object-cover"
@@ -165,13 +169,13 @@ export default function ShopProductGallery({
 
         <div className="flex min-h-16 items-center justify-between gap-4 border-t border-white/10 px-4 sm:px-6">
           <p className="hidden max-w-xl text-[12px] leading-5 text-white/50 sm:block">
-            {selected.description}
+            {pick(lang, selected.description)}
           </p>
           <div className="ml-auto flex items-center gap-2">
             <button
               type="button"
               onClick={() => moveSelection(-1)}
-              aria-label="View previous wallpaper"
+              aria-label={words.previousWallpaper}
               className="flex size-11 items-center justify-center rounded-full border border-white/15 text-white/70 transition-colors hover:border-white/30 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
             >
               <ChevronLeft size={18} aria-hidden="true" />
@@ -179,7 +183,7 @@ export default function ShopProductGallery({
             <button
               type="button"
               onClick={() => moveSelection(1)}
-              aria-label="View next wallpaper"
+              aria-label={words.nextWallpaper}
               className="flex size-11 items-center justify-center rounded-full border border-white/15 text-white/70 transition-colors hover:border-white/30 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
             >
               <ChevronRight size={18} aria-hidden="true" />

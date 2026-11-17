@@ -1,17 +1,33 @@
-import Link from "next/link";
+import { notFound } from "next/navigation";
+import type { Metadata } from "next";
+import Link from "@/components/site/LocaleLink";
 import Image from "next/image";
 import { ArrowLeft } from "lucide-react";
 import { getAllPosts } from "@/lib/blog";
 import { Blur } from "@/components/animate-ui/primitives/effects/blur";
 import { Fade } from "@/components/animate-ui/primitives/effects/fade";
 import { formatDate } from "@/lib/date";
+import { isLang } from "@/lib/i18n";
+import { dictionary } from "@/lib/i18n/dictionary";
+import { languageAlternates } from "@/lib/i18n/metadata";
 
-export const metadata = {
-  title: "Blog | mitaa.dev",
-  description: "Technical articles, devlogs, and tutorials.",
-};
+type Props = Readonly<{ params: Promise<{ lang: string }> }>;
 
-export default function BlogPage() {
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { lang } = await params;
+  if (!isLang(lang)) return {};
+  const words = dictionary(lang).blogIndex;
+  return {
+    title: words.title,
+    description: words.description,
+    alternates: languageAlternates(lang, "/blog"),
+  };
+}
+
+export default async function BlogPage({ params }: Props) {
+  const { lang } = await params;
+  if (!isLang(lang)) notFound();
+  const words = dictionary(lang);
   const blogPosts = getAllPosts();
 
   return (
@@ -29,13 +45,13 @@ export default function BlogPage() {
       {/* Header */}
       <Blur delay={50}>
         <h1 className="text-[13px] font-medium tracking-[0.8px] uppercase text-muted mb-8">
-          Blog
+          {words.blogIndex.title}
         </h1>
       </Blur>
 
       {/* Posts */}
       {blogPosts.length === 0 && (
-        <p className="text-[14px] text-muted">No posts yet.</p>
+        <p className="text-[14px] text-muted">{words.blogIndex.empty}</p>
       )}
       <div className="divide-y divide-divider">
         {blogPosts.map((post, i) => (
@@ -64,7 +80,7 @@ export default function BlogPage() {
                       {post.readTime}
                     </span>
                     <span className="text-[13px] text-date">
-                      {formatDate(post.date, "short")}
+                      {formatDate(post.date, "short", words.locale)}
                     </span>
                   </div>
                 </div>

@@ -5,6 +5,7 @@ import "../globals.css";
 import Footer from "@/components/site/Footer";
 import { LangProvider } from "@/components/site/LangProvider";
 import ThemeProvider from "@/components/site/ThemeProvider";
+import LanguageToggle from "@/components/site/LanguageToggle";
 import ThemeToggle from "@/components/site/ThemeToggle";
 import { isLang, localePath, LOCALES } from "@/lib/i18n";
 import { dictionary } from "@/lib/i18n/dictionary";
@@ -98,6 +99,7 @@ export default async function RootLayout({ children, params }: Props) {
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             <main className="min-h-screen">{children}</main>
             <Footer lang={lang} />
+            <LanguageToggle />
             <ThemeToggle />
           </ThemeProvider>
         </LangProvider>

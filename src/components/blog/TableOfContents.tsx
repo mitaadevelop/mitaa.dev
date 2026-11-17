@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/site/LocaleLink";
 import type { ChapterRef, ContentsEntry, Lang } from "@/lib/blog/types";
 import { strings } from "@/lib/blog/i18n";
 import { pageTransition, useCurrentChapter } from "./useCurrentChapter";

@@ -1,6 +1,8 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/site/LocaleLink";
+import { useDictionary } from "@/components/site/LangProvider";
+import { parseLocale } from "@/lib/i18n";
 import { usePathname } from "next/navigation";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { Blur } from "@/components/animate-ui/primitives/effects/blur";
@@ -33,7 +35,9 @@ export default function ProjectFrame({
   projects,
   children,
 }: Readonly<{ projects: ProjectNavItem[]; children: React.ReactNode }>) {
-  const pathname = usePathname();
+  const { project: words } = useDictionary();
+  // The language prefix is not part of the project address: `/en/projects/x` is project x.
+  const pathname = parseLocale(usePathname()).path;
   const slug = pathname.startsWith("/projects/") ? pathname.slice("/projects/".length).split("/")[0] : null;
   const index = slug ? projects.findIndex((project) => project.slug === slug) : -1;
   const prev = index > 0 ? projects[index - 1] : undefined;
@@ -48,7 +52,7 @@ export default function ProjectFrame({
             transitionTypes={["page-back"]}
             className="inline-flex items-center gap-2 text-[13px] text-muted hover:text-foreground transition-colors mb-10"
           >
-            <ArrowLeft size={14} /> Back to Projects
+            <ArrowLeft size={14} /> {words.back}
           </Link>
         </Blur>
       )}
@@ -57,7 +61,7 @@ export default function ProjectFrame({
       {children}
 
       {slug && (prev || next) && (
-        <nav aria-label="Other projects" className="mt-16 pt-6 border-t border-divider">
+        <nav aria-label={words.others} className="mt-16 pt-6 border-t border-divider">
           <div className="grid gap-3 sm:grid-cols-2">
             {prev && (
               <Link
@@ -66,7 +70,7 @@ export default function ProjectFrame({
                 className={blockClass}
               >
                 <span className={kickerClass}>
-                  <ArrowLeft size={14} /> Previous project
+                  <ArrowLeft size={14} /> {words.previous}
                 </span>
                 <span className="mt-1 block text-[14px] font-medium text-foreground">{prev.title}</span>
                 <span className="mt-0.5 block text-[11px] text-date">{prev.category}</span>
@@ -79,7 +83,7 @@ export default function ProjectFrame({
                 className={`${blockClass} sm:col-start-2 text-right`}
               >
                 <span className={`${kickerClass} justify-end`}>
-                  Next project <ArrowRight size={14} />
+                  {words.next} <ArrowRight size={14} />
                 </span>
                 <span className="mt-1 block text-[14px] font-medium text-foreground">{next.title}</span>
                 <span className="mt-0.5 block text-[11px] text-date">{next.category}</span>
@@ -96,7 +100,7 @@ export default function ProjectFrame({
             transitionTypes={["page-back"]}
             className="inline-flex items-center gap-2 text-[13px] text-muted hover:text-foreground transition-colors"
           >
-            <ArrowLeft size={14} /> Back to Projects
+            <ArrowLeft size={14} /> {words.back}
           </Link>
         </div>
       )}

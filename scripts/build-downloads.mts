@@ -144,7 +144,7 @@ function renderPreviews(pdf: string, pages: readonly number[], urls: readonly st
 
 const size = (url: string) => `${Math.round(statSync(path.join(publicDir, url)).size / 1024)} kB`;
 
-const readme = (template: LatexTemplate) => `${template.title} — LaTeX template by mitaa.dev
+const readme = (template: LatexTemplate) => `${template.title.en} — LaTeX template by mitaa.dev
 
 CONTENTS
   main.tex         the text; fill in your details at the top
@@ -165,7 +165,7 @@ IMAGES
   them with \\includegraphics{name}.
 `}
 LICENSE
-${wrap(TEMPLATE_LICENSE)}
+${wrap(TEMPLATE_LICENSE.en)}
 
 A two-page LaTeX cheat sheet and more templates:
   ${SITE_URL}/shop/latex-templates

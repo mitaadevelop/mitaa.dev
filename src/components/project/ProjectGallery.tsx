@@ -1,5 +1,6 @@
 "use client";
 
+import { useDictionary } from "@/components/site/LangProvider";
 import { useCallback, useEffect, useState } from "react";
 import { X, ChevronLeft, ChevronRight } from "lucide-react";
 
@@ -9,6 +10,7 @@ import { X, ChevronLeft, ChevronRight } from "lucide-react";
  * under /public or remote.
  */
 export function ProjectGallery({ images }: { images: string[] }) {
+  const { project: words, common } = useDictionary();
   const [open, setOpen] = useState<number | null>(null);
 
   const close = useCallback(() => setOpen(null), []);
@@ -49,7 +51,7 @@ export function ProjectGallery({ images }: { images: string[] }) {
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={src}
-              alt={`Project image ${i + 1}`}
+              alt={words.imageAlt(i + 1)}
               loading="lazy"
               className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
             />
@@ -65,7 +67,7 @@ export function ProjectGallery({ images }: { images: string[] }) {
           <button
             type="button"
             onClick={close}
-            aria-label="Close"
+            aria-label={common.close}
             className="absolute right-4 top-4 rounded-full bg-white/10 p-2 text-white hover:bg-white/20 transition-colors"
           >
             <X size={20} />
@@ -76,7 +78,7 @@ export function ProjectGallery({ images }: { images: string[] }) {
               <button
                 type="button"
                 onClick={(e) => { e.stopPropagation(); step(-1); }}
-                aria-label="Previous"
+                aria-label={common.previous}
                 className="absolute left-4 rounded-full bg-white/10 p-2 text-white hover:bg-white/20 transition-colors"
               >
                 <ChevronLeft size={24} />
@@ -84,7 +86,7 @@ export function ProjectGallery({ images }: { images: string[] }) {
               <button
                 type="button"
                 onClick={(e) => { e.stopPropagation(); step(1); }}
-                aria-label="Next"
+                aria-label={common.next}
                 className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full bg-white/10 p-2 text-white hover:bg-white/20 transition-colors"
               >
                 <ChevronRight size={24} />
@@ -95,7 +97,7 @@ export function ProjectGallery({ images }: { images: string[] }) {
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={images[open]}
-            alt={`Project image ${open + 1}`}
+            alt={words.imageAlt(open + 1)}
             onClick={(e) => e.stopPropagation()}
             className="max-h-[88vh] max-w-[92vw] rounded-lg object-contain"
           />

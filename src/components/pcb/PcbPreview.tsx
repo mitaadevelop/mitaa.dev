@@ -1,6 +1,7 @@
 "use client";
 
 import Script from "next/script";
+import { useDictionary } from "@/components/site/LangProvider";
 import { resolveModelSrc } from "@/lib/pcb";
 
 /**
@@ -17,13 +18,14 @@ const MODEL_VIEWER_SRC =
   "https://cdn.jsdelivr.net/npm/@google/model-viewer@4.0.0/dist/model-viewer.min.js";
 
 export function PcbPreview({ model3d }: { model3d: string }) {
+  const { pcb: words } = useDictionary();
   return (
     <>
       <Script type="module" src={MODEL_VIEWER_SRC} strategy="lazyOnload" />
       <div className="pointer-events-none h-full w-full">
         <model-viewer
           src={resolveModelSrc(model3d)}
-          alt="3D preview of the PCB"
+          alt={words.preview3d}
           auto-rotate
           rotation-per-second="24deg"
           interaction-prompt="none"

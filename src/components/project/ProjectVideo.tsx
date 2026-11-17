@@ -18,7 +18,7 @@ function vimeoId(url: string): string | null {
   return m ? m[1] : null;
 }
 
-export function ProjectVideo({ src }: { src: string }) {
+export function ProjectVideo({ src, title = "Project demo video" }: { src: string; title?: string }) {
   const yt = youtubeId(src);
   const vimeo = yt ? null : vimeoId(src);
   const embed = yt
@@ -32,7 +32,7 @@ export function ProjectVideo({ src }: { src: string }) {
       {embed ? (
         <iframe
           src={embed}
-          title="Project demo video"
+          title={title}
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
           allowFullScreen
           loading="lazy"

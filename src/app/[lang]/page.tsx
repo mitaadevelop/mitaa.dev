@@ -1,20 +1,34 @@
-import Link from "next/link";
+import { notFound } from "next/navigation";
+import Link from "@/components/site/LocaleLink";
 import { getAllPosts } from "@/lib/blog";
 import { getBio } from "@/lib/bio";
 import { Blur } from "@/components/animate-ui/primitives/effects/blur";
 import { Fade } from "@/components/animate-ui/primitives/effects/fade";
 import GitHubContributions from "@/components/project/GitHubContributions";
 import HomeHero from "@/components/site/HomeHero";
+import ContentLanguageNotice from "@/components/site/ContentLanguageNotice";
 import { formatDate } from "@/lib/date";
+import { isLang } from "@/lib/i18n";
+import { dictionary } from "@/lib/i18n/dictionary";
 
-export default function Home() {
+export default async function Home({ params }: Readonly<{ params: Promise<{ lang: string }> }>) {
+  const { lang } = await params;
+  if (!isLang(lang)) notFound();
+
+  const words = dictionary(lang);
   const blogPosts = getAllPosts();
-  const bio = getBio();
+  const bio = getBio(lang);
+  const updated = formatDate(bio.updated, "long", words.locale);
 
   return (
     <div className="mx-auto max-w-[1440px] px-6 sm:px-12 lg:px-20">
       {/* Bio Section */}
-      <HomeHero title={bio.title} updated={bio.updated} paragraphs={bio.paragraphs} />
+      <HomeHero
+        title={bio.title}
+        updated={updated ? words.home.updated(updated) : ""}
+        paragraphs={bio.paragraphs}
+      />
+      {bio.lang !== lang && <ContentLanguageNotice lang={lang} contentLang={bio.lang} />}
 
       {/* GitHub Contributions */}
       <GitHubContributions />
@@ -24,7 +38,7 @@ export default function Home() {
       <section className="pb-16">
         <Blur delay={100} inView inViewMargin="-50px">
           <h2 className="text-[13px] font-medium tracking-[0.8px] uppercase text-muted mb-6">
-            Blog
+            {words.home.blog}
           </h2>
         </Blur>
 
@@ -46,7 +60,7 @@ export default function Home() {
                   )}
                 </div>
                 <span className="text-[13px] text-date shrink-0">
-                  {formatDate(post.date, "short")}
+                  {formatDate(post.date, "short", words.locale)}
                 </span>
               </Link>
             </Fade>

@@ -4,6 +4,8 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import type { ChapterRef } from "@/lib/blog/types";
 import { useCurrentChapter } from "./useCurrentChapter";
+import { useLang } from "@/components/site/LangProvider";
+import { localePath } from "@/lib/i18n";
 
 /**
  * Arrow-key navigation between chapters. Renders nothing.
@@ -14,9 +16,11 @@ import { useCurrentChapter } from "./useCurrentChapter";
  */
 export default function ChapterKeyboardNav({ outline }: Readonly<{ outline: ChapterRef[] }>) {
   const router = useRouter();
+  const lang = useLang();
   const current = useCurrentChapter(outline);
-  const prevHref = current ? outline[current.index - 2]?.href : undefined;
-  const nextHref = current ? outline[current.index]?.href : undefined;
+  // The outline's addresses have no language prefix; the router needs the real ones.
+  const prevHref = current && outline[current.index - 2] ? localePath(lang, outline[current.index - 2].href) : undefined;
+  const nextHref = current && outline[current.index] ? localePath(lang, outline[current.index].href) : undefined;
 
   useEffect(() => {
     if (prevHref) router.prefetch(prevHref);

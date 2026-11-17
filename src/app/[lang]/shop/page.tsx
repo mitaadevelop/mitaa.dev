@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import Image from "next/image";
-import Link from "next/link";
+import Link from "@/components/site/LocaleLink";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { Blur } from "@/components/animate-ui/primitives/effects/blur";
 import { Fade } from "@/components/animate-ui/primitives/effects/fade";
@@ -13,21 +14,31 @@ import {
   templateFiles,
 } from "@/data/latex-templates";
 import { getDownloadCounts, sumCounts } from "@/lib/downloads";
+import { isLang, pick } from "@/lib/i18n";
+import { dictionary } from "@/lib/i18n/dictionary";
+import { languageAlternates } from "@/lib/i18n/metadata";
 
 // Download counts are read from Redis at most once a minute.
 // Must be a literal — keep in sync with COUNTS_REVALIDATE in @/lib/downloads.
 export const revalidate = 60;
 
-export const metadata: Metadata = {
-  title: "Shop",
-  description:
-    "Free downloads by mitaa.dev: minimal-tech wallpapers for desktop and mobile, LaTeX templates for essays, reports and research, and a LaTeX cheat sheet.",
-  alternates: {
-    canonical: "/shop",
-  },
-};
+type Props = Readonly<{ params: Promise<{ lang: string }> }>;
 
-export default async function ShopPage() {
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { lang } = await params;
+  if (!isLang(lang)) return {};
+  const words = dictionary(lang).shop;
+  return {
+    title: words.title,
+    description: words.description,
+    alternates: languageAlternates(lang, "/shop"),
+  };
+}
+
+export default async function ShopPage({ params }: Props) {
+  const { lang } = await params;
+  if (!isLang(lang)) notFound();
+  const words = dictionary(lang);
   const featuredArtwork = shopProduct.artworks[0];
   const counts = await getDownloadCounts();
   const latexDownloads = sumCounts(counts, [
@@ -49,12 +60,10 @@ export default async function ShopPage() {
       <Blur delay={50}>
         <div className="mb-10 max-w-2xl">
           <h1 className="text-[13px] font-medium uppercase tracking-[0.8px] text-muted">
-            Shop
+            {words.shop.title}
           </h1>
           <p className="mt-4 text-[15px] leading-7 text-foreground">
-            Free downloads: original wallpapers that make technical screens
-            feel calm and considered, clean LaTeX templates for your essays,
-            reports and research, and a LaTeX cheat sheet to keep next to them.
+            {words.shop.intro}
           </p>
         </div>
       </Blur>
@@ -69,7 +78,7 @@ export default async function ShopPage() {
             <div className="relative min-h-[300px] overflow-hidden bg-[#0b0d10] sm:min-h-[440px] lg:min-h-[560px]">
               <Image
                 src={featuredArtwork.preview.landscape}
-                alt={featuredArtwork.alt.landscape}
+                alt={pick(lang, featuredArtwork.alt.landscape)}
                 fill
                 priority
                 sizes="(max-width: 1023px) 100vw, 68vw"
@@ -80,7 +89,7 @@ export default async function ShopPage() {
                 <div className="relative aspect-[9/20] overflow-hidden rounded-[1.1rem] border-[4px] border-white/20 bg-black shadow-2xl sm:rounded-[1.6rem]">
                   <Image
                     src={featuredArtwork.preview.mobile}
-                    alt={featuredArtwork.alt.mobile}
+                    alt={pick(lang, featuredArtwork.alt.mobile)}
                     fill
                     sizes="150px"
                     className="object-cover"
@@ -93,17 +102,17 @@ export default async function ShopPage() {
               </div>
 
               <span className="absolute left-5 top-5 rounded-full border border-white/15 bg-black/45 px-3 py-1 text-[10px] font-medium uppercase tracking-[0.8px] text-white/80 backdrop-blur-sm sm:left-8 sm:top-8">
-                Collection 01
+                {words.shop.collection}
               </span>
             </div>
 
             <div className="flex flex-col p-6 sm:p-9 lg:p-10">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="rounded-full bg-badge-bg px-2.5 py-1 text-[11px] font-medium text-badge-text">
-                  {shopProduct.status}
+                  {words.shop.status[shopProduct.status]}
                 </span>
                 <span className="rounded-full bg-secondary px-2.5 py-1 text-[11px] font-medium text-muted">
-                  {shopProduct.type}
+                  {pick(lang, shopProduct.type)}
                 </span>
               </div>
 
@@ -114,14 +123,14 @@ export default async function ShopPage() {
                 {shopProduct.title}
               </h2>
               <p className="mt-4 text-[14px] leading-7 text-muted">
-                {shopProduct.description}
+                {pick(lang, shopProduct.description)}
               </p>
 
               <ul
-                aria-label="Product details"
+                aria-label={words.shop.productDetails}
                 className="mt-6 flex flex-wrap gap-2"
               >
-                {shopProduct.tags.map((tag) => (
+                {pick(lang, shopProduct.tags).map((tag) => (
                   <li
                     key={tag}
                     className="rounded-full border border-divider px-2.5 py-1 text-[11px] text-muted"
@@ -133,19 +142,20 @@ export default async function ShopPage() {
 
               <div className="mt-10 border-t border-divider pt-6 lg:mt-auto">
                 <p className="text-[11px] font-medium uppercase tracking-[0.8px] text-date">
-                  Free download
+                  {words.common.freeDownload}
                 </p>
                 <div className="mt-1 flex items-end justify-between gap-4">
                   <p className="text-[32px] font-semibold tracking-[-0.8px] text-foreground">
-                    {shopProduct.price}
+                    {words.common.free}
                   </p>
                   <span className="inline-flex items-center gap-2 text-[13px] font-medium text-foreground transition-opacity group-hover:opacity-60">
-                    View product
+                    {words.shop.viewProduct}
                     <ArrowRight size={14} aria-hidden="true" />
                   </span>
                 </div>
                 <DownloadCount
                   count={counts?.[shopProduct.download.id] ?? null}
+                  lang={lang}
                   className="mt-3"
                 />
               </div>
@@ -171,7 +181,7 @@ export default async function ShopPage() {
                 >
                   <Image
                     src={templateFiles(template).previews[0]}
-                    alt={`Title page of the ${template.title.toLowerCase()} template`}
+                    alt={words.shop.templateTitlePage(pick(lang, template.title).toLowerCase())}
                     fill
                     sizes="(max-width: 1023px) 30vw, 210px"
                     className="object-cover object-top"
@@ -183,10 +193,10 @@ export default async function ShopPage() {
             <div className="flex flex-col p-6 sm:p-9 lg:p-10">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="rounded-full bg-badge-bg px-2.5 py-1 text-[11px] font-medium text-badge-text">
-                  Free
+                  {words.common.free}
                 </span>
                 <span className="rounded-full bg-secondary px-2.5 py-1 text-[11px] font-medium text-muted">
-                  LaTeX templates
+                  {words.shop.latexBadge}
                 </span>
               </div>
 
@@ -194,19 +204,17 @@ export default async function ShopPage() {
                 id="latex-templates-title"
                 className="mt-6 text-[28px] font-semibold leading-tight tracking-[-0.8px] text-foreground sm:text-[34px]"
               >
-                LaTeX templates &amp; cheat sheet
+                {words.shop.latexTitle}
               </h2>
               <p className="mt-4 text-[14px] leading-7 text-muted">
-                Clean, ready-to-write templates for an essay, a report and a
-                research report, with APA references. Open one in Overleaf
-                with a single click, and keep the two-page cheat sheet close.
+                {words.shop.latexIntro}
               </p>
 
               <ul
-                aria-label="Template details"
+                aria-label={words.shop.templateDetails}
                 className="mt-6 flex flex-wrap gap-2 lg:mb-10"
               >
-                {["3 templates", "Cheat sheet", "Overleaf-ready"].map((tag) => (
+                {words.shop.latexTags.map((tag) => (
                   <li
                     key={tag}
                     className="rounded-full border border-divider px-2.5 py-1 text-[11px] text-muted"
@@ -218,18 +226,18 @@ export default async function ShopPage() {
 
               <div className="mt-10 border-t border-divider pt-6 lg:mt-auto">
                 <p className="text-[11px] font-medium uppercase tracking-[0.8px] text-date">
-                  Free download
+                  {words.common.freeDownload}
                 </p>
                 <div className="mt-1 flex items-end justify-between gap-4">
                   <p className="text-[32px] font-semibold tracking-[-0.8px] text-foreground">
-                    Free
+                    {words.common.free}
                   </p>
                   <span className="inline-flex items-center gap-2 text-[13px] font-medium text-foreground transition-opacity group-hover:opacity-60">
-                    View templates
+                    {words.shop.viewTemplates}
                     <ArrowRight size={14} aria-hidden="true" />
                   </span>
                 </div>
-                <DownloadCount count={latexDownloads} className="mt-3" />
+                <DownloadCount count={latexDownloads} lang={lang} className="mt-3" />
               </div>
             </div>
           </div>

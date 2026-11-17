@@ -1,5 +1,6 @@
 "use client";
 
+import { useDictionary } from "@/components/site/LangProvider";
 import { useMemo, useState, ViewTransition } from "react";
 import { Download, ExternalLink, FileText } from "lucide-react";
 import type { MarkdownDoc, PdfDoc } from "@/lib/projects/types";
@@ -43,6 +44,7 @@ function disambiguate(tabs: Tab[]): Tab[] {
  * turns a page (swapView); a tab to the right counts as forward.
  */
 export function MarkdownDocs({ docs, pdfs }: Readonly<Props>) {
+  const { project: words } = useDictionary();
   const [active, setActive] = useState(0);
 
   const tabs = useMemo<Tab[]>(
@@ -109,7 +111,7 @@ export function MarkdownDocs({ docs, pdfs }: Readonly<Props>) {
                 <div className="flex h-full flex-col items-center justify-center gap-3 px-6 text-center">
                   <FileText size={20} className="text-muted" />
                   <p className="text-[13px] text-muted">
-                    Dit PDF-bestand kan niet in de browser worden weergegeven.
+                    {words.pdfUnsupported}
                   </p>
                   <a
                     href={current.pdf.src}
@@ -117,7 +119,7 @@ export function MarkdownDocs({ docs, pdfs }: Readonly<Props>) {
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-1.5 rounded-full bg-primary px-3 py-1.5 text-[13px] font-medium text-primary-foreground transition-colors"
                   >
-                    Open in nieuw tabblad <ExternalLink size={14} />
+                    {words.pdfOpen} <ExternalLink size={14} />
                   </a>
                 </div>
               </object>
@@ -134,7 +136,7 @@ export function MarkdownDocs({ docs, pdfs }: Readonly<Props>) {
                 className="inline-flex shrink-0 items-center gap-1.5 text-muted hover:text-foreground transition-colors"
               >
                 <Download size={13} />
-                Download{current.pdf.size ? ` (${formatBytes(current.pdf.size)})` : ""}
+                {words.download}{current.pdf.size ? ` (${formatBytes(current.pdf.size)})` : ""}
               </a>
             </div>
           </div>
