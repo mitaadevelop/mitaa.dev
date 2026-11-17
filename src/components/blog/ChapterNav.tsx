@@ -4,7 +4,7 @@ import Link from "@/components/site/LocaleLink";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import type { ChapterRef, Lang } from "@/lib/blog/types";
 import { strings } from "@/lib/blog/i18n";
-import { pageTransition, useCurrentChapter } from "./useCurrentChapter";
+import { pageTransition, useShownChapter } from "./useCurrentChapter";
 
 const blockClass =
   "group rounded-md border border-divider p-4 transition-colors hover:bg-card-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background";
@@ -16,7 +16,7 @@ const kickerClass =
  * page), and the previous and next page by title.
  */
 export default function ChapterNav({ outline, lang }: Readonly<{ outline: ChapterRef[]; lang: Lang }>) {
-  const current = useCurrentChapter(outline);
+  const current = useShownChapter(outline);
   const words = strings(lang);
   if (!current) return null;
 

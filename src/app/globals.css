@@ -1125,30 +1125,52 @@ html {
 }
 
 /* Turning a page of a blog post ------------------------------------------
-   Only the text takes part (ChapterBody's ViewTransition); the header, table
-   of contents and navigation stay where they are. The old page leaves quickly,
-   the new one arrives a moment later, nudged a few pixels in the reading
-   direction when the link says which way it goes. */
+   Only the text takes part (ChapterBody's ViewTransition). The page counter,
+   table of contents and the previous / next cards are live DOM and change in
+   the pause between the two, not on top of the text (useShownChapter holds them
+   back for --page-out + --page-gap, in step with PAGE_SWAP_MS). One after the other: the old
+   page slides a little way out in the direction the reader is going and fades
+   away completely, and only then does the new page come in from the other
+   side. The new page waits for the old one to leave (--page-out) plus a short
+   pause (--page-gap), so the two are never on screen together, not even for
+   a frame.
+
+   The group is not allowed to morph. By default the browser animates its box
+   from the old page's position and size to the new one's, so a page that is
+   shorter, longer or scrolled differently flies or stretches across the
+   screen. One millisecond puts the box at its final place at once. */
+:root {
+  --page-out: 150ms; /* the old text leaving */
+  --page-gap: 50ms; /* the pause before the new text comes */
+}
+
 ::view-transition {
   pointer-events: none;
+}
+
+::view-transition-group(.page-fade),
+::view-transition-group(.page-forward),
+::view-transition-group(.page-back) {
+  animation-duration: 1ms;
 }
 
 ::view-transition-old(.page-fade),
 ::view-transition-old(.page-forward),
 ::view-transition-old(.page-back) {
-  animation: 120ms ease-in both post-page-out;
+  animation: var(--page-out) cubic-bezier(0.4, 0, 1, 1) both post-page-out;
 }
 
 ::view-transition-new(.page-fade),
 ::view-transition-new(.page-forward),
 ::view-transition-new(.page-back) {
-  animation: 220ms ease-out 80ms both post-page-in;
+  animation: 300ms cubic-bezier(0.22, 1, 0.36, 1) calc(var(--page-out) + var(--page-gap)) both post-page-in;
 }
 
-::view-transition-old(.page-forward) { --page-shift: -12px; }
-::view-transition-new(.page-forward) { --page-shift: 12px; }
-::view-transition-old(.page-back) { --page-shift: 12px; }
-::view-transition-new(.page-back) { --page-shift: -12px; }
+/* --page-shift: how far a page travels, on the side it leaves or arrives from. */
+::view-transition-old(.page-forward) { --page-shift: -20px; }
+::view-transition-new(.page-forward) { --page-shift: 20px; }
+::view-transition-old(.page-back) { --page-shift: 20px; }
+::view-transition-new(.page-back) { --page-shift: -20px; }
 
 @keyframes post-page-out {
   to {

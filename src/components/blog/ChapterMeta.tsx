@@ -2,7 +2,7 @@
 
 import type { ChapterRef, Lang } from "@/lib/blog/types";
 import { strings } from "@/lib/blog/i18n";
-import { useCurrentChapter } from "./useCurrentChapter";
+import { useShownChapter } from "./useCurrentChapter";
 
 interface ChapterMetaProps {
   outline: ChapterRef[];
@@ -13,7 +13,7 @@ interface ChapterMetaProps {
 
 /** Where in the post the reader is: "Page 4 of 5 · 18 min total". */
 export default function ChapterMeta({ outline, totalMinutes, lang }: Readonly<ChapterMetaProps>) {
-  const current = useCurrentChapter(outline);
+  const current = useShownChapter(outline);
   const words = strings(lang);
   if (!current) return null;
 
