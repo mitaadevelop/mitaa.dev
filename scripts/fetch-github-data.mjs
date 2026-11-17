@@ -10,6 +10,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { convertStepToGlb } from "./step-to-glb.mjs";
+import { parseContributionsHtml } from "./contributions-html.mjs";
 
 const GITHUB_USERNAME = "mitaadevelop";
 /** Folder whose markdown files are shown (switchable) on a project page. */
@@ -26,14 +27,42 @@ if (!fs.existsSync(OUT_DIR)) {
   fs.mkdirSync(OUT_DIR, { recursive: true });
 }
 
+/**
+ * The contribution calendar. With a token it comes from the GraphQL API
+ * (private contributions included, if the token may see them); without one, or
+ * when that fails, from the public profile page, so the heatmap on the home
+ * page is never empty just because a build has no token.
+ */
 async function fetchContributions() {
-  if (!CONTRIBUTIONS_TOKEN) {
+  if (CONTRIBUTIONS_TOKEN) {
+    const fromApi = await fetchContributionsFromApi();
+    if (fromApi) return fromApi;
+    console.warn("⚠️  The GraphQL fetch failed; trying the public profile page.");
+  } else {
     console.warn(
-      "⚠️  GITHUB_TOKEN_CONTRIBUTIONS not set. Skipping contributions fetch."
+      "⚠️  GITHUB_TOKEN_CONTRIBUTIONS not set. Reading the public profile page (public contributions only)."
     );
+  }
+  return fetchContributionsFromProfile();
+}
+
+async function fetchContributionsFromProfile() {
+  try {
+    const response = await fetch(
+      `https://github.com/users/${GITHUB_USERNAME}/contributions`,
+      { headers: { "User-Agent": "mitaa.dev build", Accept: "text/html" } }
+    );
+    if (!response.ok) throw new Error(`GitHub answered ${response.status}`);
+    const calendar = parseContributionsHtml(await response.text());
+    if (!calendar) throw new Error("no calendar on the page (did the markup change?)");
+    return calendar;
+  } catch (error) {
+    console.error("❌ Failed to read the public contributions:", error.message);
     return null;
   }
+}
 
+async function fetchContributionsFromApi() {
   const query = `
     query($username: String!) {
       user(login: $username) {
@@ -71,7 +100,10 @@ async function fetchContributions() {
     }
 
     const data = await response.json();
-    const calendar = data.data.user.contributionsCollection.contributionCalendar;
+    const calendar = data.data?.user?.contributionsCollection?.contributionCalendar;
+    if (!calendar) {
+      throw new Error(data.errors?.[0]?.message ?? "no contribution calendar in the answer");
+    }
 
     return {
       totalContributions: calendar.totalContributions,
