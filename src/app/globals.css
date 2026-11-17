@@ -1126,9 +1126,11 @@ html {
 
 /* Turning a page of a blog post ------------------------------------------
    Only the text takes part (ChapterBody's ViewTransition); the header, table
-   of contents and navigation stay where they are. The old page fades out in
-   place, and the new one slides in from the side the reader is heading to,
-   starting before the old one is gone so there is never an empty beat.
+   of contents and navigation stay where they are. One after the other: the old
+   page slides a little way out in the direction the reader is going and fades
+   away completely, and only then does the new page come in from the other
+   side. The new page waits for exactly as long as the old one takes to leave
+   (--page-out), so the two are never on screen together.
 
    The group is not allowed to morph. By default the browser animates its box
    from the old page's position and size to the new one's, so a page that is
@@ -1147,22 +1149,27 @@ html {
 ::view-transition-old(.page-fade),
 ::view-transition-old(.page-forward),
 ::view-transition-old(.page-back) {
-  animation: 110ms linear both post-page-out;
+  --page-out: 170ms;
+  animation: var(--page-out) cubic-bezier(0.4, 0, 1, 1) both post-page-out;
 }
 
 ::view-transition-new(.page-fade),
 ::view-transition-new(.page-forward),
 ::view-transition-new(.page-back) {
-  animation: 320ms cubic-bezier(0.22, 1, 0.36, 1) 50ms both post-page-in;
+  --page-out: 170ms;
+  animation: 300ms cubic-bezier(0.22, 1, 0.36, 1) var(--page-out) both post-page-in;
 }
 
-/* --page-shift is where the new page starts: on the side it comes from. */
-::view-transition-new(.page-forward) { --page-shift: 28px; }
-::view-transition-new(.page-back) { --page-shift: -28px; }
+/* --page-shift: how far a page travels, on the side it leaves or arrives from. */
+::view-transition-old(.page-forward) { --page-shift: -20px; }
+::view-transition-new(.page-forward) { --page-shift: 20px; }
+::view-transition-old(.page-back) { --page-shift: 20px; }
+::view-transition-new(.page-back) { --page-shift: -20px; }
 
 @keyframes post-page-out {
   to {
     opacity: 0;
+    translate: var(--page-shift, 0) 0;
   }
 }
 

@@ -14,10 +14,11 @@ import { localePath, type Lang } from "@/lib/i18n";
  * mounted, so this is also everything that varies per page: the abstract on
  * page 1, the citation block and the links to other posts on the last.
  *
- * The ViewTransition gives the swap a short fade, the new page sliding in from
- * the side the reader is heading to when the link says which way it goes
- * (`page-forward` / `page-back`, see ChapterNav). It sits in the page, not the layout: a layout
- * never unmounts, so its enter and exit would never run.
+ * The ViewTransition gives the swap a short fade: the old text leaves, and then
+ * the new text comes in, each sliding a little in the direction the link says
+ * the reader is going (`page-forward` / `page-back`, see ChapterNav). It sits
+ * in the page, not the layout: a layout never unmounts, so its enter and exit
+ * would never run.
  */
 export default async function ChapterBody({ data, lang }: Readonly<{ data: ChapterPageData; lang: Lang }>) {
   const { post, chapter, prev, next } = data;
