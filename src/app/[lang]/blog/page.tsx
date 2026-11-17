@@ -28,7 +28,7 @@ export default async function BlogPage({ params }: Props) {
   const { lang } = await params;
   if (!isLang(lang)) notFound();
   const words = dictionary(lang);
-  const blogPosts = getAllPosts();
+  const blogPosts = getAllPosts(lang);
 
   return (
     <div className="mx-auto max-w-[1440px] px-6 sm:px-12 lg:px-20 py-20">

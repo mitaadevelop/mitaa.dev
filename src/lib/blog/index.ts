@@ -25,7 +25,8 @@ import {
 import { strings } from "./i18n";
 import { countWords, readTimeFromWords } from "./text";
 import { renderLatex } from "./render";
-import { chapterHref, listPostFiles, readPostSource } from "./source";
+import { chapterHref, listPostFiles, readPostSource, translatedLanguages } from "./source";
+import type { Lang } from "./i18n";
 import {
   BIBLIOGRAPHY_PLACEHOLDER,
   numberBibliography,
@@ -48,10 +49,20 @@ function readPublished(slug: string) {
   return source && isPublished(source.meta) ? source : null;
 }
 
-/** Get metadata for all posts, sorted by date (newest first). */
-export function getAllPosts(): BlogPost[] {
+/**
+ * The key to read a post in a language: the slug itself, or `slug@lang` for the
+ * build's machine translation when the post is written in another language and
+ * has one. Every function below that takes a `slug` accepts a key.
+ */
+export function postKey(slug: string, lang: Lang): string {
+  const original = readPublished(slug);
+  return original && original.meta.lang !== lang && translatedLanguages(slug).includes(lang) ? `${slug}@${lang}` : slug;
+}
+
+/** Get metadata for all posts, sorted by date (newest first); in a language, with translations where there are any. */
+export function getAllPosts(lang?: Lang): BlogPost[] {
   return listPostFiles()
-    .map(({ slug }) => readPublished(slug)?.meta)
+    .map(({ slug }) => readPublished(lang ? postKey(slug, lang) : slug)?.meta)
     .filter((post): post is BlogPost => post !== undefined)
     .sort((a, b) => (a.date > b.date ? -1 : 1));
 }
@@ -67,8 +78,8 @@ export function getAllSlugs(): string[] {
  * The posts either side of this one by date, for the "previous / next post"
  * cards at the end of a post. `previous` is the older one.
  */
-export function getAdjacentPosts(slug: string): { previous?: BlogPost; next?: BlogPost } {
-  const posts = getAllPosts();
+export function getAdjacentPosts(slug: string, lang?: Lang): { previous?: BlogPost; next?: BlogPost } {
+  const posts = getAllPosts(lang);
   const index = posts.findIndex((post) => post.slug === slug);
   if (index < 0) return {};
   return { previous: posts[index + 1], next: posts[index - 1] };
@@ -88,7 +99,7 @@ export function getChapterOutline(slug: string): ChapterRef[] {
     index: chapter.index,
     slug: chapter.slug,
     title: chapter.title,
-    href: chapterHref(slug, chapter.slug, chapter.index),
+    href: chapterHref(source.meta.slug, chapter.slug, chapter.index),
     readTime: readTimeFromWords(countWords(toPlainText(chapter.nodes))),
   }));
 }
@@ -114,11 +125,12 @@ interface RenderedPost {
  */
 const renderedPosts = new Map<string, { mtimeMs: number; value: RenderedPost }>();
 
-async function getRenderedPost(slug: string): Promise<RenderedPost | null> {
-  const source = readPublished(slug);
+async function getRenderedPost(key: string): Promise<RenderedPost | null> {
+  const source = readPublished(key);
   if (!source) return null;
+  const slug = source.meta.slug;
 
-  const cached = renderedPosts.get(slug);
+  const cached = renderedPosts.get(key);
   if (cached && cached.mtimeMs === source.mtimeMs) return cached.value;
 
   const { meta, body, lead, chapters, paginated, bibliography } = source;
@@ -143,7 +155,7 @@ async function getRenderedPost(slug: string): Promise<RenderedPost | null> {
   let abstract: RenderedPost["abstract"];
   if (source.abstract) {
     const parts = abstractParts(source.abstract);
-    const { html } = await renderLatex(parts.nodes, { ctx, source: slug });
+    const { html } = await renderLatex(parts.nodes, { ctx, source: key });
     abstract = { title: parts.title || strings(meta.lang).abstract, html };
   }
 
@@ -155,7 +167,7 @@ async function getRenderedPost(slug: string): Promise<RenderedPost | null> {
     const { html, toc } = await renderLatex(unit.nodes, {
       ctx,
       firstHeadingId: paginated ? unit.slug : undefined,
-      source: paginated ? `${slug}/${unit.slug}` : slug,
+      source: paginated ? `${key}/${unit.slug}` : key,
     });
     drafts.push({ unit, html, toc, href });
   }
@@ -164,7 +176,7 @@ async function getRenderedPost(slug: string): Promise<RenderedPost | null> {
   const entries = await Promise.all(
     bibliography.map(async (entry) => ({
       id: entry.id,
-      html: (await renderLatex(prepareBibEntry(entry.nodes, ctx), { ctx, source: slug })).html
+      html: (await renderLatex(prepareBibEntry(entry.nodes, ctx), { ctx, source: key })).html
         .replace(/^<p>/, "")
         .replace(/<\/p>\s*$/, ""),
     }))
@@ -212,7 +224,7 @@ async function getRenderedPost(slug: string): Promise<RenderedPost | null> {
       : [],
   };
 
-  renderedPosts.set(slug, { mtimeMs: source.mtimeMs, value });
+  renderedPosts.set(key, { mtimeMs: source.mtimeMs, value });
   return value;
 }
 

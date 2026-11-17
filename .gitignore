@@ -69,3 +69,6 @@ Thumbs.db
 /.codeatlas/
 /graft/
 /.trail/cache/
+
+# Machine translations of the site's own texts, made at build time (npm run translate).
+/.translations/

@@ -41,6 +41,9 @@ const en = {
     names: { nl: "Dutch", en: "English" },
     /** Shown on a page whose text is in the other language. */
     contentIn: (language: string) => `This text is written in ${language}.`,
+    /** Shown on a machine-translated page. */
+    translatedFrom: (language: string) => `Automatically translated from ${language}.`,
+    viewOriginal: "View the original",
   },
 
   theme: {
@@ -269,6 +272,8 @@ const nl: Dictionary = {
     label: "Bekijk de website in het Engels",
     names: { nl: "Nederlands", en: "Engels" },
     contentIn: (language: string) => `Deze tekst is geschreven in het ${language}.`,
+    translatedFrom: (language: string) => `Automatisch vertaald uit het ${language}.`,
+    viewOriginal: "Bekijk het origineel",
   },
 
   theme: {

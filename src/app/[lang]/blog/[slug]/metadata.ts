@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
-import { getPostChapter } from "@/lib/blog";
+import { getPostChapter, postKey } from "@/lib/blog";
 import { strings } from "@/lib/blog/i18n";
-import { localePath, type Lang } from "@/lib/i18n";
+import { LOCALES, localePath, type Lang } from "@/lib/i18n";
+import { SITE_URL } from "@/lib/site";
 
 /**
  * Metadata for a post page or one of its chapter pages.
@@ -16,7 +17,7 @@ export async function buildChapterMetadata(
   slug: string,
   chapterSlug?: string
 ): Promise<Metadata> {
-  const data = await getPostChapter(slug, chapterSlug);
+  const data = await getPostChapter(postKey(slug, lang), chapterSlug);
   if (!data) {
     return { title: "Post Not Found" };
   }
@@ -26,8 +27,9 @@ export async function buildChapterMetadata(
   // Chapter 1 is also reachable at its own chapter URL; point it at the canonical
   // /blog/<slug> so the two do not compete.
   const path = isFirst ? `/blog/${post.slug}` : chapter.href;
-  // A post written in the other language than the page is the same text under two
-  // addresses: the one in its own language is the canonical one.
+  // A post written in the other language than the page, without a translation, is
+  // the same text under two addresses: the one in its own language is the canonical
+  // one. A machine translation is a text of its own and is canonical where it is.
   const url = localePath(lang, path);
   const canonical = localePath(post.lang, path);
   const title = paginated && !isFirst ? `${post.title} — ${chapter.index}. ${chapter.title}` : post.title;
@@ -39,7 +41,13 @@ export async function buildChapterMetadata(
   return {
     title,
     description,
-    alternates: { canonical },
+    alternates: {
+      canonical,
+      // With a machine translation the post exists in both languages, as two texts.
+      ...(postKey(slug, "nl") !== postKey(slug, "en")
+        ? { languages: Object.fromEntries(LOCALES.map((code) => [code, `${SITE_URL}${localePath(code, path)}`])) }
+        : {}),
+    },
     openGraph: {
       type: "article",
       title,

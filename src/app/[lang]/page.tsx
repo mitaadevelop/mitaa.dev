@@ -16,7 +16,7 @@ export default async function Home({ params }: Readonly<{ params: Promise<{ lang
   if (!isLang(lang)) notFound();
 
   const words = dictionary(lang);
-  const blogPosts = getAllPosts();
+  const blogPosts = getAllPosts(lang);
   const bio = getBio(lang);
   const updated = formatDate(bio.updated, "long", words.locale);
 
@@ -28,7 +28,9 @@ export default async function Home({ params }: Readonly<{ params: Promise<{ lang
         updated={updated ? words.home.updated(updated) : ""}
         paragraphs={bio.paragraphs}
       />
-      {bio.lang !== lang && <ContentLanguageNotice lang={lang} contentLang={bio.lang} />}
+      {(bio.lang !== lang || bio.translatedFrom) && (
+        <ContentLanguageNotice lang={lang} contentLang={bio.lang} translatedFrom={bio.translatedFrom} originalPath="/" />
+      )}
 
       {/* GitHub Contributions */}
       <GitHubContributions />

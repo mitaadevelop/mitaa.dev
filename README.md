@@ -110,6 +110,7 @@ allowing dynamic routes like the RSS feed.
 - The bio: `content/bio.md` is Dutch, `content/bio.en.md` is the English version (written by hand; without it the English page shows the Dutch text and says so).
 - A blog post says which language it is written in (`\usepackage[dutch]{babel}` or `\lang{nl}`; English without it). On the other language's page it shows the same text with a short note, and search engines are pointed at the address in its own language.
 - The LaTeX templates and the cheat sheet in the shop stay English; the shop says so.
+- **Automatic translation.** You write in one language; at build time `scripts/translate-content.mts` translates the bio and the blog posts into the other one with the Claude API and the site shows them with the note "Automatically translated from … View the original". Put `ANTHROPIC_API_KEY` in the environment (Vercel: Settings → Environment Variables). Without it nothing breaks: the other language shows the original with a note. Each piece of text is cached, so only what you changed is translated (and paid for) again. A hand-written `content/bio.en.md` always wins. Run it yourself with `npm run translate`.
 
 ### Projects (`/projects`)
 - Curated projects from `content/projects/*.md`
@@ -426,6 +427,11 @@ Create a `.env.local` file in the project root (it is git-ignored):
 GITHUB_TOKEN=ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 GITHUB_TOKEN_CONTRIBUTIONS=ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx   # the contribution heatmap
 GITHUB_TOKEN_PUBLIC_REPO=ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx     # repos, READMEs, PCB files, media
+
+# Optional: machine translation of the bio and the posts at build time (scripts/translate-content.mts).
+ANTHROPIC_API_KEY=sk-ant-...
+# TRANSLATE_MODEL=claude-sonnet-5-5   # the default
+# TRANSLATE=off                       # skip the step
 ```
 
 To create a token:

@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { getAllSlugs, getPostChapter } from "@/lib/blog";
+import { getAllSlugs, getPostChapter, postKey } from "@/lib/blog";
 import { isLang } from "@/lib/i18n";
 import ChapterBody from "./ChapterBody";
 import { buildChapterMetadata } from "./metadata";
@@ -21,7 +21,7 @@ export default async function BlogPostPage({
 }) {
   const { lang, slug } = await params;
   if (!isLang(lang)) notFound();
-  const data = await getPostChapter(slug);
+  const data = await getPostChapter(postKey(slug, lang));
 
   if (!data) {
     notFound();
