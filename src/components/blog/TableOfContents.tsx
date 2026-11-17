@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "@/components/site/LocaleLink";
 import type { ChapterRef, ContentsEntry, Lang } from "@/lib/blog/types";
 import { strings } from "@/lib/blog/i18n";
-import { pageTransition, useCurrentChapter } from "./useCurrentChapter";
+import { pageTransition, useShownChapter } from "./useCurrentChapter";
 
 /** Stable reference, so an empty page never restarts the scroll-spy effect. */
 const NO_ITEMS: ContentsEntry[] = [];
@@ -27,7 +27,7 @@ interface TableOfContentsProps {
  */
 export default function TableOfContents({ contents, outline, lang }: Readonly<TableOfContentsProps>) {
   const words = strings(lang);
-  const current = useCurrentChapter(outline);
+  const current = useShownChapter(outline);
   const page = current?.index ?? 1;
   const paginated = outline.length > 1;
 

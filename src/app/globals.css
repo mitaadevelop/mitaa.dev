@@ -1125,8 +1125,10 @@ html {
 }
 
 /* Turning a page of a blog post ------------------------------------------
-   Only the text takes part (ChapterBody's ViewTransition); the header, table
-   of contents and navigation stay where they are. One after the other: the old
+   Only the text takes part (ChapterBody's ViewTransition). The page counter,
+   table of contents and the previous / next cards are live DOM and change in
+   the pause between the two, not on top of the text (useShownChapter holds them
+   back for --page-out + --page-gap, in step with PAGE_SWAP_MS). One after the other: the old
    page slides a little way out in the direction the reader is going and fades
    away completely, and only then does the new page come in from the other
    side. The new page waits for the old one to leave (--page-out) plus a short
@@ -1137,6 +1139,11 @@ html {
    from the old page's position and size to the new one's, so a page that is
    shorter, longer or scrolled differently flies or stretches across the
    screen. One millisecond puts the box at its final place at once. */
+:root {
+  --page-out: 150ms; /* the old text leaving */
+  --page-gap: 50ms; /* the pause before the new text comes */
+}
+
 ::view-transition {
   pointer-events: none;
 }
@@ -1150,15 +1157,12 @@ html {
 ::view-transition-old(.page-fade),
 ::view-transition-old(.page-forward),
 ::view-transition-old(.page-back) {
-  --page-out: 150ms;
   animation: var(--page-out) cubic-bezier(0.4, 0, 1, 1) both post-page-out;
 }
 
 ::view-transition-new(.page-fade),
 ::view-transition-new(.page-forward),
 ::view-transition-new(.page-back) {
-  --page-out: 150ms;
-  --page-gap: 50ms;
   animation: 300ms cubic-bezier(0.22, 1, 0.36, 1) calc(var(--page-out) + var(--page-gap)) both post-page-in;
 }
 
