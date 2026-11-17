@@ -98,7 +98,7 @@ export default async function RootLayout({ children, params }: Props) {
         <LangProvider lang={lang}>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             <main className="min-h-screen">{children}</main>
-            <Footer lang={lang} />
+            <Footer />
             <LanguageToggle />
             <ThemeToggle />
           </ThemeProvider>
