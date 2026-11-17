@@ -1,6 +1,6 @@
 import { ViewTransition } from "react";
 import type { ChapterPageData } from "@/lib/blog/types";
-import { getAdjacentPosts, getPostShell } from "@/lib/blog";
+import { getAdjacentPosts, getPostShell, postKey } from "@/lib/blog";
 import { SITE_URL } from "@/lib/site";
 import PostAbstract from "@/components/blog/PostAbstract";
 import ArticleEnd from "@/components/blog/ArticleEnd";
@@ -23,8 +23,8 @@ export default async function ChapterBody({ data, lang }: Readonly<{ data: Chapt
   const { post, chapter, prev, next } = data;
   const isFirst = chapter.index === 1;
   const isLast = !next;
-  const abstract = isFirst ? (await getPostShell(post.slug))?.abstract : undefined;
-  const adjacent = isLast ? getAdjacentPosts(post.slug) : {};
+  const abstract = isFirst ? (await getPostShell(postKey(post.slug, lang)))?.abstract : undefined;
+  const adjacent = isLast ? getAdjacentPosts(post.slug, lang) : {};
 
   return (
     <>
@@ -37,7 +37,14 @@ export default async function ChapterBody({ data, lang }: Readonly<{ data: Chapt
         default="none"
       >
         <div>
-          {isFirst && <ContentLanguageNotice lang={lang} contentLang={post.lang} />}
+          {isFirst && (
+            <ContentLanguageNotice
+              lang={lang}
+              contentLang={post.lang}
+              translatedFrom={post.translatedFrom}
+              originalPath={`/blog/${post.slug}`}
+            />
+          )}
           {abstract && <PostAbstract post={post} abstract={abstract} />}
           {/* Heading numbers are in the HTML, counted by the pipeline across the
               whole post, so a chapter needs no counter offset of its own. */}

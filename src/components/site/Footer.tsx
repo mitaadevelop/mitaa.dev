@@ -1,8 +1,6 @@
-import { Mail, Rss } from "lucide-react";
 import { GitHubIcon, LinkedInIcon, XIcon } from "@/components/site/icons";
-import { localePath, type Lang } from "@/lib/i18n";
 
-export default function Footer({ lang }: Readonly<{ lang: Lang }>) {
+export default function Footer() {
   return (
     <footer className="border-t border-divider">
       <div className="mx-auto max-w-[1440px] px-6 sm:px-12 lg:px-20 pt-16 pb-20">
@@ -33,20 +31,6 @@ export default function Footer({ lang }: Readonly<{ lang: Lang }>) {
           >
             <XIcon size={16} />
             X
-          </a>
-          <a
-            href="mailto:hello@mitaa.dev"
-            className="inline-flex items-center gap-2 text-[13px] text-muted hover:text-foreground transition-colors"
-          >
-            <Mail size={16} />
-            Mail
-          </a>
-          <a
-            href={localePath(lang, "/feed.xml")}
-            className="inline-flex items-center gap-2 text-[13px] text-muted hover:text-foreground transition-colors"
-          >
-            <Rss size={16} />
-            RSS
           </a>
         </div>
       </div>

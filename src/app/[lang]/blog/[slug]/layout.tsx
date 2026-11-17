@@ -6,7 +6,8 @@ import "katex/dist/katex.min.css";
 import { notFound } from "next/navigation";
 import Link from "@/components/site/LocaleLink";
 import { ArrowLeft } from "lucide-react";
-import { getPostShell } from "@/lib/blog";
+import { getPostShell, postKey } from "@/lib/blog";
+import { isLang } from "@/lib/i18n";
 import { strings } from "@/lib/blog/i18n";
 import { Blur } from "@/components/animate-ui/primitives/effects/blur";
 import { Fade } from "@/components/animate-ui/primitives/effects/fade";
@@ -38,10 +39,10 @@ export default async function BlogPostLayout({
   params,
 }: {
   children: React.ReactNode;
-  params: Promise<{ slug: string }>;
+  params: Promise<{ lang: string; slug: string }>;
 }) {
-  const { slug } = await params;
-  const shell = await getPostShell(slug);
+  const { lang, slug } = await params;
+  const shell = isLang(lang) ? await getPostShell(postKey(slug, lang)) : null;
   // Dev only, and imported inside the condition so a production build does not
   // bundle it: NODE_ENV is a constant there and the branch is dropped.
   const LivePreview =

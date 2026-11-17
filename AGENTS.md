@@ -15,6 +15,7 @@ npm test         # node --test via tsx: snapshot + regression tests for the blog
 npm start        # serve a production build
 npm run new:post <slug> ["Title"]          # start a post: content/blog/<slug>.tex from the template (a \draft) + public/blog/<slug>/
 npm run blog:check <post> [-- --publish]   # compile a post with latexmk, compare its numbering with the site's; --publish copies the PDF to public/docs/blog/
+npm run translate                         # machine-translate the bio and the posts into the other language (also runs from prebuild; needs ANTHROPIC_API_KEY, else uses its cache)
 npm run downloads:build [-- <name> …]      # compile the LaTeX templates + zip the shop downloads into public/downloads/ (local; output is committed)
 npm run icons:build                        # src/app/icon.svg → favicon.ico + apple-icon.png (headless Chrome, local; output is committed; the SVG carries the dark-mode look, the rasters the light one)
 
@@ -134,6 +135,15 @@ The site is written in **Dutch** (`SITE_LANG` in `src/lib/i18n/index.ts`) and sh
 - The shop's downloads (the LaTeX templates, the README in each ZIP) stay **English only**, so `scripts/build-downloads.mts` reads the `.en` side of the template texts, and the templates page says so.
 - `generateStaticParams` in `[lang]/layout.tsx` builds both languages ahead of time and `dynamicParams = false` makes any other first segment a 404.
 
+### Automatic translation (build time)
+What the author writes stays in one language; the other one is made at build time by **`scripts/translate-content.mts`** (`prebuild`, or `npm run translate`) with the Claude API (`ANTHROPIC_API_KEY`, model `TRANSLATE_MODEL`, default `claude-sonnet-5-5`). It translates the bio (`content/bio.md`) and every non-draft post (`content/blog/*.tex`) into the language they are *not* written in, and writes `.translations/bio.<lang>.md` and `.translations/blog/<slug>.<lang>.tex` (git-ignored; read through `translationsDirectory` in `src/lib/translations.ts`). A hand-written `content/bio.en.md` is never replaced. `TRANSLATE=off` skips it.
+- **Engine** (`scripts/translate/`): `chunk.mts` cuts a document at blank lines, never inside a code block (the pieces join back into the original); `skeleton.mts` reduces a piece to its structure (LaTeX commands and environments, `\label`/`\ref`/`\cite` keys, maths, code; for Markdown code, links and headings); `pipeline.mts` translates piece by piece, caches each piece by content hash (`.next/cache/translations/`, which Vercel keeps between builds, so only changed text costs anything), accepts an answer only if its skeleton equals the original's, asks once more if not, and returns `null` for the whole document if a piece still fails; `anthropic.mts` is the Messages API over plain `fetch` (no SDK), retrying 429/5xx.
+- **It never fails a build.** No key: the cache still answers, and a text it has never translated just is not translated. API down or a bad answer: a warning and a fallback. A half-translated page is worse than an honest one, so a document is translated whole or not at all.
+- **On the site**: a translated post is read under the key `slug@lang` (`splitKey` in `blog/source.ts`; `postKey(slug, lang)` in `blog/index.ts` gives the key to read in a language). Every blog function that takes a `slug` accepts a key, `meta.slug` stays the public slug, so the address is the same in both languages, and a translation with the same number of chapters **keeps the original's chapter addresses** (the language button then leads to the same page). `getAllPosts(lang)` returns the translation in place of the original; `meta.translatedFrom` marks one, and `ContentLanguageNotice` says "Automatically translated from … View the original". A translation is canonical where it is, with `hreflang` between the two, and the sitemap lists both.
+- The translation declares its own language (`setLatexLanguage`: `\lang{…}` / babel, in the preamble only); a file that says another language than it was made for is ignored.
+- Tests: `tests/translate.test.ts` (engine, with a fake translator), `tests/translate-script.test.ts` (the script end to end against a local stand-in for the API; async `spawn`, because the stand-in runs in the test's own process), `tests/translated-content.test.ts` (reading a translation; `TRANSLATIONS_DIR` points at `tests/fixtures/translations/` under `NODE_ENV=test`, from `tests/setup.ts`).
+- Not translated: GitHub project texts (READMEs, descriptions) and the shop's LaTeX templates.
+
 ### Build-time data pipeline (the non-obvious part)
 `prebuild` / `predev` run Node scripts that generate files into `public/` before Next builds:
 - `scripts/fetch-github-data.mjs` — GitHub REST + GraphQL (repos, contributions, commits, contributors, releases, dependency manifests) **and** per-repo PCB assets and `project/**/*.pdf` documents (see below). Needs `GITHUB_TOKEN` (or `GITHUB_TOKEN_PUBLIC_REPO` / `GITHUB_TOKEN_CONTRIBUTIONS`); degrades to public-rate-limited fetches without one.
@@ -194,7 +204,7 @@ Two libraries, each for what it does best. **Motion** (`motion/react`, through t
 ### Conventions
 - Reference files/lines as clickable markdown links (`[file.tsx:42](path#L42)`), not backticks (see repo `.md` conventions).
 - `Date.now()` / non-deterministic values are fine in app code but the workflow/scripts avoid them where reproducibility matters.
-- Env: `GITHUB_TOKEN*` (build-time GitHub fetch), `KICAD_CLI` (override kicad-cli path for `pcb:render`), `NEXT_PUBLIC_SITE_URL` (canonical URLs / feeds), `KV_REST_API_URL` / `KV_REST_API_TOKEN` (download counts; optional).
+- Env: `GITHUB_TOKEN*` (build-time GitHub fetch), `KICAD_CLI` (override kicad-cli path for `pcb:render`), `NEXT_PUBLIC_SITE_URL` (canonical URLs / feeds), `KV_REST_API_URL` / `KV_REST_API_TOKEN` (download counts; optional), `ANTHROPIC_API_KEY` / `TRANSLATE_MODEL` / `TRANSLATE=off` (build-time translation; optional).
 
 <!-- BEGIN:nextjs-agent-rules -->
 

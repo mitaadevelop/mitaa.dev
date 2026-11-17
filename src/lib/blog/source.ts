@@ -9,7 +9,8 @@ import {
   toPlainText,
   type LatexNode,
 } from "./latex";
-import { strings } from "./i18n";
+import { strings, type Lang } from "./i18n";
+import { translationsDirectory } from "@/lib/translations";
 import { countWords, minutesFromWords, readTimeFromWords, uniqueSlug } from "./text";
 
 /**
@@ -56,8 +57,32 @@ function devTemplatePost(): { slug: string; file: string } | null {
   return fs.existsSync(file) ? { slug: "template", file } : null;
 }
 
-/** Resolve the on-disk path for a slug. */
-export function resolvePostPath(slug: string): string | null {
+/**
+ * A post is addressed by a key: its slug (`hello-world`), or, for the machine
+ * translation of it, the slug and the language (`hello-world@en`). The public
+ * address is always the slug; the key only says which text to read.
+ */
+export function splitKey(key: string): { slug: string; lang?: Lang } {
+  const at = key.lastIndexOf("@");
+  const lang = at < 0 ? undefined : key.slice(at + 1);
+  return lang === "nl" || lang === "en" ? { slug: key.slice(0, at), lang } : { slug: key };
+}
+
+/** The translation of a post into a language, if the build made one. */
+function translationPath(slug: string, lang: Lang): string | null {
+  const file = path.join(translationsDirectory, "blog", `${slug}.${lang}.tex`);
+  return fs.existsSync(file) ? file : null;
+}
+
+/** The languages a post has a machine translation in. */
+export function translatedLanguages(slug: string): Lang[] {
+  return (["nl", "en"] as const).filter((lang) => translationPath(slug, lang) !== null);
+}
+
+/** Resolve the on-disk path for a post key. */
+export function resolvePostPath(key: string): string | null {
+  const { slug, lang } = splitKey(key);
+  if (lang) return translationPath(slug, lang);
   for (const ext of POST_EXTENSIONS) {
     const candidate = path.join(postsDirectory, `${slug}${ext}`);
     if (fs.existsSync(candidate)) return candidate;
@@ -106,12 +131,17 @@ function pdfAsset(href: string, slug: string): BlogPost["pdf"] {
   return { href, bytes: fs.statSync(file).size };
 }
 
-export function readPostSource(slug: string): PostSource | null {
-  const file = resolvePostPath(slug);
+export function readPostSource(key: string): PostSource | null {
+  const file = resolvePostPath(key);
   if (!file) return null;
+  const { slug, lang: variant } = splitKey(key);
 
   const document = parseLatex(fs.readFileSync(file, "utf8"));
   const { meta } = document;
+  // A translation counts only if it says it is in the language it was made for.
+  if (variant && meta.lang !== variant) return null;
+  const original = variant ? readPostSource(slug) : null;
+  if (variant && !original) return null;
   const words = strings(meta.lang);
   const { body, abstract } = extractAbstract(document.body);
   const { lead, chapters: rawChapters, byPage } = splitLatexChapters(body);
@@ -125,6 +155,11 @@ export function readPostSource(slug: string): PostSource | null {
     const title = byPage && chapter.appendix ? words.appendices : chapter.title || words.page(chapter.index);
     return { ...chapter, title, slug: uniqueSlug(title || `chapter-${chapter.index}`, seen) };
   });
+  // A translation keeps the chapter addresses of the original, so the language
+  // button leads to the same page and a link to a chapter works in both.
+  if (original && original.chapters.length === chapters.length) {
+    chapters.forEach((chapter, index) => (chapter.slug = original.chapters[index].slug));
+  }
 
   // Explicit page breaks say how the author wants the post served; otherwise
   // \paginate decides.
@@ -154,6 +189,7 @@ export function readPostSource(slug: string): PostSource | null {
       kind: meta.kind || undefined,
       pdf: pdfAsset(meta.pdf, slug),
       draft: meta.draft,
+      ...(original ? { translatedFrom: original.meta.lang } : {}),
     },
     body,
     lead,

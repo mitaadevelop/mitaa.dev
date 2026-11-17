@@ -9,7 +9,7 @@ PORT ?= 3000
 .DEFAULT_GOAL := help
 .PHONY: help install run dev build build-fast start preview data \
         lint typecheck test test-update check deps \
-        downloads new-post blog-check blog-publish icons \
+        downloads translate new-post blog-check blog-publish icons \
         pcb-render pcb-convert pcb-recolor \
         clean distclean fix-biber
 
@@ -66,6 +66,9 @@ deps: ## Check that exactly one katex and one gsap are installed
 	npm ls katex gsap
 
 ## —— Content —————————————————————————————————————————————————————————
+
+translate: ## Machine-translate the bio and the posts into the other language (needs ANTHROPIC_API_KEY, else cache only)
+	npm run translate
 
 downloads: ## Rebuild the shop downloads (ONLY="essay cheatsheet" for a few)
 	npm run downloads:build -- $(ONLY)

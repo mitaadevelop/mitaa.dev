@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 import { SITE_URL } from "@/lib/site";
-import { getAllPosts, getChapterOutline } from "@/lib/blog";
+import { getAllPosts, getChapterOutline, postKey } from "@/lib/blog";
 import { getAllProjectSlugs } from "@/lib/projects";
 import { LOCALES, localePath, type Lang } from "@/lib/i18n";
 
@@ -28,22 +28,29 @@ export default function sitemap(): MetadataRoute.Sitemap {
     inBothLanguages(route || "/", route === "" ? 1 : 0.7)
   );
 
-  // A post is listed only at the address in the language it is written in: the
-  // other language's address shows the same text and is not canonical.
+  // A post is listed at the address in the language it is written in. When the
+  // build also made a machine translation, the other language's address is a text
+  // of its own and is listed too, each pointing at the other with `hreflang`.
+  // Otherwise that address shows the same text and is not canonical.
   // Paginated posts contribute one URL per chapter: each chapter is its own
   // indexed document, so each belongs here. getChapterOutline is synchronous
   // and returns [] for single-page posts.
   const blogRoutes = getAllPosts().flatMap((post) => {
-    const chapters = getChapterOutline(post.slug);
-    const paths =
-      chapters.length === 0
-        ? [{ path: `/blog/${post.slug}`, priority: 0.6 }]
-        : chapters.map((chapter) => ({ path: chapter.href, priority: chapter.index === 1 ? 0.6 : 0.5 }));
-    return paths.map(({ path, priority }) => ({
-      url: `${SITE_URL}${localePath(post.lang, path)}`,
-      changeFrequency: "monthly" as const,
-      priority,
-    }));
+    const languages = LOCALES.filter((lang) => lang === post.lang || postKey(post.slug, lang) !== post.slug);
+    return languages.flatMap((lang) => {
+      const key = lang === post.lang ? post.slug : postKey(post.slug, lang);
+      const chapters = getChapterOutline(key);
+      const paths =
+        chapters.length === 0
+          ? [{ path: `/blog/${post.slug}`, priority: 0.6 }]
+          : chapters.map((chapter) => ({ path: chapter.href, priority: chapter.index === 1 ? 0.6 : 0.5 }));
+      return paths.map(({ path, priority }) => ({
+        url: `${SITE_URL}${localePath(lang, path)}`,
+        changeFrequency: "monthly" as const,
+        priority,
+        ...(languages.length > 1 ? { alternates: alternates(path, languages) } : {}),
+      }));
+    });
   });
 
   const projectRoutes = getAllProjectSlugs().flatMap((slug) => inBothLanguages(`/projects/${slug}`, 0.6));

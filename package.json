@@ -5,7 +5,8 @@
   "scripts": {
     "predev": "node scripts/convert-step-models.mjs",
     "dev": "next dev",
-    "prebuild": "node scripts/fetch-github-data.mjs && node scripts/convert-step-models.mjs",
+    "prebuild": "node scripts/fetch-github-data.mjs && node scripts/convert-step-models.mjs && tsx scripts/translate-content.mts",
+    "translate": "tsx scripts/translate-content.mts",
     "build": "next build",
     "pcb:convert": "node scripts/step-to-glb.mjs",
     "pcb:render": "node scripts/render-kicad-images.mjs",

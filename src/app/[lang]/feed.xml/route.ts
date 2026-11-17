@@ -17,7 +17,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ lan
   const { lang } = await params;
   if (!isLang(lang)) return new Response("Not found", { status: 404 });
   const words = dictionary(lang);
-  const posts = getAllPosts();
+  const posts = getAllPosts(lang);
 
   const items = posts
     .map((post) => {

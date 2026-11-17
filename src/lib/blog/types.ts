@@ -47,6 +47,8 @@ export interface BlogPost {
   pdf?: { href: string; bytes: number };
   /** `\draft` posts render under `npm run dev` only. */
   draft: boolean;
+  /** Set on a machine translation: the language the post was written in. */
+  translatedFrom?: Lang;
 }
 
 export interface TocItem {
