@@ -7,10 +7,10 @@
 \usepackage{mitaa}
 
 \title{Hallo wereld}
-\subtitle{Wie ik ben, wat je hier gaat lezen en hoe zo'n post op de site belandt}
+\subtitle{Wie ik ben, wat je hier gaat lezen, en hoe een post, de projectenpagina en de shop werken}
 \author{Mitchel Reints}
 \date{2026-11-17}
-\excerpt{Mijn eerste post: wat ik bouw, wat je hier kunt verwachten, en waarom het eerste programma op een microcontroller altijd een knipperende led is.}
+\excerpt{Mijn eerste post: wat ik bouw, wat je hier kunt verwachten, hoe de projectenpagina en de shop in elkaar zitten, en waarom het eerste programma op een microcontroller altijd een knipperende led is.}
 \tags{Meta, Elektronica, LaTeX}
 \paginate{never}
 
@@ -76,6 +76,46 @@ flowchart LR
 \end{figure}
 
 Hetzelfde bestand wordt met \texttt{latexmk} ook een PDF, en een kleine controle vergelijkt de nummers die LaTeX afdrukt (hoofdstukken, figuren, formules) met die op de pagina, zodat de twee altijd kloppen.\footnote{Dit bericht is in het Nederlands geschreven; de Engelse versie wordt bij het bouwen van de site automatisch vertaald.}
+
+\section{De projectenpagina}
+
+Onder \emph{Projecten} staat alles wat ik bouw. Die lijst schrijf ik niet zelf bij: als de site wordt gebouwd, haalt hij al mijn openbare GitHub-repo's op, dus een nieuw project staat er vanzelf tussen. Op dit moment komen alle projecten op die manier binnen. Daarnaast kan ik een project met de hand beschrijven in een Markdown-bestand, en die versie wint als het over dezelfde repo gaat. \Cref{fig:projecten} laat zien hoe het samenkomt.
+
+\begin{figure}
+\begin{lstlisting}[language=mermaid, title={Waar de projecten vandaan komen}]
+flowchart LR
+  A[GitHub-repo's] --> C[Samenvoegen]
+  B[Handgeschreven pagina's] --> C
+  C --> D[Lijst met zoeken en filter]
+  D --> E[Detailpagina per project]
+\end{lstlisting}
+\caption{Van repo naar projectpagina}
+\label{fig:projecten}
+\end{figure}
+
+In de lijst zoek je op titel, omschrijving of techniek en filter je op categorie. Elke regel toont de technieken, een balkje met de programmeertalen, het aantal sterren en forks, en bij een hardwareproject een klein 3D-model van de print dat rondjes draait.
+
+Open je een project, dan hangt de detailpagina af van wat er in de repo staat. Er is geen beheerpagina: de repo is de bron.
+
+\begin{itemize}
+  \item \textbf{Documentatie}: de README, de andere Markdown-bestanden en de pdf's uit de map \texttt{project/}, achter tabbladen.
+  \item \textbf{Hardware}: staan er KiCad-bestanden in de map \texttt{PCB/}, dan krijg je een viewer met het schema, de print, het 3D-model en de onderdelenlijst (BOM), die je kunt doorzoeken en sorteren.
+  \item \textbf{Demovideo, foto's en metingen}: een video, een fotogalerij die je groot kunt bekijken, en CSV-bestanden met metingen die als grafiek (of tabel) getoond worden.
+  \item \textbf{Achtergrond}: de gebruikte technieken, de afhankelijkheden, de laatste commits en wie eraan meewerkte.
+\end{itemize}
+
+\section{De shop}
+
+In de shop staan dingen die ik gratis weggeef: geen betaling, geen account en geen e-mailadres. Op dit moment zijn dat twee dingen.
+
+\begin{itemize}
+  \item \textbf{Signal No. 01}: een wallpaperpakket met zes rustige ontwerpen voor desktop en telefoon, drie donker en drie licht. Elk ontwerp zit in vier formaten (16:9, 16:10, 21:9 en mobiel), samen 24 jpg's in een zip van 28 MB. Op de productpagina bekijk je ze groot en blader je met de pijltjestoetsen. De licentie is voor persoonlijk gebruik op je eigen apparaten.
+  \item \textbf{LaTeX-sjablonen}: een essay, een verslag en een onderzoeksverslag, plus een spiekbrief van twee pagina's. Elk sjabloon komt als zip met de bronbestanden en een voorbeeld-pdf, en je opent hem met één knop in Overleaf. Ze gebruiken alleen standaardpakketten, dus ze compileren daar zonder aanpassingen. Je mag ze vrij gebruiken en aanpassen, ook voor werk dat beoordeeld wordt; alleen doorverkopen niet. De sjablonen zelf zijn Engelstalig.
+\end{itemize}
+
+\begin{note}[Hoe de teller werkt]
+Bij een download staat hoe vaak hij gedaan is. Elke bezoeker telt één keer per bestand per dag, en ik sla niet op wie het was.
+\end{note}
 
 \section{Wat nu}
 
