@@ -1,11 +1,17 @@
-<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-  <rect width="100" height="100" rx="24" fill="#000000"/>
-  <polyline
-    points="27,73 27,27 50,55 73,27 73,73"
-    fill="none"
-    stroke="#ffffff"
-    stroke-width="12"
-    stroke-linecap="round"
-    stroke-linejoin="round"
-  />
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <title>mitaa.dev</title>
+  <style>
+    /* A dark tile with a light "m"; in a dark browser the tile turns light, so
+       the icon stays readable against either tab bar. */
+    .tile { fill: #0E0E10; }
+    .m { fill: none; stroke: #EDEDED; }
+    @media (prefers-color-scheme: dark) {
+      .tile { fill: #EDEDED; }
+      .m { stroke: #0E0E10; }
+    }
+  </style>
+  <rect class="tile" width="64" height="64" rx="14"/>
+  <path class="m" d="M18 47V26 M18 34C18 28 22 26 25 26C29 26 32 29 32 34V47 M32 34C32 28 36 26 39 26C43 26 46 29 46 34V47"
+        stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="49.5" cy="16.5" r="4.5" fill="#22D3EE"/>
 </svg>
