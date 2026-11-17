@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/site/LocaleLink";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import type { BlogPost, Lang } from "@/lib/blog/types";
 import { strings } from "@/lib/blog/i18n";

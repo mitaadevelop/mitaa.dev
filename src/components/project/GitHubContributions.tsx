@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { GitHubIcon } from "@/components/site/icons";
 import { CountingNumber } from "@/components/animate-ui/primitives/texts/counting-number";
 import ScrollReveal from "@/components/site/ScrollReveal";
+import { useDictionary } from "@/components/site/LangProvider";
 import { formatDate } from "@/lib/date";
 
 const GITHUB_URL = "https://github.com/mitaadevelop";
@@ -45,22 +46,22 @@ function getLevel(count: number): number {
   return 4;
 }
 
-const MONTH_LABELS = [
-  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
-];
-
-function getMonthLabels(weeks: ContributionWeek[]) {
+function getMonthLabels(weeks: ContributionWeek[], locale: string) {
   const labels: { label: string; col: number }[] = [];
   let lastMonth = -1;
 
   weeks.forEach((week, i) => {
     const firstDay = week.contributionDays[0];
     if (!firstDay) return;
-    const month = new Date(firstDay.date).getMonth();
+    // Calendar dates, read in UTC like `formatDate`: local time would show the day before in the west.
+    const date = new Date(firstDay.date);
+    const month = date.getUTCMonth();
     // Skip the very first column so a label never sits half-off the left edge.
     if (month !== lastMonth && i > 0) {
-      labels.push({ label: MONTH_LABELS[month], col: i });
+      labels.push({
+        label: date.toLocaleDateString(locale, { month: "short", timeZone: "UTC" }).replace(/\.$/, ""),
+        col: i,
+      });
       lastMonth = month;
     } else if (lastMonth === -1) {
       lastMonth = month;
@@ -70,9 +71,8 @@ function getMonthLabels(weeks: ContributionWeek[]) {
   return labels;
 }
 
-const DAY_LABELS = ["", "Mon", "", "Wed", "", "Fri", ""];
-
 export default function GitHubContributions() {
+  const { activity: words, locale } = useDictionary();
   const [data, setData] = useState<ContributionData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -96,21 +96,21 @@ export default function GitHubContributions() {
   return (
     <section className="pb-16">
       <h2 className="text-[13px] font-medium tracking-[0.8px] uppercase text-muted mb-6 flex items-center gap-2">
-        <GitHubIcon size={14} /> GitHub Activity
+        <GitHubIcon size={14} /> {words.title}
       </h2>
 
       <div className="rounded-xl border border-border bg-card p-6">
         {error && (
           <div className="flex items-center justify-center h-32 text-center">
             <p className="text-muted text-[13px] max-w-sm">
-              Contribution data isn&apos;t available right now.{" "}
+              {words.unavailable}{" "}
               <a
                 href={GITHUB_URL}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-emerald-600 dark:text-emerald-500 hover:underline"
               >
-                View activity on GitHub
+                {words.viewOnGitHub}
               </a>
               .
             </p>
@@ -121,7 +121,7 @@ export default function GitHubContributions() {
           <div className="flex items-center justify-center h-32">
             <div className="flex items-center gap-3 text-muted text-[13px]">
               <div className="w-4 h-4 rounded-full border-2 border-emerald-500 border-t-transparent animate-spin" />
-              Loading contributions…
+              {words.loading}
             </div>
           </div>
         )}
@@ -134,7 +134,7 @@ export default function GitHubContributions() {
                 <span className="text-foreground font-semibold">
                   <CountingNumber number={data.totalContributions} inView />
                 </span>{" "}
-                contributions in the last year
+                {words.summary}
               </p>
               <a
                 href={GITHUB_URL}
@@ -142,7 +142,7 @@ export default function GitHubContributions() {
                 rel="noopener noreferrer"
                 className="text-[12px] text-muted hover:text-foreground transition-colors shrink-0"
               >
-                View on GitHub →
+                {words.viewArrow}
               </a>
             </div>
 
@@ -160,7 +160,7 @@ export default function GitHubContributions() {
                   className="relative h-4 text-[10px] text-muted select-none"
                   style={{ marginLeft: DAY_LABEL_W + GAP }}
                 >
-                  {getMonthLabels(data.weeks).map(({ label, col }, i) => (
+                  {getMonthLabels(data.weeks, locale).map(({ label, col }, i) => (
                     <span
                       key={`${label}-${i}`}
                       className="absolute top-0"
@@ -177,7 +177,7 @@ export default function GitHubContributions() {
                     className="flex flex-col text-[10px] text-muted select-none shrink-0"
                     style={{ gap: GAP, width: DAY_LABEL_W }}
                   >
-                    {DAY_LABELS.map((d, i) => (
+                    {words.days.map((d, i) => (
                       <span key={i} style={{ height: CELL, lineHeight: `${CELL}px` }}>
                         {d}
                       </span>
@@ -193,9 +193,7 @@ export default function GitHubContributions() {
                             key={day.date}
                             className={`rounded-[2px] ${LEVEL_COLORS[level]} transition-colors hover:ring-1 hover:ring-emerald-500/60`}
                             style={{ width: CELL, height: CELL }}
-                            title={`${day.contributionCount} contribution${
-                              day.contributionCount === 1 ? "" : "s"
-                            } on ${formatDate(day.date, "short")}`}
+                            title={words.dayTitle(day.contributionCount, formatDate(day.date, "short", locale) ?? day.date)}
                           />
                         );
                       })}
@@ -207,7 +205,7 @@ export default function GitHubContributions() {
 
             {/* Legend */}
             <div className="flex items-center justify-end gap-1.5 mt-4 text-[11px] text-muted">
-              <span className="mr-1">Less</span>
+              <span className="mr-1">{words.legendLess}</span>
               {LEVEL_COLORS.map((color, i) => (
                 <div
                   key={i}
@@ -215,7 +213,7 @@ export default function GitHubContributions() {
                   style={{ width: CELL, height: CELL }}
                 />
               ))}
-              <span className="ml-1">More</span>
+              <span className="ml-1">{words.legendMore}</span>
             </div>
           </>
         )}

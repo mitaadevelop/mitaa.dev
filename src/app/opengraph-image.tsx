@@ -1,7 +1,11 @@
 import { ImageResponse } from "next/og";
-import { SITE_NAME, SITE_DESCRIPTION } from "@/lib/site";
+import { SITE_NAME } from "@/lib/site";
+import { dictionary } from "@/lib/i18n/dictionary";
 
-export const alt = SITE_DESCRIPTION;
+// One image for every language, in the language of the site itself.
+const words = dictionary("nl").site;
+
+export const alt = words.description;
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -40,10 +44,10 @@ export default function OpengraphImage() {
 
         <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
           <div style={{ fontSize: "72px", fontWeight: 700, letterSpacing: "-2px" }}>
-            Embedded systems, firmware &amp; web
+            {words.headline}
           </div>
           <div style={{ fontSize: "32px", color: "#8A8A8A", maxWidth: "900px" }}>
-            {SITE_DESCRIPTION}
+            {words.description}
           </div>
         </div>
       </div>

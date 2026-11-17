@@ -8,6 +8,7 @@ import { resolveModelSrc } from "@/lib/pcb";
 import { BomTable } from "@/components/pcb/BomTable";
 import { PcbImageView, type ImageViewOption } from "@/components/pcb/PcbImageView";
 import { SWAP_CLASSES, swapView } from "@/lib/view-transition";
+import { useDictionary } from "@/components/site/LangProvider";
 
 /**
  * Interactive PCB viewer with Schematic / PCB / 3D tabs.
@@ -30,12 +31,8 @@ const KICANVAS_SRC = "https://kicanvas.org/kicanvas/kicanvas.js";
 const MODEL_VIEWER_SRC =
   "https://cdn.jsdelivr.net/npm/@google/model-viewer@4.0.0/dist/model-viewer.min.js";
 
-const LAYER_PRESETS: { id: LayerPreset; label: string }[] = [
-  { id: "all", label: "All" },
-  { id: "front", label: "Front" },
-  { id: "back", label: "Back" },
-  { id: "copper", label: "Copper" },
-];
+/** The preset ids; their labels come from the dictionary (`pcb.layer`). */
+const LAYER_PRESETS: { id: LayerPreset }[] = [{ id: "all" }, { id: "front" }, { id: "back" }, { id: "copper" }];
 
 /**
  * Reach KiCanvas's internal BoardViewer through the embed's shadow DOM. Best-effort
@@ -80,6 +77,7 @@ interface SheetOption {
 }
 
 export function PcbViewer({ pcb }: { pcb: PcbAssets }) {
+  const { pcb: words } = useDictionary();
   // Diode-style pre-rendered images take precedence over the live KiCanvas view.
   const schematicAsImage = !!pcb.schematicImage;
   const pcbAsImage = !!pcb.pcbImage || !!pcb.pcbXrayImage;
@@ -87,22 +85,22 @@ export function PcbViewer({ pcb }: { pcb: PcbAssets }) {
   // The Top / Bottom / X-ray views available as static images.
   const pcbViews = useMemo<ImageViewOption[]>(() => {
     const v: ImageViewOption[] = [];
-    if (pcb.pcbImage) v.push({ id: "top", label: "Top", src: pcb.pcbImage });
-    if (pcb.pcbBackImage) v.push({ id: "bottom", label: "Bottom", src: pcb.pcbBackImage });
-    if (pcb.pcbXrayImage) v.push({ id: "xray", label: "X-ray", src: pcb.pcbXrayImage });
+    if (pcb.pcbImage) v.push({ id: "top", label: words.top, src: pcb.pcbImage });
+    if (pcb.pcbBackImage) v.push({ id: "bottom", label: words.bottom, src: pcb.pcbBackImage });
+    if (pcb.pcbXrayImage) v.push({ id: "xray", label: words.xray, src: pcb.pcbXrayImage });
     return v;
-  }, [pcb.pcbImage, pcb.pcbBackImage, pcb.pcbXrayImage]);
+  }, [pcb.pcbImage, pcb.pcbBackImage, pcb.pcbXrayImage, words]);
 
   const tabs = useMemo(() => {
     const list: { id: TabId; label: string; icon: typeof Layers }[] = [];
     if (pcb.schematic || pcb.schematicImage)
-      list.push({ id: "schematic", label: "Schematic", icon: CircuitBoard });
+      list.push({ id: "schematic", label: words.schematic, icon: CircuitBoard });
     if (pcb.board || pcb.pcbImage || pcb.pcbXrayImage)
-      list.push({ id: "pcb", label: "PCB", icon: Layers });
-    if (pcb.model3d) list.push({ id: "3d", label: "3D", icon: Box });
-    if (pcb.bom) list.push({ id: "bom", label: "BOM", icon: Table });
+      list.push({ id: "pcb", label: words.pcb, icon: Layers });
+    if (pcb.model3d) list.push({ id: "3d", label: words.threeD, icon: Box });
+    if (pcb.bom) list.push({ id: "bom", label: words.bom, icon: Table });
     return list;
-  }, [pcb]);
+  }, [pcb, words]);
 
   const [active, setActive] = useState<TabId | null>(tabs[0]?.id ?? null);
   // Track which tabs have been opened so we mount (and fetch) each view lazily,
@@ -287,7 +285,7 @@ export function PcbViewer({ pcb }: { pcb: PcbAssets }) {
             {(pcb.schematic || pcb.schematicImage) && visited.has("schematic") && (
               <div className={active === "schematic" ? "absolute inset-0" : "hidden"}>
                 {schematicAsImage ? (
-                  <PcbImageView views={[{ id: "sch", label: "Schematic", src: pcb.schematicImage! }]} />
+                  <PcbImageView views={[{ id: "sch", label: words.schematic, src: pcb.schematicImage! }]} />
                 ) : (
                   <kicanvas-embed
                     ref={schematicEmbedRef}
@@ -325,7 +323,7 @@ export function PcbViewer({ pcb }: { pcb: PcbAssets }) {
               <div className={active === "3d" ? "absolute inset-0" : "hidden"}>
                 <model-viewer
                   src={resolveModelSrc(pcb.model3d)}
-                  alt="Interactive 3D view of the PCB"
+                  alt={words.view3d}
                   camera-controls
                   auto-rotate
                   rotation-per-second="18deg"
@@ -348,18 +346,18 @@ export function PcbViewer({ pcb }: { pcb: PcbAssets }) {
               <button
                 type="button"
                 onClick={toggleFullscreen}
-                aria-label={isFullscreen ? "Exit fullscreen" : "Fullscreen"}
+                aria-label={isFullscreen ? words.exitFullscreen : words.fullscreen}
                 className="inline-flex items-center gap-1.5 rounded-lg bg-background/80 px-2.5 py-1.5 text-[12px] text-foreground backdrop-blur hover:bg-border transition-colors"
               >
                 {isFullscreen ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
-                {isFullscreen ? "Exit" : "Fullscreen"}
+                {isFullscreen ? words.exit : words.fullscreen}
               </button>
 
               {/* Sheet selector — schematic tab only, when the design has multiple sheets */}
               {active === "schematic" && sheets.length > 1 && (
                 <div className="flex items-center gap-1.5 rounded-lg bg-background/80 p-1 backdrop-blur">
                   <span className="pl-1.5 text-[10px] font-medium uppercase tracking-wide text-date">
-                    Sheet
+                    {words.sheet}
                   </span>
                   <select
                     value={activeSheet}
@@ -379,7 +377,7 @@ export function PcbViewer({ pcb }: { pcb: PcbAssets }) {
               {active === "pcb" && layerControls && (
                 <div className="flex flex-wrap items-center gap-1 rounded-lg bg-background/80 p-1 backdrop-blur">
                   <span className="px-1.5 text-[10px] font-medium uppercase tracking-wide text-date">
-                    Layers
+                    {words.layers}
                   </span>
                   {LAYER_PRESETS.map((p) => (
                     <button
@@ -388,7 +386,7 @@ export function PcbViewer({ pcb }: { pcb: PcbAssets }) {
                       onClick={() => applyPreset(p.id)}
                       className="rounded-md bg-secondary px-2 py-0.5 text-[11px] text-foreground hover:bg-border transition-colors"
                     >
-                      {p.label}
+                      {words.layer[p.id]}
                     </button>
                   ))}
                 </div>

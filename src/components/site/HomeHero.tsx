@@ -1,11 +1,13 @@
 "use client";
 
 import { useRef } from "react";
-import Link from "next/link";
+import Link from "@/components/site/LocaleLink";
+import { useDictionary } from "@/components/site/LangProvider";
 import { gsap, MOTION_OK, SplitText, useGSAP } from "@/lib/gsap";
 
 interface HomeHeroProps {
   title: string;
+  /** The whole line, already in the page's language: "Bijgewerkt op 28 februari 2026". */
   updated: string;
   paragraphs: string[];
 }
@@ -16,6 +18,7 @@ interface HomeHeroProps {
  * is hidden by CSS until this runs; with reduced motion it is simply there.
  */
 export default function HomeHero({ title, updated, paragraphs }: HomeHeroProps) {
+  const { nav } = useDictionary();
   const scope = useRef<HTMLElement>(null);
 
   useGSAP(
@@ -66,17 +69,17 @@ export default function HomeHero({ title, updated, paragraphs }: HomeHeroProps) 
       </h1>
 
       <div data-gsap data-hero-meta className="mt-2 flex items-center gap-4">
-        <p className="text-[13px] text-date font-medium">Updated {updated}</p>
+        <p className="text-[13px] text-date font-medium">{updated}</p>
         <span className="text-border">·</span>
         <nav className="flex items-center gap-3">
           <Link href="/projects" className="text-[13px] text-muted hover:text-foreground transition-colors font-medium">
-            Projects
+            {nav.projects}
           </Link>
           <Link href="/blog" className="text-[13px] text-muted hover:text-foreground transition-colors font-medium">
-            Blog
+            {nav.blog}
           </Link>
           <Link href="/shop" className="text-[13px] text-muted hover:text-foreground transition-colors font-medium">
-            Shop
+            {nav.shop}
           </Link>
         </nav>
       </div>

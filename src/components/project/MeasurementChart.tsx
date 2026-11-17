@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState, ViewTransition } from "react";
 import { SWAP_CLASSES, swapView } from "@/lib/view-transition";
 import { useTheme } from "next-themes";
+import { useDictionary } from "@/components/site/LangProvider";
 import { Table2, LineChart as LineIcon } from "lucide-react";
 
 /**
@@ -75,6 +76,7 @@ export function MeasurementChart({
   xLabel?: string;
   yLabel?: string;
 }) {
+  const { project: words } = useDictionary();
   const { resolvedTheme } = useTheme();
   const dark = resolvedTheme === "dark";
   const colors = dark ? SERIES_DARK : SERIES_LIGHT;
@@ -110,7 +112,7 @@ export function MeasurementChart({
         const xLabel = header[0] || "x";
         const xs = body.map((r) => Number(r[0]));
         const series = header.slice(1).map((name, ci) => ({
-          name: name || `series ${ci + 1}`,
+          name: name || words.series(ci + 1),
           points: body
             .map((r) => ({ x: Number(r[0]), y: Number(r[ci + 1]) }))
             .filter((p) => Number.isFinite(p.x) && Number.isFinite(p.y)),
@@ -120,7 +122,7 @@ export function MeasurementChart({
       })
       .catch(() => !cancelled && setError(true));
     return () => { cancelled = true; };
-  }, [src]);
+  }, [src, words]);
 
   const geom = useMemo(() => {
     if (!data) return null;
@@ -144,13 +146,13 @@ export function MeasurementChart({
   if (error)
     return (
       <div className="flex h-[220px] items-center justify-center rounded-xl border border-divider bg-secondary text-[13px] text-muted">
-        Couldn’t load the measurement data.
+        {words.chartError}
       </div>
     );
   if (!data || !geom)
     return (
       <div ref={setWrapEl} className="flex h-[220px] items-center justify-center rounded-xl border border-divider bg-secondary text-[13px] text-date">
-        Loading chart…
+        {words.chartLoading}
       </div>
     );
 
@@ -180,7 +182,7 @@ export function MeasurementChart({
           className="inline-flex shrink-0 items-center gap-1.5 rounded-md bg-background/60 px-2 py-1 text-[11px] text-muted hover:text-foreground transition-colors"
         >
           {showTable ? <LineIcon size={13} /> : <Table2 size={13} />}
-          {showTable ? "Chart" : "Table"}
+          {showTable ? words.chart : words.table}
         </button>
       </div>
 

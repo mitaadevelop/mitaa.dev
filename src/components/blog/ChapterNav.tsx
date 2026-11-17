@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/site/LocaleLink";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import type { ChapterRef, Lang } from "@/lib/blog/types";
 import { strings } from "@/lib/blog/i18n";

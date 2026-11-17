@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getPostChapter } from "@/lib/blog";
 import { strings } from "@/lib/blog/i18n";
+import { localePath, type Lang } from "@/lib/i18n";
 
 /**
  * Metadata for a post page or one of its chapter pages.
@@ -11,6 +12,7 @@ import { strings } from "@/lib/blog/i18n";
  * text they do not share.
  */
 export async function buildChapterMetadata(
+  lang: Lang,
   slug: string,
   chapterSlug?: string
 ): Promise<Metadata> {
@@ -23,7 +25,11 @@ export async function buildChapterMetadata(
   const isFirst = chapter.index === 1;
   // Chapter 1 is also reachable at its own chapter URL; point it at the canonical
   // /blog/<slug> so the two do not compete.
-  const url = isFirst ? `/blog/${post.slug}` : chapter.href;
+  const path = isFirst ? `/blog/${post.slug}` : chapter.href;
+  // A post written in the other language than the page is the same text under two
+  // addresses: the one in its own language is the canonical one.
+  const url = localePath(lang, path);
+  const canonical = localePath(post.lang, path);
   const title = paginated && !isFirst ? `${post.title} — ${chapter.index}. ${chapter.title}` : post.title;
   const description =
     paginated && !isFirst
@@ -33,7 +39,7 @@ export async function buildChapterMetadata(
   return {
     title,
     description,
-    alternates: { canonical: url },
+    alternates: { canonical },
     openGraph: {
       type: "article",
       title,

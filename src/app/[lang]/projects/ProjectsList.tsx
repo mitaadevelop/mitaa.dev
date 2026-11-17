@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/site/LocaleLink";
+import { useDictionary } from "@/components/site/LangProvider";
 import { ExternalLink, Search, Star, GitFork, ArrowLeft } from "lucide-react";
 import { GitHubIcon } from "@/components/site/icons";
 import type { Project } from "@/lib/projects/types";
@@ -16,6 +17,7 @@ interface Props {
 }
 
 export default function ProjectsList({ curatedProjects, initialGithubProjects }: Readonly<Props>) {
+  const { projects: words } = useDictionary();
   const [activeCategory, setActiveCategory] = useState("All");
   const [search, setSearch] = useState("");
   const [githubProjects, setGithubProjects] = useState<Project[]>(initialGithubProjects);
@@ -74,7 +76,7 @@ export default function ProjectsList({ curatedProjects, initialGithubProjects }:
       {/* Header */}
       <Blur delay={50}>
         <h1 className="text-[13px] font-medium tracking-[0.8px] uppercase text-muted mb-8">
-          Projects
+          {words.title}
         </h1>
       </Blur>
 
@@ -92,7 +94,7 @@ export default function ProjectsList({ curatedProjects, initialGithubProjects }:
                   : "bg-secondary text-muted hover:text-foreground"
               }`}
             >
-              {cat}
+              {cat === "All" ? words.all : cat === "Other" ? words.other : cat}
             </button>
           ))}
         </div>
@@ -105,7 +107,7 @@ export default function ProjectsList({ curatedProjects, initialGithubProjects }:
           />
           <input
             type="text"
-            placeholder="Search projects..."
+            placeholder={words.search}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full sm:w-56 pl-8 pr-3 py-1.5 rounded-full bg-secondary border-none text-[13px] text-foreground placeholder:text-date focus:outline-none focus:ring-1 focus:ring-foreground/10 transition-colors"
@@ -196,7 +198,7 @@ export default function ProjectsList({ curatedProjects, initialGithubProjects }:
 
       {filtered.length === 0 && (
         <div className="text-center py-16">
-          <p className="text-muted text-[14px]">No projects found</p>
+          <p className="text-muted text-[14px]">{words.noResults}</p>
           <button
             onClick={() => {
               setActiveCategory("All");
@@ -204,7 +206,7 @@ export default function ProjectsList({ curatedProjects, initialGithubProjects }:
             }}
             className="mt-3 text-foreground hover:underline text-[13px]"
           >
-            Clear filters
+            {words.clearFilters}
           </button>
         </div>
       )}

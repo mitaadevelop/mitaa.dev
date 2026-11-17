@@ -104,6 +104,13 @@ allowing dynamic routes like the RSS feed.
 - Every download goes through `/api/download/<id>`, which counts it (once per visitor, per file, per day; no IP stored) and redirects to the file
 - "Open in Overleaf" for the templates
 
+### Languages (`/` in Dutch, `/en` in English)
+- The site is written in **Dutch**; every page also exists in **English** under `/en/…`, and a button next to the light/dark toggle (**EN** / **NL**) switches to the same page in the other language.
+- The words of the interface are in `src/lib/i18n/dictionary.ts` (both languages side by side, so a missing translation is a type error). Texts of the shop are `{ nl, en }` pairs in `src/data/`.
+- The bio: `content/bio.md` is Dutch, `content/bio.en.md` is the English version (written by hand; without it the English page shows the Dutch text and says so).
+- A blog post says which language it is written in (`\usepackage[dutch]{babel}` or `\lang{nl}`; English without it). On the other language's page it shows the same text with a short note, and search engines are pointed at the address in its own language.
+- The LaTeX templates and the cheat sheet in the shop stay English; the shop says so.
+
 ### Projects (`/projects`)
 - Curated projects from `content/projects/*.md`
 - Public GitHub repos pulled at build time (deduplicated against curated projects)
@@ -159,7 +166,8 @@ mitaa.dev/
 │   └── blog-check.mts          # Compile a post with latexmk and compare numbering
 ├── templates/                  # Starting points: a blog post (shows every feature) and a project repo
 ├── src/
-│   ├── app/                    # Next.js App Router routes
+│   ├── proxy.ts                # Dutch without a prefix, English under /en (rewrite + redirect)
+│   ├── app/                    # Next.js App Router routes; every page is under [lang]/
 │   │   ├── api/github-repos/   # Live repo list (revalidates every 60 s)
 │   │   ├── api/download/[id]/  # Counts a shop download, then redirects to the file
 │   │   ├── api/blog-watch/     # Dev only: live preview of .tex saves (404 in production)
@@ -592,7 +600,7 @@ This website does not host its own comment system. Instead, blog post discussion
 - **X / Twitter**: Follow [@MITCHEL_Dev](https://x.com/MITCHEL_Dev) for new posts and updates *(replace with your actual handle)*
 - **GitHub**: Star and fork the repo at [github.com/mitaadevelop/mitaa.dev](https://github.com/mitaadevelop/mitaa.dev)
 
-> Want to self-host comments instead? The site is built to be extended. You can integrate Disqus, Cusdis, or a custom Supabase backend by adding a client-side comment component to `src/app/blog/[slug]/page.tsx`.
+> Want to self-host comments instead? The site is built to be extended. You can integrate Disqus, Cusdis, or a custom Supabase backend by adding a client-side comment component to `src/app/[lang]/blog/[slug]/page.tsx`.
 
 ---
 

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import Image from "next/image";
-import Link from "next/link";
+import Link from "@/components/site/LocaleLink";
 import {
   ArrowLeft,
   Check,
@@ -16,37 +17,49 @@ import DownloadCount, { downloadHref } from "@/components/shop/DownloadCount";
 import ShopProductGallery from "@/components/shop/ShopProductGallery";
 import ScrollReveal from "@/components/site/ScrollReveal";
 import { shopProduct } from "@/data/shop";
+import { isLang, pick } from "@/lib/i18n";
+import { dictionary } from "@/lib/i18n/dictionary";
+import { languageAlternates } from "@/lib/i18n/metadata";
 import { getDownloadCounts } from "@/lib/downloads";
 
 // The download count is read from Redis at most once a minute.
 // Must be a literal — keep in sync with COUNTS_REVALIDATE in @/lib/downloads.
 export const revalidate = 60;
 
-export const metadata: Metadata = {
-  title: `${shopProduct.title} — Shop`,
-  description: shopProduct.description,
-  alternates: {
-    canonical: `/shop/${shopProduct.slug}`,
-  },
-  robots: {
-    index: false,
-    follow: false,
-  },
-  openGraph: {
-    title: `${shopProduct.title} — Wallpaper pack`,
-    description: shopProduct.description,
-    images: [
-      {
-        url: shopProduct.artworks[0].preview.landscape,
-        width: 1600,
-        height: 1000,
-        alt: shopProduct.artworks[0].alt.landscape,
-      },
-    ],
-  },
-};
+type Props = Readonly<{ params: Promise<{ lang: string }> }>;
 
-export default async function SignalNo01Page() {
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { lang } = await params;
+  if (!isLang(lang)) return {};
+  const words = dictionary(lang).shop;
+  return {
+    title: words.productMeta(shopProduct.title),
+    description: pick(lang, shopProduct.description),
+    alternates: languageAlternates(lang, `/shop/${shopProduct.slug}`),
+    robots: {
+      index: false,
+      follow: false,
+    },
+    openGraph: {
+      title: words.productOgTitle(shopProduct.title),
+      description: pick(lang, shopProduct.description),
+      images: [
+        {
+          url: shopProduct.artworks[0].preview.landscape,
+          width: 1600,
+          height: 1000,
+          alt: pick(lang, shopProduct.artworks[0].alt.landscape),
+        },
+      ],
+    },
+  };
+}
+
+export default async function SignalNo01Page({ params }: Props) {
+  const { lang } = await params;
+  if (!isLang(lang)) notFound();
+  const words = dictionary(lang);
+  const shop = words.shop;
   const featuredArtwork = shopProduct.artworks[0];
   const counts = await getDownloadCounts();
   const downloads = counts?.[shopProduct.download.id] ?? null;
@@ -58,7 +71,7 @@ export default async function SignalNo01Page() {
           href="/shop"
           className="mb-10 inline-flex items-center gap-2 rounded-sm text-[13px] text-muted transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
         >
-          <ArrowLeft size={14} aria-hidden="true" /> Back to Shop
+          <ArrowLeft size={14} aria-hidden="true" /> {shop.backToShop}
         </Link>
       </Blur>
 
@@ -68,7 +81,7 @@ export default async function SignalNo01Page() {
             <ScrollReveal variant="parallax">
               <Image
                 src={featuredArtwork.preview.landscape}
-                alt={featuredArtwork.alt.landscape}
+                alt={pick(lang, featuredArtwork.alt.landscape)}
                 fill
                 priority
                 sizes="(max-width: 1023px) 100vw, 63vw"
@@ -80,7 +93,7 @@ export default async function SignalNo01Page() {
               <div className="relative aspect-[9/20] overflow-hidden rounded-[1.2rem] border-[4px] border-white/20 bg-black shadow-2xl sm:rounded-[1.8rem] sm:border-[5px]">
                 <Image
                   src={featuredArtwork.preview.mobile}
-                  alt={featuredArtwork.alt.mobile}
+                  alt={pick(lang, featuredArtwork.alt.mobile)}
                   fill
                   sizes="170px"
                   className="object-cover"
@@ -93,7 +106,7 @@ export default async function SignalNo01Page() {
             </div>
 
             <span className="absolute left-5 top-5 rounded-full border border-white/15 bg-black/45 px-3 py-1 text-[10px] font-medium uppercase tracking-[0.8px] text-white/80 backdrop-blur-sm sm:left-9 sm:top-9">
-              Desktop + mobile
+              {shop.desktopMobile}
             </span>
           </div>
         </Fade>
@@ -102,10 +115,10 @@ export default async function SignalNo01Page() {
           <div className="flex h-full flex-col p-6 sm:p-9 lg:p-10">
             <div className="flex flex-wrap items-center gap-2">
               <span className="rounded-full bg-badge-bg px-2.5 py-1 text-[11px] font-medium text-badge-text">
-                {shopProduct.status}
+                {shop.status[shopProduct.status]}
               </span>
               <span className="rounded-full bg-secondary px-2.5 py-1 text-[11px] font-medium text-muted">
-                {shopProduct.type}
+                {pick(lang, shopProduct.type)}
               </span>
             </div>
 
@@ -113,14 +126,14 @@ export default async function SignalNo01Page() {
               {shopProduct.title}
             </h1>
             <p className="mt-5 text-[15px] leading-7 text-muted">
-              {shopProduct.description}
+              {pick(lang, shopProduct.description)}
             </p>
 
             <ul
-              aria-label="Product details"
+              aria-label={shop.productDetails}
               className="mt-6 flex flex-wrap gap-2"
             >
-              {shopProduct.tags.map((tag) => (
+              {pick(lang, shopProduct.tags).map((tag) => (
                 <li
                   key={tag}
                   className="rounded-full border border-divider px-2.5 py-1 text-[11px] text-muted"
@@ -131,30 +144,30 @@ export default async function SignalNo01Page() {
             </ul>
 
             <aside
-              aria-label="Download"
+              aria-label={shop.downloadAside}
               className="mt-10 border-t border-divider pt-7 lg:mt-auto"
             >
               <p className="text-[11px] font-medium uppercase tracking-[0.8px] text-date">
-                Free download
+                {words.common.freeDownload}
               </p>
               <div className="mt-1 flex items-end justify-between gap-4">
                 <p className="text-[36px] font-semibold tracking-[-1px] text-foreground">
-                  {shopProduct.price}
+                  {words.common.free}
                 </p>
-                <DownloadCount count={downloads} className="mb-3" />
+                <DownloadCount count={downloads} lang={lang} className="mb-3" />
               </div>
               <p className="mt-1 text-[12px] text-muted">
-                {shopProduct.fileCount} high-resolution JPGs · {shopProduct.download.size} ZIP · Personal use
+                {shop.filesLine(shopProduct.fileCount, shopProduct.download.size)}
               </p>
               <a
                 href={downloadHref(shopProduct.download.id)}
                 rel="nofollow"
                 className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-md bg-primary px-4 py-3 text-[13px] font-medium text-primary-foreground transition-opacity hover:opacity-85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
               >
-                <Download size={15} aria-hidden="true" /> Download the pack
+                <Download size={15} aria-hidden="true" /> {shop.downloadPack}
               </a>
               <p className="mt-4 text-[12px] leading-5 text-date">
-                No account or email needed. The download starts straight away.
+                {shop.noAccount}
               </p>
             </aside>
           </div>
@@ -169,18 +182,17 @@ export default async function SignalNo01Page() {
           <div className="mb-8 flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
             <div>
               <p className="text-[11px] font-medium uppercase tracking-[0.8px] text-date">
-                The collection
+                {shop.collectionKicker}
               </p>
               <h2
                 id="wallpaper-collection"
                 className="mt-2 text-[24px] font-semibold tracking-[-0.5px] text-foreground"
               >
-                Six signals, two moods
+                {shop.collectionTitle}
               </h2>
             </div>
             <p className="max-w-lg text-[13px] leading-6 text-muted">
-              Select any design to compare its dedicated desktop and mobile
-              composition. Public images are protected previews.
+              {shop.collectionIntro}
             </p>
           </div>
           <ShopProductGallery artworks={shopProduct.artworks} />
@@ -192,16 +204,16 @@ export default async function SignalNo01Page() {
           <Fade delay={80} inView>
             <section className="py-12" aria-labelledby="about-signal">
               <p className="text-[11px] font-medium uppercase tracking-[0.8px] text-date">
-                About the pack
+                {shop.aboutKicker}
               </p>
               <h2
                 id="about-signal"
                 className="mt-2 text-[22px] font-semibold tracking-[-0.4px] text-foreground"
               >
-                Technical, without the visual noise
+                {shop.aboutTitle}
               </h2>
               <p className="mt-5 max-w-2xl text-[14px] leading-7 text-muted">
-                {shopProduct.overview}
+                {pick(lang, shopProduct.overview)}
               </p>
 
               <div className="mt-9 grid gap-4 sm:grid-cols-3">
@@ -210,15 +222,15 @@ export default async function SignalNo01Page() {
                   const Icon = icons[index];
                   return (
                     <article
-                      key={item.title}
+                      key={pick(lang, item.title)}
                       className="rounded-lg border border-divider bg-card p-5"
                     >
                       <Icon size={17} className="text-muted" aria-hidden="true" />
                       <h3 className="mt-4 text-[14px] font-medium text-foreground">
-                        {item.title}
+                        {pick(lang, item.title)}
                       </h3>
                       <p className="mt-2 text-[12px] leading-5 text-muted">
-                        {item.description}
+                        {pick(lang, item.description)}
                       </p>
                     </article>
                   );
@@ -241,20 +253,20 @@ export default async function SignalNo01Page() {
                   id="included-formats"
                   className="text-[13px] font-medium uppercase tracking-[0.8px] text-muted"
                 >
-                  Included formats
+                  {shop.includedFormats}
                 </h2>
               </div>
               <div className="mt-6 border-b border-divider">
                 {shopProduct.formats.map((format) => (
                   <div
-                    key={format.label}
+                    key={pick(lang, format.label)}
                     className="grid grid-cols-[72px_1fr_auto] items-center gap-3 border-t border-divider py-4 text-[12px]"
                   >
                     <span className="font-medium text-foreground">
-                      {format.label}
+                      {pick(lang, format.label)}
                     </span>
                     <span className="text-muted">{format.dimensions}</span>
-                    <span className="text-date">{format.use}</span>
+                    <span className="text-date">{pick(lang, format.use)}</span>
                   </div>
                 ))}
               </div>
@@ -270,10 +282,10 @@ export default async function SignalNo01Page() {
               id="how-it-works"
               className="text-[13px] font-medium uppercase tracking-[0.8px] text-muted"
             >
-              How it works
+              {shop.howItWorks}
             </h2>
             <ol className="mt-7 space-y-5">
-              {["Download one ZIP", "Choose your screen format", "Set it as your wallpaper"].map(
+              {shop.packSteps.map(
                 (step, index) => (
                   <li
                     key={step}
@@ -299,10 +311,10 @@ export default async function SignalNo01Page() {
               id="personal-license"
               className="text-[13px] font-medium uppercase tracking-[0.8px] text-muted"
             >
-              Personal-use license
+              {shop.licenseTitle}
             </h2>
             <p className="mt-6 text-[14px] leading-7 text-muted">
-              {shopProduct.license}
+              {pick(lang, shopProduct.license)}
             </p>
             <p className="mt-5 flex items-start gap-3 text-[12px] leading-5 text-foreground">
               <Check
@@ -310,7 +322,7 @@ export default async function SignalNo01Page() {
                 className="mt-0.5 shrink-0 text-success"
                 aria-hidden="true"
               />
-              Use every wallpaper across devices you personally own.
+              {shop.licenseNote}
             </p>
           </section>
         </Fade>
@@ -321,21 +333,21 @@ export default async function SignalNo01Page() {
           <div className="grid gap-8 lg:grid-cols-[minmax(220px,0.35fr)_minmax(0,1fr)]">
             <div>
               <p className="text-[11px] font-medium uppercase tracking-[0.8px] text-date">
-                Need to know
+                {shop.faqKicker}
               </p>
               <h2
                 id="frequently-asked-questions"
                 className="mt-2 text-[22px] font-semibold tracking-[-0.4px] text-foreground"
               >
-                Frequently asked questions
+                {shop.faqTitle}
               </h2>
             </div>
 
             <div className="border-b border-divider">
               {shopProduct.faqs.map((faq) => (
-                <details key={faq.question} className="group border-t border-divider">
+                <details key={pick(lang, faq.question)} className="group border-t border-divider">
                   <summary className="flex min-h-16 cursor-pointer list-none items-center justify-between gap-6 rounded-sm py-4 text-[14px] font-medium text-foreground transition-colors hover:text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background [&::-webkit-details-marker]:hidden">
-                    {faq.question}
+                    {pick(lang, faq.question)}
                     <Plus
                       size={16}
                       aria-hidden="true"
@@ -343,7 +355,7 @@ export default async function SignalNo01Page() {
                     />
                   </summary>
                   <p className="max-w-2xl pb-6 pr-10 text-[13px] leading-6 text-muted">
-                    {faq.answer}
+                    {pick(lang, faq.answer)}
                   </p>
                 </details>
               ))}

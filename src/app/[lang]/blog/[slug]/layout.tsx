@@ -4,7 +4,7 @@
 import "katex/dist/katex.min.css";
 
 import { notFound } from "next/navigation";
-import Link from "next/link";
+import Link from "@/components/site/LocaleLink";
 import { ArrowLeft } from "lucide-react";
 import { getPostShell } from "@/lib/blog";
 import { strings } from "@/lib/blog/i18n";

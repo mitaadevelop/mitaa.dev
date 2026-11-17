@@ -7,7 +7,7 @@ is built; there is no database.
 | --- | --- |
 | **A blog post** | `npm run new:post <name>` — see below |
 | **A project** | Push a public GitHub repo: it shows up by itself. Put its write-up in the repo's `project/` folder (start from [`templates/project/`](../templates/project/)). Only a project *without* a public repo needs a file here: `content/projects/<name>.md` |
-| **The bio on the home page** | Edit [`bio.md`](bio.md) |
+| **The bio on the home page** | Edit [`bio.md`](bio.md) (Dutch). The English version is [`bio.en.md`](bio.en.md): write it yourself, or delete it and the English page shows the Dutch text |
 | **A free download in the shop** | Sources are in `content/shop/` (the LaTeX templates and the cheat sheet); then `npm run downloads:build` |
 
 ## Writing a blog post

@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { getAllSlugs, getChapterOutline, getPostChapter } from "@/lib/blog";
+import { isLang } from "@/lib/i18n";
 import ChapterBody from "../ChapterBody";
 import { buildChapterMetadata } from "../metadata";
 
@@ -18,23 +19,25 @@ export function generateStaticParams() {
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ slug: string; chapter: string }>;
+  params: Promise<{ lang: string; slug: string; chapter: string }>;
 }) {
-  const { slug, chapter } = await params;
-  return buildChapterMetadata(slug, chapter);
+  const { lang, slug, chapter } = await params;
+  if (!isLang(lang)) return {};
+  return buildChapterMetadata(lang, slug, chapter);
 }
 
 export default async function BlogChapterPage({
   params,
 }: {
-  params: Promise<{ slug: string; chapter: string }>;
+  params: Promise<{ lang: string; slug: string; chapter: string }>;
 }) {
-  const { slug, chapter } = await params;
+  const { lang, slug, chapter } = await params;
+  if (!isLang(lang)) notFound();
   const data = await getPostChapter(slug, chapter);
 
   if (!data) {
     notFound();
   }
 
-  return <ChapterBody data={data} />;
+  return <ChapterBody data={data} lang={lang} />;
 }

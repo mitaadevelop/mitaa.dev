@@ -1,5 +1,6 @@
 "use client";
 
+import { useDictionary } from "@/components/site/LangProvider";
 import { useCallback, useEffect, useRef, useState, ViewTransition } from "react";
 import { SWAP_CLASSES, swapView } from "@/lib/view-transition";
 
@@ -20,6 +21,7 @@ const MIN_SCALE = 1;
 const MAX_SCALE = 10;
 
 export function PcbImageView({ views }: { views: ImageViewOption[] }) {
+  const { pcb: words } = useDictionary();
   const [active, setActive] = useState(views[0]?.id ?? "");
   const [t, setT] = useState({ scale: 1, x: 0, y: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
@@ -84,7 +86,7 @@ export function PcbImageView({ views }: { views: ImageViewOption[] }) {
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={src}
-            alt="Rendered view"
+            alt={words.renderedView}
             draggable={false}
             className="max-h-full max-w-full object-contain p-4"
           />

@@ -12,12 +12,15 @@ import { ProjectGallery } from "@/components/project/ProjectGallery";
 import { MeasurementChart } from "@/components/project/MeasurementChart";
 import { Fade } from "@/components/animate-ui/primitives/effects/fade";
 import { formatDate } from "@/lib/date";
+import { isLang } from "@/lib/i18n";
+import { dictionary } from "@/lib/i18n/dictionary";
+import { languageAlternates } from "@/lib/i18n/metadata";
 
-/** Format an ISO date as e.g. "Jul 2026". */
-const formatMonth = (iso?: string) => formatDate(iso, "month");
+/** Format an ISO date as e.g. "Jul 2026" (or "jul 2026" in Dutch). */
+const formatMonth = (iso: string | undefined, locale: string) => formatDate(iso, "month", locale);
 
 /** Format an ISO date as a relative time, e.g. "3 days ago". */
-function formatRelative(iso?: string): string | null {
+function formatRelative(iso: string | undefined, locale: string): string | null {
   if (!iso) return null;
   const then = new Date(iso).getTime();
   if (Number.isNaN(then)) return null;
@@ -31,7 +34,7 @@ function formatRelative(iso?: string): string | null {
     [Infinity, "year"],
   ];
   const divisors = [1, 60, 3600, 86400, 2592000, 31536000];
-  const rtf = new Intl.RelativeTimeFormat("en-US", { numeric: "auto" });
+  const rtf = new Intl.RelativeTimeFormat(locale, { numeric: "auto" });
   for (let i = 0; i < units.length; i++) {
     if (seconds < units[i][0]) {
       return rtf.format(-Math.round(seconds / divisors[i]), units[i][1]);
@@ -57,16 +60,17 @@ export function generateStaticParams() {
   return Array.from(slugs).map((slug) => ({ slug }));
 }
 
-export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params;
+export async function generateMetadata({ params }: { params: Promise<{ lang: string; slug: string }> }) {
+  const { lang, slug } = await params;
+  if (!isLang(lang)) return {};
   const project = await resolveProject(slug);
   if (!project) {
-    return { title: "Project Not Found" };
+    return { title: dictionary(lang).project.notFound };
   }
   return {
     title: project.title,
     description: project.description,
-    alternates: { canonical: `/projects/${project.slug}` },
+    alternates: languageAlternates(lang, `/projects/${slug}`),
     openGraph: {
       type: "website",
       title: project.title,
@@ -84,9 +88,12 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 export default async function ProjectDetail({
   params,
 }: {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ lang: string; slug: string }>;
 }) {
-  const { slug } = await params;
+  const { lang, slug } = await params;
+  if (!isLang(lang)) notFound();
+  const words = dictionary(lang);
+  const w = words.project;
   const project = await resolveProject(slug);
 
   if (!project) {
@@ -96,7 +103,7 @@ export default async function ProjectDetail({
   // Markdown docs and PDFs share the one Documentation switcher.
   const docCount = (project.docs?.length ?? 0) + (project.pdfs?.length ?? 0);
   const singleDocLabel =
-    project.docs?.[0]?.label ?? project.pdfs?.[0]?.label ?? "Documentation";
+    project.docs?.[0]?.label ?? project.pdfs?.[0]?.label ?? w.documentation;
 
   // The back links and previous / next project are in the /projects layout
   // (ProjectFrame), which stays mounted; this is only the part that changes.
@@ -144,13 +151,13 @@ export default async function ProjectDetail({
                   <Tag size={11} /> {project.release.tag}
                 </a>
               )}
-              {formatMonth(project.createdAt) && (
-                <span>Created {formatMonth(project.createdAt)}</span>
+              {formatMonth(project.createdAt, words.locale) && (
+                <span>{w.created(formatMonth(project.createdAt, words.locale) ?? "")}</span>
               )}
-              {formatMonth(project.updatedAt) && (
-                <span>Updated {formatMonth(project.updatedAt)}</span>
+              {formatMonth(project.updatedAt, words.locale) && (
+                <span>{w.updated(formatMonth(project.updatedAt, words.locale) ?? "")}</span>
               )}
-              {project.license && <span>{project.license} License</span>}
+              {project.license && <span>{w.license(project.license)}</span>}
             </div>
           </div>
         )}
@@ -164,7 +171,7 @@ export default async function ProjectDetail({
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-secondary text-foreground text-[13px] font-medium hover:bg-border transition-colors"
             >
-              <GitHubIcon size={14} /> Source
+              <GitHubIcon size={14} /> {w.source}
             </a>
           )}
           {project.demo && (
@@ -174,7 +181,7 @@ export default async function ProjectDetail({
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary text-primary-foreground text-[13px] font-medium hover:opacity-90 transition-colors"
             >
-              <ExternalLink size={14} /> Demo
+              <ExternalLink size={14} /> {w.demo}
             </a>
           )}
         </div>
@@ -185,7 +192,7 @@ export default async function ProjectDetail({
             {project.context && (
               <div>
                 <h3 className="text-[12px] font-medium tracking-[0.5px] uppercase text-date mb-2">
-                  Context
+                  {w.context}
                 </h3>
                 <p className="text-[14px] text-foreground">{project.context}</p>
               </div>
@@ -193,7 +200,7 @@ export default async function ProjectDetail({
             {project.role && (
               <div>
                 <h3 className="text-[12px] font-medium tracking-[0.5px] uppercase text-date mb-2">
-                  Role
+                  {w.role}
                 </h3>
                 <p className="text-[14px] text-foreground">{project.role}</p>
               </div>
@@ -201,7 +208,7 @@ export default async function ProjectDetail({
             {project.goal && (
               <div>
                 <h3 className="text-[12px] font-medium tracking-[0.5px] uppercase text-date mb-2">
-                  Goal
+                  {w.goal}
                 </h3>
                 <p className="text-[14px] text-foreground">{project.goal}</p>
               </div>
@@ -226,7 +233,7 @@ export default async function ProjectDetail({
           <Fade inView>
             <div className="mb-10">
               <h2 className="text-[13px] font-medium tracking-[0.8px] uppercase text-muted mb-4">
-                Overview
+                {w.overview}
               </h2>
               <div
                 className="prose-blog max-w-none"
@@ -253,9 +260,9 @@ export default async function ProjectDetail({
           <Fade inView>
             <div className="mb-10">
               <h2 className="text-[13px] font-medium tracking-[0.8px] uppercase text-muted mb-4">
-                Demo
+                {w.demoVideo}
               </h2>
-              <ProjectVideo src={project.video} />
+              <ProjectVideo src={project.video} title={w.videoTitle} />
             </div>
           </Fade>
         )}
@@ -265,7 +272,7 @@ export default async function ProjectDetail({
           <Fade inView>
             <div className="mb-10">
               <h2 className="text-[13px] font-medium tracking-[0.8px] uppercase text-muted mb-4">
-                Hardware
+                {w.hardware}
               </h2>
               <PcbViewer pcb={project.pcb} />
             </div>
@@ -277,7 +284,7 @@ export default async function ProjectDetail({
           <Fade inView>
             <div className="mb-10">
               <h2 className="text-[13px] font-medium tracking-[0.8px] uppercase text-muted mb-4">
-                Measurements
+                {w.measurements}
               </h2>
               <div className="space-y-4">
                 {project.measurements.map((mset) => (
@@ -299,7 +306,7 @@ export default async function ProjectDetail({
           <Fade inView>
             <div className="mb-10">
               <h2 className="text-[13px] font-medium tracking-[0.8px] uppercase text-muted mb-4">
-                Gallery
+                {w.gallery}
               </h2>
               <ProjectGallery images={project.gallery} />
             </div>
@@ -310,7 +317,7 @@ export default async function ProjectDetail({
         <Fade inView>
           <div className="mb-10">
             <h2 className="text-[13px] font-medium tracking-[0.8px] uppercase text-muted mb-4">
-              Tech Stack
+              {w.techStack}
             </h2>
             <div className="flex flex-wrap gap-2">
               {project.techStack.map((tech) => (
@@ -330,7 +337,7 @@ export default async function ProjectDetail({
           <Fade inView>
             <div className="mb-10">
               <h2 className="text-[13px] font-medium tracking-[0.8px] uppercase text-muted mb-4">
-                Dependencies
+                {w.dependencies}
               </h2>
               <div className="flex flex-wrap gap-2">
                 {project.dependencies.map((dep) => (
@@ -354,7 +361,7 @@ export default async function ProjectDetail({
           <Fade inView>
             <div className="mb-10">
               <h2 className="text-[13px] font-medium tracking-[0.8px] uppercase text-muted mb-4">
-                Recent Commits
+                {w.commits}
               </h2>
               <ul className="divide-y divide-divider">
                 {project.commits.map((commit) => (
@@ -369,7 +376,7 @@ export default async function ProjectDetail({
                         {commit.message}
                       </span>
                       <span className="flex items-center gap-2 shrink-0 text-[12px] text-date">
-                        {formatRelative(commit.date)}
+                        {formatRelative(commit.date, words.locale)}
                         <code className="text-[11px] font-mono text-muted">
                           {commit.sha}
                         </code>
@@ -387,7 +394,7 @@ export default async function ProjectDetail({
           <Fade inView>
             <div className="mb-10">
               <h2 className="text-[13px] font-medium tracking-[0.8px] uppercase text-muted mb-4">
-                Contributors
+                {w.contributors}
               </h2>
               <div className="flex flex-wrap gap-3">
                 {project.contributors.map((c) => (
@@ -396,7 +403,7 @@ export default async function ProjectDetail({
                     href={c.htmlUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    title={`${c.login} · ${c.contributions} commits`}
+                    title={w.contributorTitle(c.login, c.contributions)}
                     className="flex items-center gap-2 rounded-full bg-secondary py-1 pl-1 pr-3 hover:bg-border transition-colors"
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -419,7 +426,7 @@ export default async function ProjectDetail({
           <Fade inView>
             <div className="mb-10">
               <h2 className="text-[13px] font-medium tracking-[0.8px] uppercase text-muted mb-4">
-                Key Features
+                {w.features}
               </h2>
               <ul className="space-y-3">
                 {project.features.map((feature) => (
