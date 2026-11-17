@@ -12,6 +12,7 @@
     "pcb:render": "node scripts/render-kicad-images.mjs",
     "pcb:recolor": "node scripts/recolor-glb.mjs",
     "new:post": "tsx scripts/new-post.mts",
+    "icons:build": "node scripts/build-icons.mjs",
     "blog:check": "tsx scripts/blog-check.mts",
     "downloads:build": "tsx scripts/build-downloads.mts",
     "start": "next start",

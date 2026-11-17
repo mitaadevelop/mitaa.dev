@@ -9,7 +9,7 @@ PORT ?= 3000
 .DEFAULT_GOAL := help
 .PHONY: help install run dev build build-fast start preview data \
         lint typecheck test test-update check deps \
-        downloads translate new-post blog-check blog-publish \
+        downloads translate new-post blog-check blog-publish icons \
         pcb-render pcb-convert pcb-recolor \
         clean distclean fix-biber
 
@@ -84,6 +84,9 @@ blog-check: ## Compile a post with LaTeX and compare numbering (POST=<slug>)
 blog-publish: ## Same as blog-check, then publish the PDF (POST=<slug>)
 	@test -n "$(POST)" || { echo "usage: make blog-publish POST=<slug>"; exit 1; }
 	npm run blog:check -- $(POST) --publish
+
+icons: ## Rebuild favicon.ico and apple-icon.png from src/app/icon.svg (needs Chrome)
+	npm run icons:build
 
 ## —— Hardware —————————————————————————————————————————————————————————
 

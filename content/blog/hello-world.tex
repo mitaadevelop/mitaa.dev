@@ -1,0 +1,48 @@
+% content/blog/hello-world.tex — the file name is the URL (/blog/hello-world).
+% Images for this post go in public/blog/hello-world/ and are referenced from the site root.
+% It compiles with latexmk too: npm run blog:check hello-world
+\documentclass[11pt,a4paper]{article}
+\usepackage{amsmath, booktabs, graphicx}
+\usepackage{mitaa}
+
+\title{Hello, world}
+\subtitle{What this site is, and how a post gets onto it}
+\author{Mitchel Reints}
+\date{2026-11-16}
+\excerpt{A first, short post: what is on this site, and how a LaTeX file becomes a page on it.}
+\tags{Meta, LaTeX}
+\paginate{never}
+
+\begin{document}
+\maketitle
+
+\section{What this site is}
+
+This is the personal site of Mitchel Reints: projects, a blog and a few free downloads.
+
+The projects page fills itself. Every public repository on GitHub becomes a project, with its README, and with schematics, PCB layouts and measurement charts when the repository has them. The blog is written in LaTeX, so maths such as $e^{i\pi} + 1 = 0$ is typeset the way it is in a paper. The shop holds free LaTeX templates (an essay, a report and a research report) and a two-page cheat sheet.
+
+\section{How a post gets here}
+
+A post is one \texttt{.tex} file. When the site is built, the file is read, the maths is typeset with KaTeX, and a diagram written as Mermaid text is drawn to SVG. \Cref{fig:pipeline} shows the path, and it is itself such a diagram.
+
+\begin{figure}
+\begin{lstlisting}[language=mermaid, title={From a .tex file to a page}]
+flowchart LR
+  A[post.tex] --> B[Read the LaTeX]
+  B --> C[Maths: KaTeX]
+  B --> D[Diagrams: pele]
+  C --> E[Page on the site]
+  D --> E
+\end{lstlisting}
+\caption{How a LaTeX post becomes a page}
+\label{fig:pipeline}
+\end{figure}
+
+The same file also compiles to a PDF with \texttt{latexmk}, and a small check compares the numbers LaTeX prints (sections, figures, equations) with the ones on the page, so the two always agree.
+
+\section{What comes next}
+
+Posts about the projects can follow here. For now this one only has to show that a post goes from a \texttt{.tex} file to a page.
+
+\end{document}
