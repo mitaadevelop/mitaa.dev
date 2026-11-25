@@ -754,7 +754,7 @@ html {
   font-size: calc(var(--prose-base) * 0.9286);
 }
 
-/* Bibliography, printed where thebibliography stands */
+/* Bibliography, printed at the end of the last page */
 
 /* Neither the bibliography heading nor remark-gfm's screen-reader footnote
    heading is part of the document outline, so neither may consume a chapter
