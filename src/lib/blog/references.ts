@@ -32,10 +32,15 @@ export function resolveRefs(
   html: string,
   labels: Map<string, LabelTarget>,
   citations: Map<string, number>,
-  currentHref: string
+  currentHref: string,
+  bibliographyHref: string = currentHref
 ): string {
   const hrefOf = (target: LabelTarget) =>
     target.href === currentHref ? `#${target.anchor}` : `${target.href}#${target.anchor}`;
+
+  // The list is printed on one page (the last); a citation elsewhere links there.
+  const refHref = (key: string) =>
+    `${bibliographyHref === currentHref ? "" : bibliographyHref}#ref-${escapeHtml(key)}`;
 
   return html.replaceAll(PLACEHOLDER, (_match, keyList: string, macro: string, note?: string) => {
     const keys = keyList.split(",");
@@ -47,7 +52,7 @@ export function resolveRefs(
         const number = citations.get(key);
         return number === undefined
           ? `<span class="xref-missing">?${escapeHtml(key)}</span>`
-          : `<a href="#ref-${escapeHtml(key)}">${number}</a>`;
+          : `<a href="${refHref(key)}">${number}</a>`;
       });
       if (note) items.push(note);
       return `<span class="citation">[${items.join(", ")}]</span>`;
@@ -62,7 +67,7 @@ export function resolveRefs(
         }
         const number = citations.get(key);
         if (number !== undefined) {
-          return `<span class="citation">[<a href="#ref-${escapeHtml(key)}">${number}</a>]</span>`;
+          return `<span class="citation">[<a href="${refHref(key)}">${number}</a>]</span>`;
         }
         return `<span class="xref-missing">[?${escapeHtml(key)}]</span>`;
       })

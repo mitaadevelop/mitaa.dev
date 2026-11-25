@@ -198,8 +198,9 @@
   \IfBooleanTF{#1}{\mitaa@includegraphics*[#2]{\mitaa@file}}{\mitaa@includegraphics[#2]{\mitaa@file}}}
 
 % --- Bibliography ---------------------------------------------------------------
-% The site prints the list where thebibliography stands; \printbibliography is
-% only what it calls that place internally.
+% The site prints the list at the end of the last page, above "Cite this post",
+% wherever thebibliography stands (write it last and the PDF agrees);
+% \printbibliography is only what it calls that place internally.
 \providecommand{\printbibliography}{}
 
 \endinput

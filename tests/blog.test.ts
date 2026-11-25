@@ -10,6 +10,7 @@ import {
   getPostShell,
 } from "../src/lib/blog/index.ts";
 import { parseLatex, splitLatexChapters, SUPPORTED } from "../src/lib/blog/latex.ts";
+import { resolveRefs } from "../src/lib/blog/references.ts";
 import { findUntranslated } from "../src/lib/blog/render.ts";
 import { matchSnapshot } from "./snapshot.ts";
 
@@ -22,6 +23,8 @@ const REPORT = "report-features-reference";
 const MATH = "katex-math-reference";
 const SHOWCASE = "latex-features-showcase";
 const DESIGN = "report-design-showcase";
+/** The page that holds the reference list: the last of REPORT. */
+const LAST_PAGE = "/blog/report-features-reference/a-worked-example";
 
 async function chapterOf(slug: string, chapterSlug?: string) {
   const data = await getPostChapter(slug, chapterSlug);
@@ -83,16 +86,42 @@ describe("footnotes", () => {
 describe("citations", () => {
   test("numbers follow the order of the \\bibitems, as thebibliography numbers them", async () => {
     const body = await html(REPORT, "citations-and-the-bibliography");
-    assert.match(body, /href="#ref-shannon1948">1</);
-    assert.match(body, /href="#ref-nyquist1928">2</);
-    assert.match(body, /href="#ref-oppenheim1999">3</);
+    assert.match(body, new RegExp(`href="${LAST_PAGE}#ref-shannon1948">1<`));
+    assert.match(body, new RegExp(`href="${LAST_PAGE}#ref-nyquist1928">2<`));
+    assert.match(body, new RegExp(`href="${LAST_PAGE}#ref-oppenheim1999">3<`));
+  });
+
+  test("a citation on another page links to the page that holds the list", async () => {
+    // The list is on the last page, so a citation anywhere else crosses pages,
+    // and one on the last page stays on it.
+    const elsewhere = await html(REPORT, "citations-and-the-bibliography");
+    assert.doesNotMatch(elsewhere, /href="#ref-/);
+    const refs = resolveRefs(
+      '<span data-ref="a" data-macro="cite"></span>',
+      new Map(),
+      new Map([["a", 1]]),
+      "/blog/x/last",
+      "/blog/x/last"
+    );
+    assert.match(refs, /href="#ref-a">1</);
+  });
+
+  test("the list is printed at the end of the post, wherever thebibliography stands", () => {
+    const { body, bibliography } = parseLatex(
+      "\\begin{document}\n\\section{A}\n\\begin{thebibliography}{9}\n\\bibitem{k} Entry.\n\\end{thebibliography}\n\\section{B}\nText.\n\\end{document}"
+    );
+    assert.equal(bibliography.length, 1);
+    const last = body.at(-1);
+    assert.ok(last?.type === "macro" && last.content === "printbibliography");
+    assert.ok(!body.some((node) => node.type === "environment" && node.env === "thebibliography"));
+    assert.equal(body.filter((node) => node.type === "macro" && node.content === "printbibliography").length, 1);
   });
 
   test("several keys share one bracket, and an optional argument is a note", async () => {
     const body = await html(REPORT, "citations-and-the-bibliography");
-    assert.match(body, /class="citation">\[<a href="#ref-shannon1948">1<\/a>, <a href="#ref-nyquist1928">2<\/a>\]/);
+    assert.match(body, new RegExp(`class="citation">\\[<a href="${LAST_PAGE}#ref-shannon1948">1<\/a>, <a href="${LAST_PAGE}#ref-nyquist1928">2<\/a>\]`));
     const discussion = await html(DESIGN, "discussie");
-    assert.match(discussion, /class="citation">\[<a href="#ref-vermeer23">4<\/a>, p\.\u00A0212\]/);
+    assert.match(discussion, /class="citation">\[<a href="\/blog\/report-design-showcase\/bijlagen#ref-vermeer23">4<\/a>, p\.\u00A0212\]/);
   });
 
   test("a bibliography entry keeps its text", async () => {

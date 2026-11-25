@@ -297,12 +297,7 @@ architecture-beta
 \section{Citations and bibliography}
 \label{sec:cite}
 
-Cite sources with \texttt{\textbackslash{}cite}, as in \cite{datasheet}; two at once give \cite{datasheet,lecture}, and a page goes in brackets: \cite[p.~12]{datasheet}. Numbers follow the order of the \texttt{\textbackslash{}bibitem}s, and the list is printed where \texttt{thebibliography} stands. A key that is neither a label nor a bibitem is printed as a visible unresolved reference, so look for one before publishing.
-
-\begin{thebibliography}{9}
-\bibitem{datasheet} Manufacturer, \emph{Part Datasheet}, rev.~3, 2025.
-\bibitem{lecture} A.~Teacher, \emph{Control Systems}, lecture notes, 2024.
-\end{thebibliography}
+Cite sources with \texttt{\textbackslash{}cite}, as in \cite{datasheet}; two at once give \cite{datasheet,lecture}, and a page goes in brackets: \cite[p.~12]{datasheet}. Numbers follow the order of the \texttt{\textbackslash{}bibitem}s, and the list is printed at the end of the last page, above ``Cite this post'', wherever \texttt{thebibliography} stands. Write it at the end of the document, as below, and the PDF reads the same. A key that is neither a label nor a bibitem is printed as a visible unresolved reference, so look for one before publishing.
 
 \section*{Acknowledgements}
 
@@ -317,5 +312,12 @@ Cite sources with \texttt{\textbackslash{}cite}, as in \cite{datasheet}; two at 
 \label{app:wiring}
 
 Material that would interrupt the argument, such as the full wiring table, goes here and is cited from the text as \Cref{app:wiring}.
+
+% The list of works cited. The site prints it at the end of the last page, with the
+% citation block; write it last so that the PDF prints it there too.
+\begin{thebibliography}{9}
+\bibitem{datasheet} Manufacturer, \emph{Part Datasheet}, rev.~3, 2025.
+\bibitem{lecture} A.~Teacher, \emph{Control Systems}, lecture notes, 2024.
+\end{thebibliography}
 
 \end{document}

@@ -183,9 +183,13 @@ async function getRenderedPost(key: string): Promise<RenderedPost | null> {
   );
   const bibliographyHtml = renderBibliography(entries, citations);
 
+  // The bibliography is the last thing in the text (see `parseLatex`), so the
+  // last page holds it and every citation links there.
+  const bibliographyHref = drafts.at(-1)?.href ?? `/blog/${slug}`;
+
   const rendered: Chapter[] = drafts.map((draft) => {
     const wordCount = countWords(toPlainText(draft.unit.nodes));
-    const html = resolveRefs(draft.html, ctx.labels, citations, draft.href).replace(
+    const html = resolveRefs(draft.html, ctx.labels, citations, draft.href, bibliographyHref).replace(
       BIBLIOGRAPHY_PLACEHOLDER,
       bibliographyHtml
     );
@@ -210,7 +214,7 @@ async function getRenderedPost(key: string): Promise<RenderedPost | null> {
     },
     abstract: abstract && {
       ...abstract,
-      html: resolveRefs(abstract.html, ctx.labels, citations, `/blog/${slug}`),
+      html: resolveRefs(abstract.html, ctx.labels, citations, `/blog/${slug}`, bibliographyHref),
     },
     chapters: rendered,
     outline: paginated

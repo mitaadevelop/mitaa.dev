@@ -441,11 +441,15 @@ export function parseLatex(source: string): LatexDocument {
   // Drop metadata macros that would otherwise render into the page.
   body = stripMacros(body, METADATA_MACROS);
 
-  // The bibliography is collected here and printed where the environment
-  // stood — usually the end of the last page — as LaTeX does.
+  // The bibliography is collected here and printed at the very end of the
+  // post, whatever page the environment stands on: the reader finds the
+  // references and "Cite this post" together on the last page. (LaTeX prints
+  // it where it stands, so write it last to make the PDF read the same;
+  // numbering does not depend on the position.)
   const bibliography: LatexBibEntry[] = [];
-  body = body.map((node) => {
-    if (node.type !== "environment" || printRaw(node.env) !== "thebibliography") return node;
+  let printed = false;
+  body = body.flatMap((node) => {
+    if (node.type !== "environment" || printRaw(node.env) !== "thebibliography") return [node];
     let current: LatexBibEntry | null = null;
     for (const child of node.content ?? []) {
       if (child.type === "macro" && child.content === "bibitem") {
@@ -458,8 +462,10 @@ export function parseLatex(source: string): LatexDocument {
         current.nodes.push(child);
       }
     }
-    return { type: "macro", content: "printbibliography" };
+    printed = true;
+    return [];
   });
+  if (printed) body.push({ type: "macro", content: "printbibliography" });
 
   const tagList = read("tags");
   const keywordList = read("keywords");
